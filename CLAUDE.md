@@ -1,0 +1,109 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+# Interview Prep — Agent Guide
+
+This folder is Kanu Madhok's personal interview preparation workspace. Help him land roles by producing prep material that is sharp, specific, and ready to use the morning of an interview — not generic advice.
+
+## Who Kanu is right now
+
+- Currently a Senior Data Analyst on the Customer Perception team at **Walmart Data Ventures**.
+- Active interview pipeline (kept up to date in `memory/active_interview_pipeline.md`): roles he is currently preparing for, with notes on how much prep has been done for each. Check there before assuming which role "the interview" refers to.
+- Email: madhok.kanu@gmail.com.
+
+When he says "the interview" without qualifying which one, ask which role he means rather than guessing.
+
+## Folder layout
+
+The root holds project-wide config, the pipeline tracker, and **cross-role reusables** — files that every role-specific prep folder pulls from. The rest is **one subfolder per role**.
+
+**Project-wide config:**
+
+- `AGENTS.md` / `CLAUDE.md` — this guide (mirrored, keep both in sync).
+- `Skills.md` — human-readable map of every skill in this workspace: what each does, when to invoke, when not to. The decision tree at the bottom is the fastest way to pick the right skill when two could apply.
+- `.obsidian/` — Kanu uses Obsidian as his reader/editor. Keep markdown clean and Obsidian-friendly: no exotic frontmatter, fenced code blocks fine, internal `[[wiki links]]` allowed but not required.
+
+**Pipeline tracker:**
+
+- `Pipeline.md` (rendered copy at `Pipeline.html`) — at-a-glance view of active / considering / closed roles. Edit the `.md`; regenerate the `.html` only when asked.
+- `Application Operating System.md` — daily/weekly execution loop for turning prepared roles into submitted applications and sent outreach.
+- `Application Dashboard.html` — generated dashboard of urgent actions, ready-to-send roles, blocked roles, and filed-only roles. Regenerate with `python3 scripts/build_application_dashboard.py`; a markdown companion is also written to `Application Dashboard.md`.
+
+**Cross-role reusables.** These exist so each new role doesn't re-derive shared assets from scratch. The `interview-prep-reusables` skill bootstraps and maintains them:
+
+- `Resume Achievements Master.md` — canonical library of every resume-worthy achievement, organized by role and theme, with phrasing variants and a theme index. Pull bullets from here when tailoring a resume; don't rewrite from scratch.
+- `Resume Claims To Verify.md` — quarantine file for BCG/legacy claims that are not yet resume-safe. Do not use these in outward-facing material until Kanu verifies them and they are promoted into `Resume Achievements Master.md`.
+- `Master Story Bank.md` — STAR stories with beats, canonical lines, anticipated follow-ups, and proof points, tagged by theme. Each role's `Interview Answers.md` is a *selection + tailoring* of these, not a parallel library. Theme→story map at the top.
+- `Tell Me About Yourself - Master.md` — one spine plus archetype variants (Agent Builder, Consulting / Product Builder, FDE / client-facing). Copy the closest variant into the role folder as `Tell Me About Yourself - Cue Card.md` and tune the closing line.
+- `AI Build Walkthrough - Master.md` — the 4-beat scaffold (Problem → Build → Eval → Adoption+Next) plus pre-written ~4-min walkthroughs in Kanu's voice for every shipped project (Jira agent, analytics agent, hybrid orchestrator, KPI monitor, recruitment automation, NL-to-SQL demo, donation experiment, FTI capstone). Pulls facts from `Resume Achievements Master.md`; never invents. Role folders keep `AI Build Walkthrough - Cue Card.md` as a *selection + role-specific tweaks*, same pattern as `Interview Answers.md` selecting from `Master Story Bank.md`.
+- `Demo Portfolio.md` — canonical descriptions, URLs, and talking points for live demos (NL-to-SQL Copilot, FTI capstone) plus the internal Walmart artifacts. Source of truth for the "Live Demo" line on resumes and the links in outreach.
+- `Outreach Templates.md` — voice-locked templates for cold recruiter, post-screen thank-you, nudge-after-silence, cold hiring-manager, post-interview thank-you, application follow-up, networking ask, graceful decline. Hook bank tuned per role archetype.
+- `Cold Outreach Emails Best Practices.md` — companion reference to `Outreach Templates.md`: principles, anti-patterns, and what makes a cold email actually land. Use when editing templates or coaching tone, not for drop-in copy.
+
+**Other root-level files:**
+
+- `Saved Jobs Export.md` — bulk import staging area for jobs Kanu pastes from his LinkedIn Saved Jobs page. Maintained by the `linkedin-saved-jobs-intake` skill; don't hand-edit unless cleaning up duplicates.
+- `Recruiter Contacts.html` — rendered tracker of every recruiter/HM/referrer contact mined from Gmail. Regenerated by `recruiter-contact-tracker`.
+- `scripts/build_application_dashboard.py` — scans `Pipeline.md` and role folders to regenerate `Application Dashboard.html` and `Application Dashboard.md`.
+- `scripts/render_pipeline.py` — regenerates `Pipeline.html` from `Pipeline.md`. Run only when Kanu asks for a refreshed HTML view.
+- `Work Artifacts/` — exception to the "one folder per role" rule. Holds internal Walmart project write-ups (cp-analytics, cp-platform, customer-voice-semantic-layer, jira-ticket-worker, cp-analytics-mcp) referenced by the Demo Portfolio and Story Bank. Read-only context, not a role folder.
+
+**Installable skills (at root, as `.skill` files):**
+
+- `interview-prep-intake.skill` — files a new JD into the workspace (creates the role folder, writes `Job Description.md`, adds the Pipeline row, updates auto-memory).
+- `interview-prep-reusables.skill` — bootstraps or refreshes the five cross-role reusable files above.
+- `jd-to-ready.skill` — one-shot apply-ready pipeline: runs intake, tailors a resume from `Resume Achievements Master.md`, researches recruiter + HM contacts, drafts `Cold Outreach.md`. Composes the three primitives above.
+- `linkedin-saved-jobs-intake.skill` — bulk-files jobs Kanu pastes from his LinkedIn Saved Jobs page. Appends to `Saved Jobs Export.md`, creates one folder per job, WebFetches the full JD per folder, adds Pipeline subsection.
+- `find-fresh-jobs.skill` — morning pulse: surfaces N (default 10) fresh LinkedIn roles posted in the last 24h that match `Job Search Target Profile.md`. Applies geo-adjusted comp floor, seniority, hard-skip list, leetcode filter, industry exclusions. Dedupes against `Pipeline.md`. Read-only — does not file roles.
+- `recruiter-contact-tracker.skill` — mines Gmail for recruiter/HM/referrer contacts and rebuilds `Recruiter Contacts.html`.
+
+**Per-role subfolders.** Named `Company - Role Title` (e.g., `Walmart - Principal SWE Agent Builder`, `BCG X - Senior AI Factory Product Builder`). Do not drop loose role-specific files at the root.
+
+Inside a role's folder, the standard artifact set (build these out as prep deepens) is roughly:
+
+- The job description (PDF or `Job Description.md`).
+- His tailored resume for that role.
+- `My Interpretation of Job Description.md` — what the role actually wants beneath the JD language.
+- `7-Day Prep Schedule.md` — day-by-day plan leading up to the interview.
+- `Question Bank.md` and `Live Reps Question Bank.md` — likely questions, organized by theme.
+- `Interview Answers.md` — polished, first-person STAR-style answers in Kanu's voice. Built as a *tailored selection* from root `Master Story Bank.md`, not a parallel library.
+- `Tell Me About Yourself - Cue Card.md` — the opener, drilled down to a deliverable cue card. Start from the closest archetype in root `Tell Me About Yourself - Master.md` and tune the closing line.
+- `AI Build Walkthrough - Cue Card.md` — selection + role-specific tweaks for project walkthroughs. Names the 2–3 projects to lead with for this interview and the interviewer-specific phrases/tweaks. Pulls content from root `AI Build Walkthrough - Master.md`; does not duplicate the scaffold or pre-written walkthroughs.
+- `Mock Answer Rubric.md` — how to grade his own mock answers.
+- One PDF per known interviewer (LinkedIn export or bio) — used for interviewer-specific tailoring.
+- Recruiter correspondence as `Messages with Recruiter.md` when relevant.
+
+If a `.html` version of a `.md` file exists, it's usually a rendered/printable copy — when editing, edit the `.md` and (only if asked) regenerate the `.html`.
+
+## How to help
+
+**Default to specifics over generalities.** "Talk about a time you handled ambiguity" → don't write generic advice; pull from the role folder, the JD, and his resume, and draft an actual answer in his voice with concrete project details. If you don't have the specifics, ask before writing filler.
+
+**Voice and tone in his answers.** First person, conversational, no corporate filler, no jargon padding. STAR structure is fine but it should sound like a person talking, not a framework. He's a strong end-to-end builder — answers should foreground ownership, business outcomes, and crisp numbers when available. Avoid hype words ("leveraged," "spearheaded," "synergy").
+
+**Format intel matters.** Each role can have its own format quirks (panel vs. 1:1, leetcode vs. no leetcode, behavioral-heavy vs. system-design-heavy). When you learn format intel from him or a recruiter message, save it as a project memory and reflect it in that role's prep plan. Example already captured: Walmart Agent Builder confirmed **no leetcode**, business/capability and end-to-end problem solving focus — so the prep is weighted to project narratives and agent system-design walkthroughs, not DSA drills.
+
+**Skill triggers worth remembering.** Full reference + decision tree lives in root `Skills.md` — read it whenever you're unsure which skill to invoke. Quick map:
+
+- `interview-prep-intake` — Kanu shares a fresh JD he wants filed (creates role folder, `Job Description.md`, Pipeline row, auto-memory).
+- `linkedin-saved-jobs-intake` — Kanu pastes 3+ jobs copied from his LinkedIn Saved Jobs page and wants them filed in bulk. Appends to `Saved Jobs Export.md`, creates one `Company - Role` folder per job (skips existing), WebFetches full JD per folder, adds a Pipeline subsection. Trigger on "here are my saved jobs", "intake my saved jobs", "file all of these", "bulk import these".
+- `jd-to-ready` — Kanu wants the full apply-ready package in one pass: intake + tailored resume + researched contacts + drafted cold outreach. Trigger on "get me apply-ready", "full intake", "do everything for this JD", "I want to apply to this". Prefer this over `interview-prep-intake` when intent is clearly to apply, not just track.
+- `interview-prep-reusables` — bootstrap, refresh, or extend the cross-role reusables at root (Story Bank, TMAY Master, Demo Portfolio, Outreach Templates, Resume Master). Trigger on new project shipped, new outreach pattern, new role archetype, new demo URL, "rebuild my prep library."
+- `job-outreach` — recruiter/HM lookup + cold-email drafting for one specific JD (when JD is already filed and only outreach is needed).
+- `recruiter-contact-tracker` — mine Gmail for *all* recruiter/HM/referrer contacts, build/refresh `Recruiter Contacts.html`.
+- Polished deliverables: `docx`, `pdf`, `xlsx` for trackers/comparisons, `pptx` only if explicitly asked.
+
+**Don't over-deliver structure when he asks a quick question.** A lot of his asks in this folder are tactical: "rewrite this answer tighter," "what would you ask if you were the interviewer," "what's the weakest part of this resume bullet." Answer the question; don't produce a 12-section document unless he asks for one.
+
+## Working conventions
+
+- Prefer editing existing `.md` files in place over creating new variants. If a new variant is genuinely needed, name it clearly (e.g., `Interview Answers - v2 short.md`) and tell him why.
+- **Role-specific** new files go in the relevant `Company - Role` subfolder, never at the root. **Cross-role reusable** files (stories, TMAY variants, demo descriptions, outreach templates, resume bullets) belong in the root reusables — update those rather than scattering the same content into role folders.
+- Quantified outcomes are gold — when drafting answers, push for real numbers (impact $, % lift, time saved, users affected). If a number is missing, leave a `[NUMBER?]` placeholder rather than inventing one.
+- Treat recruiter messages and interviewer bios as confidential context — use them to tailor, but don't paste verbatim quotes into outward-facing material without flagging.
+- When something genuinely cross-role surfaces (a new story worth pulling into multiple roles, a new demo URL, an outreach pattern that landed), the right move is the `interview-prep-reusables` skill — not piecemeal edits across role folders.
+
+## Memory
+
+Persistent context about Kanu, his active pipeline, and role-specific intel is kept in the auto-memory system (outside this folder). Read those memories at the start of a session if the conversation will involve real prep work — they're the single source of truth for "which roles is he prepping for" and "what's special about each interview format."

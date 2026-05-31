@@ -1,0 +1,14 @@
+I'm a Senior Data Analyst at Walmart — but I've spent the last year rebuilding what that job actually is.
+
+Most analyst work is the same bottlenecks on repeat: someone needs data, waits a day or two for a query, gets the answer, asks a follow-up. I got tired of being that bottleneck, so I started building my way out of it — text-to-SQL and text-to-Looker tools that let people get their own answers in under a minute instead of waiting a day or two on me.
+
+The way I build is the part I care about most: I take a messy problem, build the whole thing in Python (Claude/OpenAI, MCP, RAG, LangGraph), test it against real cases, ship it, and then actually watch whether people use it. Not a recommendation in a deck — a working tool in production, in daily use.
+
+I like being close to the problem and the people who have it, not two teams removed from it. I build the same kinds of things on my own time too — my NL-to-SQL Copilot and a two-agent voice debate platform are live below.
+
+The work I'm always drawn back to: take a real, messy problem and ship the AI that actually solves it.
+
+Live builds:
+Text-to-SQL: https://sql-rag-frontend-simple-481433773942.us-central1.run.app/
+Text-to-Looker: https://text-looker-sql-e8ab5918bcfc.herokuapp.com/
+Voice Agent: https://doctor-simulation-ab9928fd6e67.herokuapp.com/

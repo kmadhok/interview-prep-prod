@@ -1,0 +1,6 @@
+.DS_Store
+.obsidian/workspace*
+.obsidian/cache
+*.html
+__pycache__/
+*.pyc
