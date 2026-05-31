@@ -12,7 +12,9 @@ The job-application skill suite has accumulated **structural duplication**: `jd-
 - Primitives use **one parameterized image** with a `mode` param (e.g. `find-contacts(mode: shortlist|full)`), not separate skills.
 - Plan-first; no edits until this plan is approved.
 
-**Intended outcome:** `jd-to-ready` drops from 549 → ~120–160 lines of pure orchestration. Each capability has exactly one authoritative definition. The Process Map in `Skills.md` becomes true ("compose calls these images") instead of half-true.
+**Execution rule — anchor edits to text, not line numbers (C4).** Every line range in this plan (e.g. "166–207", "line 211") is a *reference at planning time only*. Gutting step 3 shifts all later line numbers up by ~30, so by Phase 3 those numbers are wrong. When editing, anchor to unique strings — section headers (`### Step 5`), the literal supersede sentence, the exact rule text — never raw line numbers. Re-read the file's current state before each phase's edits.
+
+**Intended outcome:** `jd-to-ready` drops to roughly half its current size, dominated by the retained steps 1/2/6/7; the four gutted steps collapse to ~20 lines of call+wiring. (Don't target a specific line count — steps 1+2+6+7 are ~168 lines of existing content, so a "120–160" goal is unrealistic; the win is *zero inline domain logic*, not a line number.) Each capability has exactly one authoritative definition. The Process Map in `Skills.md` becomes true ("compose calls these images") instead of half-true.
 
 ## Key finding that shapes the approach
 
@@ -82,14 +84,14 @@ These skills have no enforced interface, so the written contract IS the interfac
 | Step | Now | Becomes |
 |------|-----|---------|
 | 1 — Intake (35–46) | calls `interview-prep-intake` | **KEEP** as-is |
-| 2 — Classify (48–128) | subagent → `themes[]`+`archetype` | **KEEP, trim.** Legit compose-layer logic: it feeds 3 downstream primitives. ~40 lines. |
+| 2 — Classify (48–128) | subagent → `themes[]`+`archetype` | **KEEP, trim (C5).** Legit compose-layer logic: it feeds 3 downstream primitives. "Trim" = remove redundant prose ONLY. The **output schema is frozen and is itself a contract**: the `themes[]` controlled vocabulary and the `archetype` enum must not change — all three downstream primitives consume them. Document step 2's output as a contract block like the primitives have. |
 | 3 — Resume (130–164) | inline tailoring | **GUT** → `tailor-resume(mode: pipeline, role_folder, themes[], archetype)`; wire gaps → step 6. ~5 lines |
 | 4 — Contacts (166–207) | inline LinkedIn research | **GUT** → `find-contacts(mode: full, company, role_title, jd_region, archetype, role_folder)`; wire top-1 picks → step 5. ~5 lines |
 | 5 — Outreach (209–464) | 256 inline lines | **GUT** → `write-outreach(mode: drip, contacts=top-1 picks, role_title, company, archetype, lead_theme, urgency, role_folder)`. ~6 lines |
 | 6 — Report (466–477) | recap | **KEEP** — aggregates `gaps[]` from 3/4/5 |
 | 7 — Log (479–549) | JSONL audit | **KEEP** — reads per-step metadata the primitives now return |
 
-**Delete line 211** ("inline rules supersede Outreach Templates if anything conflicts"). This clause is what makes the duplication structural; after the refactor `Outreach Templates.md` is the source of truth.
+**Delete the supersede clause** — the sentence "these inline rules ... supersede Outreach Templates if anything conflicts" (near the top of step 5; do NOT target by line number per C4, match the literal text). This clause is what makes the duplication structural; after the refactor `Outreach Templates.md` is the source of truth.
 
 ## Observability layer (from the AHE paper)
 
@@ -111,7 +113,7 @@ Source: `Skill_Best_Practices/Agentic Harness Engineering- Observability-Driven 
 
 This converts a run from "ran 7 steps" into "7 contracts, N met" — each outcome attributable to one step.
 
-**Pillar 4 — Token accounting.** The paper logs prompt+completion tokens per component and reports `Succ/Mtok`; AHE saved 12% by *"avoiding per-call re-derivation."* Concretely: the JD is currently re-read by step 3, step 4, and step 5. The orchestrator should pass the parsed JD + `themes[]` once (it already classifies them in step 2) so primitives don't each re-derive. Record per-primitive token cost in the evidence record; flag any primitive that re-reads an input the orchestrator already holds.
+**Pillar 4 — Token accounting (C7: measurable-where-exposed).** The paper logs prompt+completion tokens per component and reports `Succ/Mtok`; AHE saved 12% by *"avoiding per-call re-derivation."* The actionable, always-available win: the JD is currently re-read by step 3, step 4, and step 5 — the orchestrator should pass the parsed JD + `themes[]` once (already classified in step 2) so primitives don't each re-derive. For the evidence record, record **exact token counts only where the harness exposes them**; the Skill-tool invocation path may not surface per-call tokens. Where it doesn't, fall back to a proxy: call-count + which inputs were passed-vs-re-derived. Don't promise a token number the harness can't produce.
 
 **Failure-pattern taxonomy (names make the corpus useful).** The AHE evidence corpus works because failures get recurring *names*. Seed a small taxonomy the evidence record tags against, so over many runs you learn *which primitive systematically underperforms*:
 `generic-resume-language` · `verify-placeholder-leak` · `non-decision-maker-contact` · `low-confidence-emails` · `fabricated-hook` · `thin-jd-stub` · `theme-unmatched`.
@@ -122,14 +124,22 @@ This converts a run from "ran 7 steps" into "7 contracts, N met" — each outcom
 
 ## Execution order (verify each primitive standalone BEFORE gutting its step)
 
-The orchestrator stays fully functional (inline) until each replacement is proven. **Capture a baseline `jd-to-ready` run on a fresh JD before Phase 1** for end-to-end diffing.
+The orchestrator stays fully functional (inline) until each replacement is proven.
 
-- **Phase 0** — Confirm `~/.claude/skills/jd-to-ready/SKILL.md` is the loaded file (the root `jd-to-ready.skill` is a stale stub). Confirm plugin manifest points the primitive names at the top-level stubs, not the `js-*` set.
-- **Phase 1 — `tailor-resume`** (lowest risk). Add contract + mode + theme input + A1/F1/U1 rules + filename fix + self-check. Verify standalone on an already-prepped role (e.g. `Morningstar - Product AI Engineer`), diff against committed resume. Then gut step 3; re-run; diff unchanged.
-- **Phase 2 — `find-contacts`** (LinkedIn, isolated). Upgrade to `search_people` + ranking + email inference + split + mode + contract. Verify `shortlist` then `full` standalone (watch the sequential-call invariant). Then gut step 4; diff contact tables.
-- **Phase 3 — `write-outreach`** (highest blast radius). Rewrite to reference `Outreach Templates.md` 1/1a/4/4a, add hook-finding + mode + `Cold Outreach.md` output + contract. Remove line-211 supersede clause. Verify `single` then `drip` standalone, diff `Cold Outreach.md` against a prior generated one. Then gut step 5.
+**Baseline capture (C2).** Before Phase 1, capture a baseline `jd-to-ready` run on a JD *known to produce a full, rich output* — an already-prepped role like `Morningstar - Product AI Engineer` that yields a complete 5+5 contact set and an 8-draft `Cold Outreach.md`. Do NOT baseline on an arbitrary fresh JD: if it has no good contacts, the drip section is thin/empty and useless as a diff target for Phase 3. The golden set (see Observability → Regression discipline) doubles as the baseline source.
+
+- **Phase 0** — Confirm `~/.claude/skills/jd-to-ready/SKILL.md` is the loaded file (the root `jd-to-ready.skill` is a stale stub). Confirm the plugin manifest points the primitive names at the top-level stubs, not the `js-*` set. **(C6)** `interview-prep-intake` is a `.skill` file at the *workspace root*, not in `~/.claude/skills/` — exclude it from the "primitives must live in ~/.claude/skills" check; it's already a correct step-1 call and is not being gutted. Also capture the Phase-0 baseline correctly per C2 below.
+**Mode-parity rule (C3).** The verify step before each gut must exercise the **same mode the orchestrator will call** (`pipeline`/`full`/`drip`), not only the light standalone mode. A primitive can pass `shortlist`/`single` perfectly while its `full`/`drip` path has an unexercised bug — and the orchestrator only ever calls the heavy mode. Test light mode for the standalone contract, then test heavy mode as the actual pre-gut gate.
+
+**Gaps-return rule (C1).** Each phase's verify step must also confirm the primitive **returns `gaps[]` in its output** (not merely writes a file). Steps 6/7 read `gaps[]` and per-call metadata; if a contract writes the file but returns nothing, Phase 5's evidence record/JSONL silently goes null. Verifying output-diff alone does NOT catch this — assert the structured return explicitly.
+
+- **Phase 1 — `tailor-resume`** (lowest risk). Add contract + mode + theme input + A1/F1/U1 rules + filename fix + self-check. Verify `standalone` mode for the standalone contract, then verify **`pipeline` mode** (themes[]+archetype hand-fed) as the pre-gut gate — that's what the orchestrator calls. Diff both against the committed resume; confirm `gaps[]` is returned. Then gut step 3; re-run end-to-end; diff unchanged.
+- **Phase 2 — `find-contacts`** (LinkedIn, isolated). Upgrade to `search_people` + ranking + email inference + split + mode + contract. Verify `shortlist` (standalone contract) then **`full`** (pre-gut gate — what the orchestrator calls) standalone; watch the sequential-call invariant; confirm `gaps[]` returned. Then gut step 4; diff contact tables against baseline.
+- **Phase 3 — `write-outreach`** (highest blast radius). Rewrite to reference `Outreach Templates.md` 1/1a/4/4a, add hook-finding + mode + `Cold Outreach.md` output + contract. Remove the supersede clause (match the literal text per C4). Verify `single` (standalone contract) then **`drip`** (pre-gut gate) standalone; diff the generated `Cold Outreach.md` against the **rich Phase-0 baseline** (C2), not an arbitrary prior run; confirm `gaps[]` returned. Then gut step 5.
 - **Phase 4 — `track-application` + `follow-up`** — contract blocks only. Anytime.
-- **Phase 5 — Orchestrator + docs.** End-to-end `jd-to-ready` run on a fresh JD; compare all three output files against the Phase-0 baseline. Confirm step 6 report + step 7 JSONL still populate (none null). Update `Skills.md` Process Map to reflect compose-calls-images + add the I/O contracts.
+- **Phase 5 — Orchestrator + docs.** End-to-end `jd-to-ready` run on the **same baseline JD** (C2); compare all three output files against the Phase-0 baseline. Confirm step 6 report + step 7 JSONL still populate (none null) — this is where the `gaps[]` returns from Phases 1–3 get consumed. Build the evidence record + per-step predictions + token fields (Pillars 2–4). Update `Skills.md` Process Map to reflect compose-calls-images + add the I/O contracts.
+
+**Commit discipline (C9).** Within each phase, the **primitive upgrade** and the **orchestrator gut** are *separate commits*. If a gut breaks the orchestrator, `git revert` the gut commit alone — the upgraded primitive survives. Never bundle an upgrade and its gut in one commit. (This also satisfies Pillar 1: one commit per logical edit.)
 
 ## Risks
 
