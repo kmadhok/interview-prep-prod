@@ -25,8 +25,35 @@ _Fully re-run 2026-05-31 by blind subagents using the scored-ledger skill (every
 | 1 ⭐ | **Gina Stewart** | TA Senior Manager — **Recruiting Lead for Deloitte's Strategy & Transactions** + Regulatory/Risk/Forensic practices | Greater Philadelphia (US, nationwide) | **Top** — *owns* the S&T recruiting pipeline (practice lead, 19 yrs). Highest-leverage recruiter for this req. | gstewart@deloitte.com (verify) | Med | /in/gina-stewart-348725 |
 | 2 ⭐ | **Allison (Allie) Brown** | TA Lead — **Risk and Strategy & Transactions**; "Experienced Hire Recruiting" | West Newton, MA (US, nationwide exp-hire) | **Exact** — names S&T + experienced-hire (your band); 2 shared LinkedIn groups. Hands-on day-to-day recruiter, often faster responder. | abrown@deloitte.com (verify) | Med | /in/ab-recruiting |
 | 3 | **Wendy Warne, PHR, SHRM-CP** | TA — Deloitte Consulting — **Strategy & Transactions/SFL** | Charlotte, NC (US) | **Exact** — names S&T. **2nd-degree** (mutual: Trevor Mingo) = warmest path | wwarne@deloitte.com | Med | /in/wendy-warne-phr-shrm-cp-5724b533 |
-| 4 | Nara-Jayne Linéus, CHRP | National TA Manager — **Strategy, Risk & Transactions**, Deloitte Canada | Toronto, ON | Right practice, ❌ Canada | nlineus@deloitte.ca | Low | /in/narajaynelineus |
+| 4 | **Matthew Lee** | Lead Talent Sourcing Specialist at Deloitte — sources the live **SFL Scientific** AI / data-science reqs | **Providence, RI** (confirmed 2026-06-01; not NYC) | **Activity-only AI sourcer** — his own profile names no AI/S&T practice (generic Deloitte sourcing title); the AI link is purely that he authors/DM-fronts the SFL Scientific "AI Specialist Leader" + "Data Science Managers" reqs. Practice-match 2 (vs. 3 for the S&T-titled recruiters); RI-based, not NYC → lower priority for *this* role than the recruiters above. **Provenance:** surfaced via Gina Stewart's + Wendy Warne's reposts of his SFL Scientific AI posts (2mo). | mlee@deloitte.com (verify) | Low | /in/matthew-lee-b0978815a |
+| 5 | Nara-Jayne Linéus, CHRP | National TA Manager — **Strategy, Risk & Transactions**, Deloitte Canada | Toronto, ON | Right practice, ❌ Canada | nlineus@deloitte.ca | Low | /in/narajaynelineus |
 | — | Trevor Mingo | _Network node — mutual connection_ | US | n/a (warm path to Wendy) | — | n/a | /in/trevor-mingo |
+
+### Enrichment (recruiter activity) — scraped 2026-06-01 via `enrich-contacts`
+
+All three recruiters' activity feeds (`get_person_profile`, `sections: posts`, `max_scrolls: 15`) were scraped sequentially and triaged against the team map `{AI & Analytics CoE · Strategy & Transactions · AI/data-science/product}`.
+
+- **Gina Stewart** — 17 posts loaded. One on-target item: a **2mo repost of Matthew Lee** — _"🤖 SFL Scientific is hiring an AI Specialist Leader — a rare blend of hands-on GenAI/ML/AI expertise and business development instincts."_ Everything else is noise for this role: Insurance Performance & Cost Improvement (2mo), M&A IT Due Diligence (7mo), Encore return-to-work (3yr), M&A IT contract-recruiter posts (4–5yr).
+- **Allison (Allie) Brown** — 84 posts loaded. **No on-target activity.** Newest item is a 2yr-old motivational repost; her originals are 3yr+ and are M&A / CDD / strategy / finance searches (mostly from her prior AB Recruiting LLC days, 7–9yr old). No AI / data-science / analytics signal. → `gaps[]: stale-activity`.
+- **Wendy Warne** — 298 posts loaded, richest feed. Multiple on-target reposts of **Matthew Lee**: the **SFL Scientific "AI Specialist Leader"** req (2mo) and **"We're looking for Data Science Managers... at SFL Scientific!"** (7mo). Her own title ("Strategy & Transactions/**SFL**") aligns with the SFL Scientific arm — strengthens her as the warmest recruiter path to this exact req.
+
+**Hooks found (forwarded to outreach beat 1):**
+
+| Recruiter | Hook | Source / date |
+|---|---|---|
+| Gina Stewart | Reposted the SFL Scientific "AI Specialist Leader" opening (hands-on GenAI/ML + BD) | repost of Matthew Lee, 2mo |
+| Wendy Warne | Reposted the SFL Scientific "AI Specialist Leader" opening; also reposted SFL Scientific "Data Science Managers" (7mo) | reposts of Matthew Lee, 2mo / 7mo |
+| Allison Brown | _No on-target activity — no usable hook_ | — |
+
+**New candidate surfaced (handed back to find-contacts scoring):**
+
+**Matthew Lee** — `/in/matthew-lee-b0978815a` — Lead Talent Sourcing Specialist at Deloitte, **Providence, RI** (location confirmed by profile read 2026-06-01). Provenance: post author of the SFL Scientific AI reqs that Gina Stewart and Wendy Warne each reposted (2mo), named DM contact on the live req. Scored on the find-contacts Sub-step 2 ledger:
+
+| Name | Practice (0-3) | Practice evidence (quoted) | Loc (0-2) | Title (0-2) | Tenure (0-1) | Snr (0-1) | Total | Rank |
+|------|----------------|----------------------------|-----------|-------------|--------------|-----------|-------|------|
+| Matthew Lee | 2 | Title generic — "_Lead Talent Sourcing Specialist at Deloitte_" (no practice named); profile card shows NO AI/data-science/S&T practice. AI alignment comes only from his reposts — "_SFL Scientific is hiring an AI Specialist Leader_" + "_We're looking for Data Science Managers... at SFL Scientific_". SFL Scientific = Deloitte's AI/data-science arm (role's function), but not the literal "S&T AI & Analytics CoE" → 2, not 3. | 0 (**Providence, RI** — not NYC, not the jd_region) | 2 (exact-function sourcer + named DM contact on the live req) | 1 (reposting reqs as recently as 2w–2mo) | 1 (Lead band) | **6/9** | **#4** |
+
+**Ranking decision:** Matthew ranks **#4 — below Gina, Allison, and Wendy**. The completeness gate keys on practice-match: those three literally name "Strategy & Transactions" in their titles (Practice = 3); Matthew is AI-aligned by *activity* only (Practice = 2), and the confirmed **Providence, RI** location (Loc = 0, not the NYC jd_region) drops his total to 6/9. No bonus for being repost-surfaced. He's still a genuine on-target sourcer — he authors the live AI req and is the named DM contact — so he stays in the table at #4 (ahead of Canada-based Nara-Jayne on function-match), with provenance, but he's a **low-priority touch for this NYC role**: a general RI-based sourcer, not an AI/S&T-embedded one. Gina (S&T recruiting lead, who reposted the same req) is the far stronger warm path to this exact opening.
 
 **Lead with Gina Stewart** (the S&T practice recruiting lead — she owns this pipeline). **Allison Brown** is the hands-on experienced-hire recruiter for the same practice (often a faster responder). **Wendy Warne** is the warmest path (2nd-degree). All three are strong; messaging Gina + Allison covers practice-lead + day-to-day, and Wendy adds the warm intro. Reuse the recruiter drip for whichever you send, swapping name/email.
 
@@ -58,7 +85,9 @@ _Carried from the 2026-05-27 run as additional NYC IC reserves: Gaurav Perarasu 
 
 ## Recruiter drip — Top pick: Gina Stewart, S&T Recruiting Lead (use for Allison / Wendy too, swap name/email)
 
-_Drip below is written generically for the S&T recruiter lead. **Send to Gina Stewart first** (practice lead). Reuse verbatim for Allison Brown and Wendy Warne — just swap the name and email. The hook and ask are identical._
+_Drip below is written generically for the S&T recruiter lead. **Send to Gina Stewart first** (practice lead). Reuse for **Wendy Warne** — same name/email swap, and the activity hook in beat 1 applies to her too (she reposted the same SFL Scientific AI Specialist Leader opening). For **Allison Brown**, the activity hook does NOT apply (her feed had no on-target activity) — drop the first line and open with "I recently applied for..." instead._
+
+_Hook source (real, scraped 2026-06-01): both Gina and Wendy reposted Matthew Lee's SFL Scientific "AI Specialist Leader" post (2mo). Beat 1 below references that repost honestly._
 
 **Channel:** Email (medium-confidence pattern: wwarne@deloitte.com). LinkedIn InMail backup — 2nd-degree via Trevor Mingo, so a mutual intro is viable.
 
@@ -68,9 +97,9 @@ _Drip below is written generically for the S&T recruiter lead. **Send to Gina St
 
 Hi Wendy,
 
-I just applied for the AI & Analytics Innovation Senior Product Specialist role in your Strategy & Transactions AI & Analytics CoE (NYC).
+I saw you recently reposted the SFL Scientific AI Specialist Leader opening — that hands-on GenAI/ML plus business-development blend is the work I do. I just applied for the AI & Analytics Innovation Senior Product Specialist role in your Strategy & Transactions AI & Analytics CoE (NYC).
 
-At Walmart Data Ventures my self-service analytics agent over 67 BigQuery tables is the only AI skill in active business use across Data Ventures, and my autonomous Jira-resolution agent closed 400+ data requests, cutting turnaround from 30–60 minutes to under 10. That rapid proof-of-value prototype work is exactly the "rapid analytics development engine" the JD describes. I'm in active processes at Walmart for Principal Data Analyst (interview Friday) and Principal SWE Agent Builder (interviewed last Monday), but the S&T AI & Analytics CoE is the closer match for the reusable-framework prototyping I'd want to do across engagements.
+At Walmart Data Ventures my self-service analytics agent over 67 BigQuery tables is the only AI skill in active business use across Data Ventures, and my autonomous Jira-resolution agent closed 400+ data requests, cutting turnaround from 30–60 minutes to under 10. That rapid proof-of-value work is exactly the "rapid analytics development engine" the JD describes. I'm in active Walmart processes (Principal Data Analyst, interview Friday; Principal SWE Agent Builder, in process), but the S&T AI & Analytics CoE is the closer match for the reusable-framework prototyping I want to do across engagements.
 
 I'd like to start the interview process. Are you the right person, or can you point me to the recruiter who owns this req? Resume attached.
 
