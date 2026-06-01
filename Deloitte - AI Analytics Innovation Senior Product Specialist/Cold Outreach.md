@@ -18,13 +18,18 @@ Active processes Kanu authorized name-dropping: Walmart — Principal Data Analy
 
 ## Table 1 — Recruiters (practice-aligned)
 
-| # | Name | Title | Location | Why this pick | Email (inf.) | Conf. | LinkedIn |
-|---|------|-------|----------|---------------|--------------|-------|----------|
-| 1 ⭐ | **Wendy Warne, PHR, SHRM-CP** | TA — Deloitte Consulting — **Strategy & Transactions/SFL** | Charlotte, NC | Title literally names the S&T practice; experienced-hire TA (professional services + tech); **2nd-degree** (mutual: Trevor Mingo) | wwarne@deloitte.com | Med | /in/wendy-warne-phr-shrm-cp-5724b533 |
-| 2 | Nara-Jayne Linéus, CHRP | National TA Manager — **Strategy, Risk & Transactions**, Deloitte Canada | Toronto, ON | Right practice (best of the original five), but Canada | nlineus@deloitte.ca | Low | /in/narajaynelineus |
-| — | Trevor Mingo | _Network node — mutual connection_ | US | The warm path *to* Wendy Warne; not a recruiter | — | n/a | /in/trevor-mingo |
+_Re-ranked 2026-05-31 via the new scored-ledger (every search result scored on practice-match first; connection-degree is a tiebreaker only). This corrected an earlier miss: **Allison Brown** was at search position #9 and was originally dropped — she's a top-tier match._
 
-**Drilled-down rejects from the old company-wide list:** Gregory Babcock = **Government/Cleared recruiter** (FBI/IRS/DOJ — wrong practice); Karen Garrett = **Partner/MD executive-search recruiter** (wrong seniority band, router only); Aakriti Sahni = India, no S&T signal. None were US + S&T-aligned — the exact failure the org-aware search fixes.
+| # | Name | Title | Location | Practice match | Email (inf.) | Conf. | LinkedIn |
+|---|------|-------|----------|----------------|--------------|-------|----------|
+| 1 ⭐ | **Allison (Allie) Brown** | TA Lead — **Risk and Strategy & Transactions**; "Experienced Hire Recruiting" | West Newton, MA (US) | **Exact** — names S&T *and* experienced-hire (your band); supports Advisory (strategy/ops/risk). 2 shared LinkedIn groups | abrown@deloitte.com (verify) | Med | /in/ab-recruiting |
+| 1 ⭐ | **Wendy Warne, PHR, SHRM-CP** | TA — Deloitte Consulting — **Strategy & Transactions/SFL** | Charlotte, NC (US) | **Exact** — names S&T; experienced-hire TA. **2nd-degree** (mutual: Trevor Mingo) = warmer path | wwarne@deloitte.com | Med | /in/wendy-warne-phr-shrm-cp-5724b533 |
+| 3 | Nara-Jayne Linéus, CHRP | National TA Manager — **Strategy, Risk & Transactions**, Deloitte Canada | Toronto, ON | Right practice, ❌ Canada | nlineus@deloitte.ca | Low | /in/narajaynelineus |
+| — | Trevor Mingo | _Network node — mutual connection_ | US | n/a | — | n/a | /in/trevor-mingo |
+
+**Co-leads (Allison + Wendy tie on practice-match).** Allison's title is the *most exact* (names both S&T and experienced-hire) and she shares 2 groups with you; Wendy is a 2nd-degree connection (warmer intro path via Trevor Mingo). **Message both** — different warm angles, no conflict. If forcing one: Allison on practice-fit, Wendy on warm-path.
+
+**Drilled-down rejects from the old company-wide list:** Gregory Babcock = **Government/Cleared recruiter** (FBI/IRS/DOJ — wrong practice); Karen Garrett = **Partner/MD executive-search recruiter** (wrong seniority band, router only); Aakriti Sahni = India, no S&T signal.
 
 ## Table 2 — Hiring Managers (AI & Data leadership)
 
