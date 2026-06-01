@@ -5,7 +5,7 @@
 **The voice rules (these are non-negotiable):**
 
 - First person, conversational. Read it out loud — if it doesn't sound like me talking to someone over coffee, rewrite it.
-- No corporate filler. No "I hope this email finds you well." No "I wanted to reach out to express my interest." No "leverage," "spearhead," "synergize."
+- No corporate filler. **Banned openers:** "I hope this email finds you well" / "I hope you are doing well" / "I hope this message finds you well", "Just wanted to reach out", "I wanted to reach out to express my interest", "I came across your profile", "I wanted to take a moment to". **Banned hype words:** "leverage/leveraged", "spearhead/spearheaded", "synergize/synergy", "drove", "passionate", "rockstar", "ninja", "circle back" (the literal phrase "circle in a few months" is fine in the FU2 line where it's intentional).
 - One specific hook per message — a project, a person, a JD detail. Generic = ignored.
 - Short. If a paragraph isn't earning its place, cut it.
 - End with one clear, low-friction ask. "Could we chat for 15 min next week?" is better than "I'd love to learn more."
@@ -431,5 +431,5 @@ Keep this updated as I send messages. Helps me remember who I've talked to and w
 
 - **Subject lines matter.** Keep them specific: "[Role title] at [Company] — quick note from Kanu Madhok" outperforms "Interested in opportunity." Names and roles in the subject line dramatically improve open rates from recruiters who get 200 InMails a week.
 - **LinkedIn vs. email.** LinkedIn for first-touch cold outreach to people who don't know me; email for anyone I've already interacted with (recruiter screens, referrals from my network).
-- **Timing.** Mondays 9–11 AM their timezone is the highest open-rate window for recruiter outreach. Friday afternoons are dead. Same-day thank-yous beat next-day ones.
+- **Timing.** Send Tue–Thu, late morning (~11 AM) or early afternoon (~2 PM) in the recipient's timezone — the most reliable open-rate window for cold recruiter/HM outreach. Avoid Mondays (inbox-triage day) and Friday afternoons (dead). Same-day thank-yous beat next-day ones. _[Reconciled 2026-05-31: prior version of this file said "Mondays 9–11 AM"; the inline jd-to-ready step-5 spec said avoid Mondays / Tue–Thu. Standardized on Tue–Thu. Kanu — confirm this is the rule you want, since it's now the single source for both the standalone `write-outreach` skill and the jd-to-ready pipeline.]_
 - **The bench of hooks is the real moat.** The templates here change ~10% per send. The Walmart project list + the FTI capstone are what makes any hook specific. Update the project list in this file when I ship something new.
