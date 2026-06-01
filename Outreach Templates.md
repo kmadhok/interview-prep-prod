@@ -5,7 +5,7 @@
 **The voice rules (these are non-negotiable):**
 
 - First person, conversational. Read it out loud — if it doesn't sound like me talking to someone over coffee, rewrite it.
-- No corporate filler. **Banned openers:** "I hope this email finds you well" / "I hope you are doing well" / "I hope this message finds you well", "Just wanted to reach out", "I wanted to reach out to express my interest", "I came across your profile", "I wanted to take a moment to". **Banned hype words:** "leverage/leveraged", "spearhead/spearheaded", "synergize/synergy", "drove", "passionate", "rockstar", "ninja", "circle back" (the literal phrase "circle in a few months" is fine in the FU2 line where it's intentional).
+- No corporate filler. **Banned openers:** "I hope this email finds you well" / "I hope you are doing well" / "I hope this message finds you well", "Just wanted to reach out", "I wanted to reach out to express my interest", "I came across your profile", "I wanted to take a moment to". **Banned hype words:** "leverage/leveraged", "spearhead/spearheaded", "synergize/synergy", "drove", "passionate", "rockstar", "ninja". (Note: "circle back" is NOT banned — it's used intentionally in the FU2 follow-up template as a light, established nudge; don't flag it.)
 - One specific hook per message — a project, a person, a JD detail. Generic = ignored.
 - Short. If a paragraph isn't earning its place, cut it.
 - End with one clear, low-friction ask. "Could we chat for 15 min next week?" is better than "I'd love to learn more."
