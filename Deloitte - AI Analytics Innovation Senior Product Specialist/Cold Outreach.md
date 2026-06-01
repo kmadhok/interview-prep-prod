@@ -36,6 +36,42 @@ Active processes Kanu authorized name-dropping: Walmart — Principal Data Analy
 
 ---
 
+## ⬆️ Org-aware re-run — added 2026-05-31 (new `find-contacts`, team-scoped to Strategy & Transactions)
+
+_The 2026-05-27 tables above came from a company-wide search. This re-run scoped the search to the **Strategy & Transactions** practice (the role's parent org, per the JD) and split contacts into three tables. **Net change: a stronger recruiter lead.** The original NYC peer-ICs (Gaurav Perarasu, Ruby Shen, Valeria Kaufman) are still good — keep them; this run's search surfaced different people, not better ones, on the IC side._
+
+### Recruiters — practice-aligned (new)
+
+| Name | Title | Location | Why | Email (inf.) | Conf. | LinkedIn |
+|------|-------|----------|-----|--------------|-------|----------|
+| ⭐ **Wendy Warne, PHR, SHRM-CP** | TA — Deloitte Consulting — **Strategy & Transactions/SFL** | Charlotte, NC | Title literally names the S&T practice — the cleanest recruiter match for this req. Experienced-hire TA; **2nd-degree** (mutual: Trevor Mingo) | wwarne@deloitte.com | Med | /in/wendy-warne-phr-shrm-cp-5724b533 |
+
+> **Recommended: lead with Wendy Warne instead of Gregory Babcock.** Both are 2nd-degree via the Trevor Mingo graph, but Wendy explicitly recruits for Strategy & Transactions, where Gregory is a generic experienced-hire TA. Reuse the Gregory drip above verbatim — just swap the name/email.
+
+### Hiring Managers — AI & Data leadership (new table)
+
+| Name | Title | Location | Why | Conf. | LinkedIn |
+|------|-------|----------|-----|-------|----------|
+| ⭐ Tanmay K. | Managing Director — AI & Data, Deloitte Consulting | Houston, TX | US MD over AI&Data; **2nd-degree, 3 mutuals** — strongest warm HM path | — (drill for last name first) | /in/tanmay-k-38768117 |
+| Subadhra Parthasarathy | Managing Director, AI & Data | Flemington, NJ | **2nd-degree via Nick Kadochnikov** (your UChicago MSADS link); Life Sciences vertical | Low | /in/subadhra-parthasarathy |
+
+_Caveat: no HM cleanly matched "S&T AI&A CoE, NY-based" — these are broad national AI&Data MDs. The original HM pick (Pavan Murali, Global Strategy & Innovation) with its drafted drip is still the more role-adjacent choice; treat these as warm-path supplements._
+
+### Peer ICs (new — complements the NYC ICs above)
+
+| Name | Title | Location | Why | Email (inf.) | Conf. | LinkedIn |
+|------|-------|----------|-----|--------------|-------|----------|
+| ⭐ **Akash Shukla** | Senior PM @ Deloitte — Gen AI · **Agentic AI** · Data Governance | **New York, NY** | NYC + exact agentic-AI-product work (5 AI products 0→1, governed 300+ agents); shared Python Developers group | ashukla@deloitte.com | Med | /in/contactakashshukla |
+
+> Akash is the best **referral** path: NYC, doing this exact work, reachable. For a big firm, a peer-IC referral can outweigh the cold recruiter email. Worth a short InMail asking for role intel / referral.
+
+**Updated lead recommendation (big-firm enterprise → recruiter-first):**
+1. **Wendy Warne** (S&T recruiter) — primary; reuse the Gregory drip, swap name.
+2. **Akash Shukla** (NYC agentic-AI IC) — parallel referral ask.
+3. Keep Gaurav Perarasu / Ruby Shen (NYC, exact band) from the 2026-05-27 run as IC reserves.
+
+---
+
 ## Recruiter drip — Top pick: Gregory Babcock, Senior Lead Experienced TA (DC)
 
 **Channel:** Email (medium-confidence pattern). LinkedIn InMail as backup given 2nd-degree + 3 mutual connections.
