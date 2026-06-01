@@ -14,13 +14,13 @@ Active processes Kanu authorized name-dropping: Walmart — Principal Data Analy
 
 ## Recruiter candidates (5, ranked)
 
-| # | Name | Title | Location | Why this pick | LinkedIn | Email (inferred) | Confidence |
-|---|------|-------|----------|---------------|----------|------------------|------------|
-| 1 | Gregory Babcock | Senior Lead Experienced TA at Deloitte | Washington, DC | US-based lead TA at Deloitte; 2nd-degree (3 mutuals — Trevor Mingo, Felix Lichter); experienced hire focus | https://www.linkedin.com/in/gregory-babcock-7ab1b29/ | gbabcock@deloitte.com | medium |
-| 2 | Karen Garrett | Partner & MD Talent Acquisition at Deloitte | Wilmington, NC | Partner-level TA; 2nd-degree; senior enough to route any req | https://www.linkedin.com/in/karen-garrett/ | kgarrett@deloitte.com | medium |
-| 3 | Trevor Mingo | (Mutual connection — known to Kanu via the Babcock graph) | US | Network entry point; not a recruiter directly | https://www.linkedin.com/in/trevor-mingo/ | — | n/a |
-| 4 | Nara-Jayne Linéus | National TA Manager — Strategy, Risk & Transactions at Deloitte Canada | Toronto, Canada | Exact SR&T service-line TA lead, even though Canada-based; may know US counterpart | https://www.linkedin.com/in/narajaynelineus/ | nlineus@deloitte.ca | medium |
-| 5 | Aakriti Sahni | Strategic Talent Partner @ Deloitte | Gurugram, India | Backup — far from US but actively visible | https://www.linkedin.com/in/aakritisahni/ | asahni@deloitte.com | low |
+| #   | Name              | Title                                                                  | Location        | Why this pick                                                                                              | LinkedIn                                             | Email (inferred)      | Confidence |
+| --- | ----------------- | ---------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | --------------------- | ---------- |
+| 1   | Gregory Babcock   | Senior Lead Experienced TA at Deloitte                                 | Washington, DC  | US-based lead TA at Deloitte; 2nd-degree (3 mutuals — Trevor Mingo, Felix Lichter); experienced hire focus | https://www.linkedin.com/in/gregory-babcock-7ab1b29/ | gbabcock@deloitte.com | medium     |
+| 2   | Karen Garrett     | Partner & MD Talent Acquisition at Deloitte                            | Wilmington, NC  | Partner-level TA; 2nd-degree; senior enough to route any req                                               | https://www.linkedin.com/in/karen-garrett/           | kgarrett@deloitte.com | medium     |
+| 3   | Trevor Mingo      | (Mutual connection — known to Kanu via the Babcock graph)              | US              | Network entry point; not a recruiter directly                                                              | https://www.linkedin.com/in/trevor-mingo/            | —                     | n/a        |
+| 4   | Nara-Jayne Linéus | National TA Manager — Strategy, Risk & Transactions at Deloitte Canada | Toronto, Canada | Exact SR&T service-line TA lead, even though Canada-based; may know US counterpart                         | https://www.linkedin.com/in/narajaynelineus/         | nlineus@deloitte.ca   | medium     |
+| 5   | Aakriti Sahni     | Strategic Talent Partner @ Deloitte                                    | Gurugram, India | Backup — far from US but actively visible                                                                  | https://www.linkedin.com/in/aakritisahni/            | asahni@deloitte.com   | low        |
 
 ## Hiring managers + peer ICs (5, ranked)
 
@@ -69,6 +69,20 @@ _Caveat: no HM cleanly matched "S&T AI&A CoE, NY-based" — these are broad nati
 1. **Wendy Warne** (S&T recruiter) — primary; reuse the Gregory drip, swap name.
 2. **Akash Shukla** (NYC agentic-AI IC) — parallel referral ask.
 3. Keep Gaurav Perarasu / Ruby Shen (NYC, exact band) from the 2026-05-27 run as IC reserves.
+
+### Verdict on the 5 original (2026-05-27) recruiters — drilled-down profiles, evaluated vs. S&T practice fit
+
+_The old run ranked these on "US + 2nd-degree + experienced hire" without checking the actual practice each recruiter supports. Profile drilldowns change the picture significantly:_
+
+| Original rank | Recruiter | What the profile actually says | Practice fit | Verdict |
+|---|---|---|---|---|
+| #1 | **Gregory Babcock** | "Specialties: **Government, Cleared, Healthcare/Pharma, IT**" — 20 yrs RPO + **Government Sector** (military, FBI, IRS, DEA, DOJ, FEMA) | ❌ Wrong practice — federal/cleared recruiter, not commercial S&T | **Demote.** Was a mis-rank: a defense/gov recruiter atop a commercial AI consulting req. |
+| #2 | **Karen Garrett** | "sources talent for **Partner and Managing Director opportunities** across consulting portfolios" | ⚠️ Wrong level — recruits Partner/MD leadership, not experienced-hire ICs | **Router only.** Would hand your app off; not a primary for a Senior Product Specialist band. |
+| #3 | Trevor Mingo | Already flagged "not a recruiter directly" — a mutual-connection node | n/a | **Keep as network node** — he's the warm path *to* Wendy Warne (mutual). |
+| #4 | Nara-Jayne Linéus | National TA Manager — **Strategy, Risk & Transactions**, Deloitte **Canada** | ✅ Right practice, ❌ wrong country (role is NYC) | **Backup** — best practice match of the old five, but Canada. |
+| #5 | Aakriti Sahni | Strategic Talent Partner, **India** | ? geo mismatch | **Drop** — India, no S&T signal. |
+
+**Bottom line:** of the 5 originally-listed recruiters, **none was actually S&T-aligned and US-based** — #1 was a government recruiter, #2 an exec-search MD recruiter, #4 the right practice but in Canada. The org-aware re-run's **Wendy Warne** (US, literally "Strategy & Transactions" in her title) is the correct lead, and **Nara-Jayne Linéus** is the strongest of the original five as a backup. This is exactly the failure mode the team-aware `find-contacts` upgrade was built to fix: a company-wide search ranks on surface signals (location, degree) and misses that the recruiter works a completely different practice.
 
 ---
 
