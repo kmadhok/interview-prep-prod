@@ -23,7 +23,7 @@ The funnel runs left to right. **Each outward-facing stage names exactly one sou
 | 2 | **Tailor resume** ⚠️ | `tailor-resume` | **`Resume Achievements Master.md`** (+ its `Resume Tailoring Contract`) | Don't quantify beyond verified proof points; leave `[VERIFY:]`. Scan draft against `Resume Claims To Verify.md` and strip unpromoted claims. Older tailored resumes are outputs, not evidence. | role folder resume `.md` |
 | 3 | **Find contacts** | `find-contacts` | LinkedIn MCP (live) | Never fabricate a person, title, or email; surface only what MCP returns | chat / role folder |
 | 4 | **Draft cold outreach** ⚠️ | `write-outreach` | **`Outreach Templates.md`** | No fabricated personalization — if no real hook exists, ask. Pull template, personalize only with verified facts | role folder draft |
-| 2+3+4 | **Apply-ready (one-shot)** | `jd-to-ready` | composes #1 → `Resume Achievements Master.md` → MCP → `Outreach Templates.md` | Inherits every rule above; resume safety rule explicit in skill | full role folder package |
+| 2+3+4 | **Apply-ready (one-shot)** | `jd-to-ready` | **calls** the primitives below — owns no logic itself | Inherits every primitive's rules; merges their `gaps[]` | full role folder package |
 | 5 | **Submit + log applied** | `track-application` | `Pipeline.md` | Status/date facts only; no narrative invention | `Pipeline.md`, memory |
 | 6 | **Follow up / nudge** ⚠️ | `follow-up` | `Outreach Templates.md` + the role's prior correspondence | Reference only events that actually happened (a real round, a real silence window) | role folder draft |
 | 7 | **Interview prep** (answers, Q-bank, TMAY, walkthrough) | _no skill — normal Claude editing_ | `Master Story Bank.md`, `Tell Me About Yourself - Master.md`, `AI Build Walkthrough - Master.md` | Select + tailor from masters; `[NUMBER?]` for any missing metric | role folder |
@@ -31,6 +31,19 @@ The funnel runs left to right. **Each outward-facing stage names exactly one sou
 | — | **Contact list (cross-role)** | `recruiter-contact-tracker` | Gmail (live) | Mine only real correspondence | `Recruiter Contacts.html` |
 
 ⚠️ = outward-facing text where a fabricated fact does real damage. These three (`tailor-resume`, `write-outreach`, `follow-up`) are where the "makes things up sometimes" symptom used to show up — caused by name-collision twins, now resolved (see next section).
+
+### Containerization refactor (2026-05-31) — `jd-to-ready` is now pure orchestration
+
+`jd-to-ready` was a 549-line skill that **reimplemented** the primitives' logic inline (two definitions of resume-tailoring, two of contact-research, two of outreach). It is now a **316-line pure orchestrator** (docker-compose model): each step *calls* a primitive that owns its logic, and wires the outputs forward.
+
+| jd-to-ready step | calls | mode | the primitive owns |
+|---|---|---|---|
+| 1 | `interview-prep-intake` | — | filing the JD |
+| 3 | `tailor-resume` | `pipeline` | resume tailoring (canonical-only, `[VERIFY]`) |
+| 4 | `find-contacts` | `full` | LinkedIn 5+5 + email inference |
+| 5 | `write-outreach` | `drip` | cold-outreach drip per `Outreach Templates.md` |
+
+**Conventions established:** (a) every primitive has a `## Contract` block (inputs/outputs/modes); (b) every primitive returns a cross-skill `gaps[]` of `{source, kind, detail}` objects the orchestrator merges; (c) mode names are per-primitive — `pipeline`/`full`/`drip` are each that primitive's heavy mode, `standalone`/`shortlist`/`single` the light standalone mode; (d) `Outreach Templates.md` and `Resume Achievements Master.md` are the single sources of truth — primitives *reference* them, never restate them (the old "inline rules supersede Outreach Templates" clause was deleted). The skill files now live in a git repo at `~/.claude/skills` (per-edit commits, file-granular rollback). `jd-to-ready` step 7 carries an **observability layer**: a per-step evidence record (`steps[]` with prediction / prediction_met / tokens / failure_pattern) + a failure-pattern taxonomy, so each run is traceable step-by-step.
 
 ### Where each skill physically lives (for a fresh harness)
 
@@ -43,7 +56,7 @@ The funnel runs left to right. **Each outward-facing stage names exactly one sou
 | `follow-up` | `~/.claude/skills/follow-up/SKILL.md` | `Outreach Templates.md` + role correspondence |
 | `find-contacts` | `~/.claude/skills/find-contacts/SKILL.md` | LinkedIn MCP (live) |
 | `track-application` | `~/.claude/skills/track-application/SKILL.md` | `Pipeline.md` |
-| `jd-to-ready` | `~/.claude/skills/jd-to-ready/SKILL.md` **and** `<workspace>/jd-to-ready.skill` | composes the above |
+| `jd-to-ready` | `~/.claude/skills/jd-to-ready/SKILL.md` (the stale root `jd-to-ready.skill` was deleted 2026-05-31) | composes the above |
 | `interview-prep-intake` | `<workspace>/interview-prep-intake.skill` | the JD |
 | `linkedin-saved-jobs-intake` | `<workspace>/linkedin-saved-jobs-intake.skill` | LinkedIn paste + MCP |
 | `find-fresh-jobs` | `<workspace>/find-fresh-jobs.skill` | `Job Search Target Profile.md` |
@@ -146,7 +159,7 @@ These are bundled `.skill` files that live with the workspace, version-controlle
 
 **Output.** Role folder with `Job Description.md` + `Kanu Madhok Resume - <Company> <Short Role>.md` + `Cold Outreach.md`, plus updated `Pipeline.md` and `active_interview_pipeline.md` memory.
 
-**File.** `jd-to-ready.skill` at workspace root (also installed at `~/.claude/skills/jd-to-ready/`).
+**File.** `~/.claude/skills/jd-to-ready/SKILL.md` (the stale root `jd-to-ready.skill` was deleted in the 2026-05-31 containerization refactor — see the Process Map note).
 
 ---
 
