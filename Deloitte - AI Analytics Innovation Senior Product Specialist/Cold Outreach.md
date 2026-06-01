@@ -18,39 +18,47 @@ Active processes Kanu authorized name-dropping: Walmart — Principal Data Analy
 
 ## Table 1 — Recruiters (practice-aligned)
 
-_Re-ranked 2026-05-31 via the new scored-ledger (every search result scored on practice-match first; connection-degree is a tiebreaker only). This corrected an earlier miss: **Allison Brown** was at search position #9 and was originally dropped — she's a top-tier match._
+_Fully re-run 2026-05-31 by blind subagents using the scored-ledger skill (every search result scored on practice-match first; connection-degree is a tiebreaker only). Surfaced a stronger lead — **Gina Stewart, the actual S&T practice recruiting lead** — that earlier runs missed, and corrected an earlier #9-position miss (Allison Brown)._
 
 | # | Name | Title | Location | Practice match | Email (inf.) | Conf. | LinkedIn |
 |---|------|-------|----------|----------------|--------------|-------|----------|
-| 1 ⭐ | **Allison (Allie) Brown** | TA Lead — **Risk and Strategy & Transactions**; "Experienced Hire Recruiting" | West Newton, MA (US) | **Exact** — names S&T *and* experienced-hire (your band); supports Advisory (strategy/ops/risk). 2 shared LinkedIn groups | abrown@deloitte.com (verify) | Med | /in/ab-recruiting |
-| 1 ⭐ | **Wendy Warne, PHR, SHRM-CP** | TA — Deloitte Consulting — **Strategy & Transactions/SFL** | Charlotte, NC (US) | **Exact** — names S&T; experienced-hire TA. **2nd-degree** (mutual: Trevor Mingo) = warmer path | wwarne@deloitte.com | Med | /in/wendy-warne-phr-shrm-cp-5724b533 |
-| 3 | Nara-Jayne Linéus, CHRP | National TA Manager — **Strategy, Risk & Transactions**, Deloitte Canada | Toronto, ON | Right practice, ❌ Canada | nlineus@deloitte.ca | Low | /in/narajaynelineus |
-| — | Trevor Mingo | _Network node — mutual connection_ | US | n/a | — | n/a | /in/trevor-mingo |
+| 1 ⭐ | **Gina Stewart** | TA Senior Manager — **Recruiting Lead for Deloitte's Strategy & Transactions** + Regulatory/Risk/Forensic practices | Greater Philadelphia (US, nationwide) | **Top** — *owns* the S&T recruiting pipeline (practice lead, 19 yrs). Highest-leverage recruiter for this req. | gstewart@deloitte.com (verify) | Med | /in/gina-stewart-348725 |
+| 2 ⭐ | **Allison (Allie) Brown** | TA Lead — **Risk and Strategy & Transactions**; "Experienced Hire Recruiting" | West Newton, MA (US, nationwide exp-hire) | **Exact** — names S&T + experienced-hire (your band); 2 shared LinkedIn groups. Hands-on day-to-day recruiter, often faster responder. | abrown@deloitte.com (verify) | Med | /in/ab-recruiting |
+| 3 | **Wendy Warne, PHR, SHRM-CP** | TA — Deloitte Consulting — **Strategy & Transactions/SFL** | Charlotte, NC (US) | **Exact** — names S&T. **2nd-degree** (mutual: Trevor Mingo) = warmest path | wwarne@deloitte.com | Med | /in/wendy-warne-phr-shrm-cp-5724b533 |
+| 4 | Nara-Jayne Linéus, CHRP | National TA Manager — **Strategy, Risk & Transactions**, Deloitte Canada | Toronto, ON | Right practice, ❌ Canada | nlineus@deloitte.ca | Low | /in/narajaynelineus |
+| — | Trevor Mingo | _Network node — mutual connection_ | US | n/a (warm path to Wendy) | — | n/a | /in/trevor-mingo |
 
-**Co-leads (Allison + Wendy tie on practice-match).** Allison's title is the *most exact* (names both S&T and experienced-hire) and she shares 2 groups with you; Wendy is a 2nd-degree connection (warmer intro path via Trevor Mingo). **Message both** — different warm angles, no conflict. If forcing one: Allison on practice-fit, Wendy on warm-path.
+**Lead with Gina Stewart** (the S&T practice recruiting lead — she owns this pipeline). **Allison Brown** is the hands-on experienced-hire recruiter for the same practice (often a faster responder). **Wendy Warne** is the warmest path (2nd-degree). All three are strong; messaging Gina + Allison covers practice-lead + day-to-day, and Wendy adds the warm intro. Reuse the recruiter drip for whichever you send, swapping name/email.
 
-**Drilled-down rejects from the old company-wide list:** Gregory Babcock = **Government/Cleared recruiter** (FBI/IRS/DOJ — wrong practice); Karen Garrett = **Partner/MD executive-search recruiter** (wrong seniority band, router only); Aakriti Sahni = India, no S&T signal.
+**Drilled-down rejects:** Gregory Babcock = **Government/Cleared recruiter** (FBI/IRS/DOJ — wrong practice); Karen Garrett = **Partner/MD executive-search recruiter** (wrong band, router only); Aakriti Sahni = India.
 
-## Table 2 — Hiring Managers (AI & Data leadership)
+## Table 2 — Hiring Managers (⚠️ org-structure caveat — read first)
 
-| # | Name | Title | Location | Why this pick | Conf. | LinkedIn |
-|---|------|-------|----------|---------------|-------|----------|
-| 1 ⭐ | Tanmay K. | Managing Director — AI & Data, Deloitte Consulting | Houston, TX | US MD over AI&Data; **2nd-degree, 3 mutuals** — strongest warm HM path | — (drill for last name before email) | /in/tanmay-k-38768117 |
-| 2 | Subadhra Parthasarathy | Managing Director, AI & Data | Flemington, NJ | **2nd-degree via Nick Kadochnikov** (UChicago MSADS link); Life Sciences vertical | Low | /in/subadhra-parthasarathy |
+**The literal "AI & Analytics Innovation CoE" hiring manager did not surface in keyword search** — and that's a real finding, not a gap in effort. The CoE is a newer, smaller pocket inside S&T. Broad "Strategy & Transactions Analytics" searches return **valuation / financial-modeling MDs** (ASC 718/805, Monte Carlo option pricing), NOT the applied-AI/data-science CoE this role belongs to. So the "HMs" below are **referral paths *into* the org pocket, not confirmed hiring managers.** None scored a practice-match 3.
 
-_Caveat: no HM cleanly matched "S&T AI&A CoE, NYC" — these are broad national AI&Data MDs. Treat as warm-path supplements, not the primary._
+| # | Name | Title | Location | What they actually are | Conf. | LinkedIn |
+|---|------|-------|----------|------------------------|-------|----------|
+| 1 | Aarti Karande | MD — **Transactions and Business Analytics** (DTBA / S&T) | Jersey City, NYC metro | Right entity, NYC — but valuation/ASC-718 focus, not the AI CoE. Best geo, a sideways referrer in. | Low | /in/ (search name) |
+| 2 ⭐ | Jordan Burdinie, CFA | MD — **S&T practice, Deloitte Transactions and Business Analytics LLP** | Chicago | Valuation/modeling — but **2nd-degree, 2 mutuals** (Kaushik Andra, James Garabedian) = warmest intro *into* the CoE | Low | /in/ (search name) |
+| 3 | Rashmi Mathur | MD — **Strategy & Analytics, "Advance Analytics and AI"** | McLean, VA | Strongest *actual AI* signal, but GPS/Federal-aligned (adjacent practice) | Low | /in/ (search name) |
+
+_Use these for a warm intro into the CoE, not a direct "are you my hiring manager?" ask. **Jordan Burdinie** (2nd-degree, 2 mutuals) is the warmest path._
 
 ## Table 3 — Peer ICs (people doing the role)
 
-| # | Name | Title | Location | Why this pick | Email (inf.) | Conf. | LinkedIn |
-|---|------|-------|----------|---------------|--------------|-------|----------|
-| 1 ⭐ | **Akash Shukla** | Senior PM @ Deloitte — Gen AI · **Agentic AI** · Data Governance | **New York, NY** | NYC + exact agentic-AI-product work (ships AI products 0→1, governed 300+ agents); shared Python Developers group | ashukla@deloitte.com | Med | /in/contactakashshukla |
-| 2 | Gaurav Perarasu | Data Analytics Manager | New York, NY | NYC, exact analytics-manager band (carried from 2026-05-27 run) | gperarasu@deloitte.com | Med | /in/gaurav-perarasu |
-| 3 | Ruby Shen, CPA | Data Analytics Specialist Senior | New York, NY | NYC, exact "Specialist Senior" title band (carried from 2026-05-27 run) | rshen@deloitte.com | Med | /in/rubyshen |
+| # | Name | Title | Location | Practice/role match | Email (inf.) | Conf. | LinkedIn |
+|---|------|-------|----------|---------------------|--------------|-------|----------|
+| 1 ⭐ | **Akash Shukla** | Senior PM @ Deloitte — builds 0→1 enterprise AI products (agentic, financial-intelligence, data governance) | **New York, NY** | Closest functional twin; NYC; AI-product builder with financial overlap. Best referral + honest role-signal. Shared Python Developers group. | ashukla@deloitte.com | Med | /in/contactakashshukla |
+| 2 | Sourjya Guha | **Senior Product Management Specialist** — Financial Services | Denville NJ / NYC metro | Exact title band + FS overlap + metro; lighter AI signal | sguha@deloitte.com (verify) | Low | /in/ (search name) |
+| 3 | Maggie Kotek | Modeling & Insights — **Deloitte Transactions and Business Analytics (under S&T)** | New York, NY | Only confirmed *current* DTBA/S&T-analytics IC found — but financial-modeling sub-team, junior. Can point internally. | mkotek@deloitte.com (verify) | Low | /in/margaretkotek |
+
+_Carried from the 2026-05-27 run as additional NYC IC reserves: Gaurav Perarasu (Data Analytics Manager, NYC), Ruby Shen (Data Analytics Specialist Senior, NYC)._
 
 ---
 
-## Recruiter drip — Top pick: Wendy Warne, TA — Strategy & Transactions (Charlotte, NC)
+## Recruiter drip — Top pick: Gina Stewart, S&T Recruiting Lead (use for Allison / Wendy too, swap name/email)
+
+_Drip below is written generically for the S&T recruiter lead. **Send to Gina Stewart first** (practice lead). Reuse verbatim for Allison Brown and Wendy Warne — just swap the name and email. The hook and ask are identical._
 
 **Channel:** Email (medium-confidence pattern: wwarne@deloitte.com). LinkedIn InMail backup — 2nd-degree via Trevor Mingo, so a mutual intro is viable.
 
@@ -181,5 +189,6 @@ Kanu
 - **Reserves.** If Wendy goes silent past the full 3-touch sequence, open a fresh drip with **Nara-Jayne Linéus** (right practice, Canada). If Akash goes silent, **Gaurav Perarasu** / **Ruby Shen** (NYC, exact band) are the IC reserves.
 - **Hiring-manager option.** **Tanmay K.** (MD AI&Data, 3 mutuals) is worth a light InMail only — big-firm HMs rarely reply, but a warm intro through a mutual could leapfrog the funnel. Not a primary.
 - **Hail Mary trigger.** Only send when fresh, real urgency exists. Never invent.
-- **Gaps / caveats.** No HM cleanly matched the specific S&T AI&A CoE in NYC — `{source:"contacts", kind:"thin-results", detail:"no NY-based S&T-CoE-specific HM surfaced"}`. Deloitte is 400K people; recruiter routing is the main risk — the ask is deliberately routable. 25% travel is in the JD — surface comfort with it at the screen.
+- **Gaps / caveats.** Deloitte is 400K people; recruiter routing is the main risk — the ask is deliberately routable. 25% travel is in the JD — surface comfort with it at the screen.
+- **⚠️ Org-structure trap (important for any re-search).** "Strategy & Transactions Analytics" keyword search at Deloitte is dominated by **valuation / financial-modeling MDs** (ASC 718/805, Monte Carlo) — the WRONG function. The role's actual home, the **AI & Analytics Innovation CoE**, is a newer/smaller pocket that does NOT surface under broad title searches. The correct legal entity is **Deloitte Transactions and Business Analytics LLP (DTBA)**. To find the literal CoE hiring manager, the next move is `get_company_profile` on DTBA → `get_company_employees` filtered to NY + "AI"/"data science"/"Senior Manager"/"Director" (directory enumeration beats keyword search for a team this small). Three blind-subagent runs confirmed the CoE lead is not keyword-findable.
 - **Demo URL.** https://sql-rag-frontend-simple-481433773942.us-central1.run.app/
