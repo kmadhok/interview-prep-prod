@@ -12,7 +12,26 @@ Active processes Kanu authorized name-dropping: Walmart — Principal Data Analy
 
 **recommended_lead:** Recruiter (big-firm enterprise → recruiter controls the pipeline; lead with Wendy Warne, parallel referral ask to Akash Shukla).
 
-**Email-pattern note.** Deloitte uses `firstinitial+lastname@deloitte.com` (e.g. `kmadhok@deloitte.com`) — public pattern, **Medium** confidence; verify before send or use LinkedIn InMail. Several contacts are 2nd-degree (warm-intro paths flagged).
+**Email-pattern note.** Deloitte does **not** appear to use one universal pattern. The recruiter-contact tracker has confirmed delivered / real Deloitte emails in at least three shapes:
+
+- `firstinitial+lastname@deloitte.com` — examples: `tmingo@deloitte.com`, `cwillis@deloitte.com`
+- `firstname+lastname@deloitte.com` — example: `leahhughes@deloitte.com`; `leah.hughes@`, `lhughes@`, and `lehughes@` bounced
+- `first-two-letters+lastname@deloitte.com` — example: `jubutz@deloitte.com`; `jbutz@` and `justin.butz@` bounced
+
+Use the candidate lists below as **ordered guesses**, not verified emails. Best channel remains LinkedIn / warm intro when available.
+
+### Email candidate estimates — verify before send
+
+| Contact | Best candidate | Other plausible candidates | Confidence / notes |
+|---|---|---|---|
+| Gina Stewart | `gstewart@deloitte.com` | `ginastewart@deloitte.com`, `gistewart@deloitte.com` | Medium. First-initial pattern is evidenced for Trevor Mingo and Colin Willis. |
+| Allison / Allie Brown | `abrown@deloitte.com` | `allisonbrown@deloitte.com`, `alliebrown@deloitte.com`, `albrown@deloitte.com` | Medium-low. `abrown@` is the cleanest first-initial guess; nickname/full-name ambiguity lowers confidence. |
+| Wendy Warne | `wwarne@deloitte.com` | `wendywarne@deloitte.com`, `wewarne@deloitte.com` | Medium. First-initial pattern is plausible; use Trevor Mingo as warm path if possible. |
+| Matthew Lee | `mlee@deloitte.com` | `matthewlee@deloitte.com`, `malee@deloitte.com` | Low. Common surname creates higher collision risk; LinkedIn DM may be safer. |
+| Akash Shukla | `ashukla@deloitte.com` | `akashshukla@deloitte.com`, `akshukla@deloitte.com` | Medium. First-initial is strongest; peer-referral ask should still prefer LinkedIn first. |
+| Sourjya Guha | `sguha@deloitte.com` | `sourjyaguha@deloitte.com`, `soguha@deloitte.com` | Low. Not tracker-verified. |
+| Maggie Kotek | `mkotek@deloitte.com` | `maggiekotek@deloitte.com`, `makotek@deloitte.com` | Low. Not tracker-verified. |
+| Nara-Jayne Linéus | `nlineus@deloitte.ca` | `narajaynelineus@deloitte.ca`, `nalineus@deloitte.ca` | Low. Canada domain; accent/hyphen/name normalization makes this especially uncertain. |
 
 ---
 
@@ -20,14 +39,14 @@ Active processes Kanu authorized name-dropping: Walmart — Principal Data Analy
 
 _Fully re-run 2026-05-31 by blind subagents using the scored-ledger skill (every search result scored on practice-match first; connection-degree is a tiebreaker only). Surfaced a stronger lead — **Gina Stewart, the actual S&T practice recruiting lead** — that earlier runs missed, and corrected an earlier #9-position miss (Allison Brown)._
 
-| # | Name | Title | Location | Practice match | Email (inf.) | Conf. | LinkedIn |
-|---|------|-------|----------|----------------|--------------|-------|----------|
-| 1 ⭐ | **Gina Stewart** | TA Senior Manager — **Recruiting Lead for Deloitte's Strategy & Transactions** + Regulatory/Risk/Forensic practices | Greater Philadelphia (US, nationwide) | **Top** — *owns* the S&T recruiting pipeline (practice lead, 19 yrs). Highest-leverage recruiter for this req. | gstewart@deloitte.com (verify) | Med | /in/gina-stewart-348725 |
-| 2 ⭐ | **Allison (Allie) Brown** | TA Lead — **Risk and Strategy & Transactions**; "Experienced Hire Recruiting" | West Newton, MA (US, nationwide exp-hire) | **Exact** — names S&T + experienced-hire (your band); 2 shared LinkedIn groups. Hands-on day-to-day recruiter, often faster responder. | abrown@deloitte.com (verify) | Med | /in/ab-recruiting |
-| 3 | **Wendy Warne, PHR, SHRM-CP** | TA — Deloitte Consulting — **Strategy & Transactions/SFL** | Charlotte, NC (US) | **Exact** — names S&T. **2nd-degree** (mutual: Trevor Mingo) = warmest path | wwarne@deloitte.com | Med | /in/wendy-warne-phr-shrm-cp-5724b533 |
-| 4 | **Matthew Lee** | Lead Talent Sourcing Specialist at Deloitte — sources the live **SFL Scientific** AI / data-science reqs | **Providence, RI** (confirmed 2026-06-01; not NYC) | **Activity-only AI sourcer** — his own profile names no AI/S&T practice (generic Deloitte sourcing title); the AI link is purely that he authors/DM-fronts the SFL Scientific "AI Specialist Leader" + "Data Science Managers" reqs. Practice-match 2 (vs. 3 for the S&T-titled recruiters); RI-based, not NYC → lower priority for *this* role than the recruiters above. **Provenance:** surfaced via Gina Stewart's + Wendy Warne's reposts of his SFL Scientific AI posts (2mo). | mlee@deloitte.com (verify) | Low | /in/matthew-lee-b0978815a |
-| 5 | Nara-Jayne Linéus, CHRP | National TA Manager — **Strategy, Risk & Transactions**, Deloitte Canada | Toronto, ON | Right practice, ❌ Canada | nlineus@deloitte.ca | Low | /in/narajaynelineus |
-| — | Trevor Mingo | _Network node — mutual connection_ | US | n/a (warm path to Wendy) | — | n/a | /in/trevor-mingo |
+| #   | Name                          | Title                                                                                                               | Location                                           | Practice match                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Email (inf.)                   | Conf. | LinkedIn                             |
+| --- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ | ----- | ------------------------------------ |
+| 1 ⭐ | **Gina Stewart**              | TA Senior Manager — **Recruiting Lead for Deloitte's Strategy & Transactions** + Regulatory/Risk/Forensic practices | Greater Philadelphia (US, nationwide)              | **Top** — *owns* the S&T recruiting pipeline (practice lead, 19 yrs). Highest-leverage recruiter for this req.                                                                                                                                                                                                                                                                                                                                                                       | gstewart@deloitte.com (verify) | Med   | /in/gina-stewart-348725              |
+| 2 ⭐ | **Allison (Allie) Brown**     | TA Lead — **Risk and Strategy & Transactions**; "Experienced Hire Recruiting"                                       | West Newton, MA (US, nationwide exp-hire)          | **Exact** — names S&T + experienced-hire (your band); 2 shared LinkedIn groups. Hands-on day-to-day recruiter, often faster responder.                                                                                                                                                                                                                                                                                                                                               | abrown@deloitte.com (verify)   | Med   | /in/ab-recruiting                    |
+| 3   | **Wendy Warne, PHR, SHRM-CP** | TA — Deloitte Consulting — **Strategy & Transactions/SFL**                                                          | Charlotte, NC (US)                                 | **Exact** — names S&T. **2nd-degree** (mutual: Trevor Mingo) = warmest path                                                                                                                                                                                                                                                                                                                                                                                                          | wwarne@deloitte.com            | Med   | /in/wendy-warne-phr-shrm-cp-5724b533 |
+| 4   | **Matthew Lee**               | Lead Talent Sourcing Specialist at Deloitte — sources the live **SFL Scientific** AI / data-science reqs            | **Providence, RI** (confirmed 2026-06-01; not NYC) | **Activity-only AI sourcer** — his own profile names no AI/S&T practice (generic Deloitte sourcing title); the AI link is purely that he authors/DM-fronts the SFL Scientific "AI Specialist Leader" + "Data Science Managers" reqs. Practice-match 2 (vs. 3 for the S&T-titled recruiters); RI-based, not NYC → lower priority for *this* role than the recruiters above. **Provenance:** surfaced via Gina Stewart's + Wendy Warne's reposts of his SFL Scientific AI posts (2mo). | mlee@deloitte.com (verify)     | Low   | /in/matthew-lee-b0978815a            |
+| 5   | Nara-Jayne Linéus, CHRP       | National TA Manager — **Strategy, Risk & Transactions**, Deloitte Canada                                            | Toronto, ON                                        | Right practice, ❌ Canada                                                                                                                                                                                                                                                                                                                                                                                                                                                             | nlineus@deloitte.ca            | Low   | /in/narajaynelineus                  |
+| —   | Trevor Mingo                  | _Network node — mutual connection_                                                                                  | US                                                 | n/a (warm path to Wendy)                                                                                                                                                                                                                                                                                                                                                                                                                                                             | —                              | n/a   | /in/trevor-mingo                     |
 
 ### Enrichment (recruiter activity) — scraped 2026-06-01 via `enrich-contacts`
 
@@ -39,11 +58,11 @@ All three recruiters' activity feeds (`get_person_profile`, `sections: posts`, `
 
 **Hooks found (forwarded to outreach beat 1):**
 
-| Recruiter | Hook | Source / date |
-|---|---|---|
-| Gina Stewart | Reposted the SFL Scientific "AI Specialist Leader" opening (hands-on GenAI/ML + BD) | repost of Matthew Lee, 2mo |
-| Wendy Warne | Reposted the SFL Scientific "AI Specialist Leader" opening; also reposted SFL Scientific "Data Science Managers" (7mo) | reposts of Matthew Lee, 2mo / 7mo |
-| Allison Brown | _No on-target activity — no usable hook_ | — |
+| Recruiter     | Hook                                                                                                                   | Source / date                     |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| Gina Stewart  | Reposted the SFL Scientific "AI Specialist Leader" opening (hands-on GenAI/ML + BD)                                    | repost of Matthew Lee, 2mo        |
+| Wendy Warne   | Reposted the SFL Scientific "AI Specialist Leader" opening; also reposted SFL Scientific "Data Science Managers" (7mo) | reposts of Matthew Lee, 2mo / 7mo |
+| Allison Brown | _No on-target activity — no usable hook_                                                                               | —                                 |
 
 **New candidate surfaced (handed back to find-contacts scoring):**
 
