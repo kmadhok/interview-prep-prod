@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "hunter@claude-plugins-official": true
+  }
+}

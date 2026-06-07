@@ -1,0 +1,62 @@
+# Kanu Madhok
+
+952-303-1045 • madhok.kanu@gmail.com • [github.com/kmadhok](https://github.com/kmadhok) • [linkedin.com/in/kanu-madhok](https://linkedin.com/in/kanu-madhok)
+
+_Text source for the .docx / .pdf. In the formatted version, city · date sit right-aligned to the page edge._
+
+---
+
+## PROFESSIONAL EXPERIENCE
+
+### Walmart Data Ventures — Chicago, IL · Sep 2024 – Present
+_Senior Data Analyst_
+
+- Designed and shipped to production a self-service analytics agent over 67 BigQuery tables with multi-agent orchestration and human-in-the-loop validation (Context Researcher → SQL Drafter → Validator → Devil's Advocate); 8 deterministic SQL rules and a 23-case golden-query evaluation suite. Partnered with Product, Data Science, and business stakeholders to translate ambiguous business questions into agent-ready specs. Approved by Sr. Director and product leadership and currently the only AI skill in active use by business teams on Data Ventures.
+- Built an autonomous Jira ticket-resolution agent with MCP-driven context gathering, 6-gate triage, and agentic RAG (FAISS + BM25 retrieval over 11,000 historical SQL queries) plus self-healing execution on a 10-retry budget. Closed 400+ data requests across 8 categories over 15 months — cut turnaround from 30–60 minutes per request (and up to a full day for complex ones) to under 10 minutes each. Stakeholders never knew an agent was answering them.
+- Built a hybrid orchestrator on top of the analytics agent that routes business questions through two backends in parallel — a CubeJS semantic-layer skill co-built with the DS and product team, and the context-engineered agent itself — then compares outputs, reasons about disagreements, and feeds discrepancies back to refine the semantic layer's definitions over time. Let Product self-serve requests they previously filed as tickets.
+- Built and deployed a headless KPI monitor on a 6-hour cron that detects threshold breaches, runs root-cause analysis, and posts Slack alerts; end-to-end observability via decision logging and BigQuery state persistence, so the agent carries no LLM-memory reliance. Designed a v2 as a 3-tier event-driven platform self-configuring through a BigQuery event registry — new event types ship without code deploys.
+- Automated ~20 recurring recruitment workflows on a 68-table BigQuery platform; stratified-sampling pipelines recruited 280,000+ panelists across 29 categories with zero duplicates, cutting a recurring 3-hour task to ~3 minutes.
+- Delivered 5 Power BI dashboards ranked top 1.4% of Walmart's 207,000 dashboards (1,064 views, 22 users); cut data-request turnaround from 1–24 hours to 5–10 minutes; Making a Difference Award.
+
+### University of Chicago — Data Science Institute — Chicago, IL · Jan – Sep 2024
+_Graduate Researcher, Data & Democracy Initiative_
+
+- Persona-driven multi-LLM (OpenAI + Gemini) chatbot for a 500+ participant donation experiment; controlled A/B tests persuaded 15% to donate to an opposing cause.
+
+### FTI Consulting — UChicago MSADS Capstone — Chicago, IL · Jan – Aug 2024
+
+- RAG-to-proposal generator deployed on AWS EC2 for a client engagement; cut proposal time ~30%; Best in Show — UChicago MSADS Capstone.
+
+### Innovare (EdTech Startup) — Chicago, IL · Oct 2022 – Mar 2023
+_Data Scientist_
+
+- Logistic-regression risk model + Looker dashboards for 10+ districts (5,000+ students); retention +7%, failures –15%.
+
+---
+
+## SELECTED PROJECT
+
+- Live deployed text-to-SQL copilot (Streamlit + Gemini 2.5 + LangChain-orchestrated RAG over historical queries, BigQuery execution, auto-visualization): live demo — https://sql-rag-frontend-simple-481433773942.us-central1.run.app/
+
+---
+
+## SKILLS
+
+Agentic AI: multi-agent / sub-agent orchestration, tool-calling, MCP (Model Context Protocol) server design, context engineering, memory management, prompt engineering, multi-model routing across providers, headless cron agents, event-driven architectures
+
+RAG & retrieval: RAG (embeddings + FAISS + BM25 + RRF), ChromaDB semantic memory, LangChain, evaluation suites (golden sets, human-in-the-loop validation), decision logging / observability
+
+Backend & deployment: Python, FastAPI, Cloud Run, microservices/API integration, BigQuery scheduled queries, Slack webhooks, cron, Playwright SSO, JSONL state stores, CI/CD (pytest, version control)
+
+LLMs: Claude (Opus / Sonnet / Haiku via Wibey), Gemini (2.5 Pro / Flash via Vertex AI), OpenAI
+
+Data: BigQuery, dbt, SQL, PySpark, Airflow, Databricks, MySQL
+
+Viz: Power BI (DAX, XMLA TMSL), Tableau, LookML, Streamlit, Matplotlib, React Recharts
+
+---
+
+## EDUCATION
+
+The University of Chicago — M.S., Applied Data Science (GPA 4.0) — Chicago, IL
+Loyola University Chicago — B.S., Information Systems & Economics (GPA 3.5) — Chicago, IL

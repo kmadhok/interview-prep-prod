@@ -1,4 +1,4 @@
-# Resume Achievements Master - Kanu Madhok
+	# Resume Achievements Master - Kanu Madhok
 
 **Purpose.** This is the conservative source of truth for resume-worthy achievements. Everything in this file is intended to be safe to use in tailored resumes, outreach notes, and interview prep.
 
@@ -96,13 +96,13 @@ Demo: https://sql-rag-frontend-simple-481433773942.us-central1.run.app/
 
 **Resume bullet, conservative:**
 
-> Built a hybrid orchestrator on top of the analytics agent. Routes business questions through two backends in parallel: a CubeJS semantic-layer skill co-built with the DS and product team, and the context-engineered agent itself. Compares outputs, reasons about disagreements, and feeds discrepancies back to refine the semantic layer's definitions over time.
+> Built a hybrid orchestrator on top of the analytics agent that lets Product self-serve analytics requests they previously submitted to me as tickets. Routes business questions through two backends in parallel: a CubeJS semantic-layer skill co-built with the DS and product team, and the context-engineered agent itself. Compares outputs, reasons about disagreements, and feeds discrepancies back to refine semantic-layer definitions over time. Converted 30-60 minutes of analyst execution per covered request into product-led self-service inside Wibey, reducing analyst touch time to near-zero and compressing response time to agent runtime.
 
 **Compact variant:**
 
-> Built a hybrid text-to-data orchestrator that compares a CubeJS semantic-layer skill with a context-engineered agent, reasons through disagreements, and feeds discrepancies back into semantic-layer definition refinement.
+> Built a hybrid text-to-data orchestrator that lets Product self-serve analytics requests previously handled as tickets; compares a CubeJS semantic-layer skill with a context-engineered agent, reasons through disagreements, and converts 30-60 minutes of analyst execution per covered request into product-led self-service inside Wibey.
 
-**Verified proof points:** CubeJS semantic-layer skill - co-built with DS and product team - context-engineered agent - parallel routing - disagreement review/refinement loop.
+**Verified proof points:** CubeJS semantic-layer skill - co-built with DS and product team - context-engineered agent - Wibey/Claude Code fork skill interface - parallel routing - disagreement review/refinement loop - Product requests previously came as tickets - manual analyst execution usually took 30-60 minutes per request - agent returns usable answers in <=10 minutes (verified by Kanu) - 67-92% response-time reduction from the prior 30-60 minute manual workflow - Product can now ask those questions directly through the Wibey skill instead of filing a ticket to Kanu.
 
 ---
 
@@ -112,13 +112,15 @@ Demo: https://sql-rag-frontend-simple-481433773942.us-central1.run.app/
 
 **Resume bullet, conservative:**
 
-> Built and shipped to production an autonomous Jira ticket-resolution agent: 6-gate triage, MCP-driven context gathering, agentic RAG with embeddings-based FAISS + BM25 retrieval over 11,000 historical SQL queries, self-healing execution with a 10-retry budget. Closed 400+ data requests across 8 categories over 15 months; cut turnaround from 30-60 minutes per request, and up to a full day for complex ones, to under 10 minutes each. Stakeholders never knew an agent was answering them.
+> Built and shipped to production an autonomous Jira ticket-resolution agent that closed 400+ data requests across 8 categories over 15 months, cutting routine turnaround from 30-60 minutes to under 10 minutes per request and complex requests from up to a full day to the same agent-assisted workflow. Removed ~130-330+ hours of request-cycle time on routine tickets alone. Under the hood: 6-gate triage, MCP-driven context gathering, agentic RAG with FAISS + BM25 retrieval over 11,000 historical SQL queries, and self-healing execution with a 10-retry budget. Stakeholders never knew an agent was answering them.
 
 **Compact variant:**
 
-> Built a production Jira ticket-resolution agent with 6-gate triage, MCP-driven context gathering, agentic RAG (embeddings + FAISS + BM25) over 11,000 historical SQL queries, and self-healing execution; closed 400+ requests across 8 categories and cut turnaround from 30-60 minutes to under 10 minutes.
+> Built a production Jira ticket-resolution agent that closed 400+ requests across 8 categories, cut routine turnaround from 30-60 minutes to under 10 minutes, and removed ~130-330+ hours of request-cycle time using 6-gate triage, MCP context gathering, RAG over 11,000 SQL queries, and self-healing execution.
 
 **Verified proof points:** 6-gate triage - MCP-driven context gathering - FAISS+BM25 - 11,000 historical SQL queries - 10-retry budget - 400+ data requests - 8 categories - 15 months - 30-60 minutes to under 10 minutes - complex requests up to a full day before.
+
+**Derived impact metric:** 30-60 minutes down to under 10 minutes is roughly 67-83% faster for routine tickets. Across 400+ tickets, that removes roughly 130-330+ hours of routine request-cycle time before counting the complex tickets that used to take up to a full day.
 
 ---
 
