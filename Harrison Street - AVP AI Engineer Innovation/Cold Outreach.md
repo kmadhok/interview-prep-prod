@@ -69,3 +69,9 @@ linkedin.com/in/kanu-madhok • github.com/kmadhok
 - **The hiring manager couldn't be identified publicly.** The JD says the role reports to the **Chief Innovation Officer**, but Harrison Street's senior-leadership page (updated March 2026) lists no one with that title. The Innovation Department, the CINO role, and this AI Engineer req look like a recent build-out — consistent with the 2025 Colliers → Harrison Street Asset Management rebrand. Best move: send the recruiter note and explicitly ask Heather who the hiring manager is.
 - **Emails are inferred, not verified.** Harrison Street's dominant pattern is first-initial + last name `@harrisonst.com` (~98% of addresses, per RocketReach). Every address above is labeled `(likely)`. Connecting a tool like Hunter.io would let me verify these next time.
 - **Recommended sequence:** send the recruiter email first. If no reply in 5–7 days, send a short bump. Only consider the Bill Sechen note if you want to also plant a flag with a senior leader — and even then, the recruiter is the contact who actually moves the application.
+
+---
+
+## 2026-06-10 update — Heather email STAGED in Gmail ✅
+
+**Primary draft to Heather Sherman Nelson (hnelson@harrisonst.com) staged as a Gmail draft, verbatim from this file.** Applied 5/24 — 17 days with no outreach sent, so this was overdue. Review and send from Gmail drafts. Reminder: the address is the best guess of three inferred variants (~98% of Harrison Street follows first-initial+last); if it bounces 550, retry `hshermannelson@` then `hsherman@`. Bump in 5–7 days if silent; Bill Sechen note stays optional.

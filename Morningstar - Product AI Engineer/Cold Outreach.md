@@ -343,3 +343,9 @@ _~160 words — longer than the recruiter drafts because the ask of an engineeri
 ### Risk note on parallel Aviles + recruiter contact
 
 Some orgs frown on candidates pinging the hiring manager *and* multiple recruiters simultaneously. Morningstar's recruiting org is big enough that this is unlikely to surface — but if Jeanine or someone routes back saying "we got your note via Tom," own it cleanly: "I appreciated his work on the AI Assistant launch and wanted to surface my interest at the team level too." Don't apologize for being multi-threaded; senior tech candidates routinely are.
+
+---
+
+## 2026-06-10 update — Jeanine nudge STAGED in Gmail ✅
+
+Jeanine silent 15 days after the 5/26 intro (no FU1 had gone out; the 6/3 nudge trigger passed). **FU1-style nudge drafted in Gmail as a reply on the original thread** — Jira-agent restate + fresh urgency line (BCG X round 2 June 16, Walmart next round June 19; replaces the stale "interview Friday" line). Review and send from Gmail drafts. If still silent 4–5 business days after sending, Ashley (Draft 5) is the next parallel ping, then Mary Kay (Draft 6).

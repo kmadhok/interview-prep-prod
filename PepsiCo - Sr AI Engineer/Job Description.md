@@ -70,4 +70,6 @@ AI Engineer specializing in **AI Agents** — design and develop domain-specific
 
 ## Notes
 
-200+ applicants as of posting
+- 200+ applicants as of filing (5/27); **2,596 apply-clicks as of 2026-06-10** (re-verified live via LinkedIn MCP — reposted ~2 weeks ago, 0 clicks in past day). 72% of applicants are entry-level, so the field is large but weak — the 8+ yrs gate is doing the filtering.
+- **Fit gates to weigh before applying:** (1) hard "8+ years total experience" requirement — Kanu is short on raw years; the counter is principal-level shipped-agent scope, but an ATS may filter on years. (2) Comp $106.4K–$178.1K + 12% bonus — below the Opendoor/BCG X tier. (3) Reports to a Senior AI Solutions Manager — IC seat, moderate autonomy.
+- **Archetype fit is real:** Langchain + MCP + A2A named in the JD; "information gathering, insight generation, intelligent actions" is his exact agent portfolio. Chicago hybrid = home base.

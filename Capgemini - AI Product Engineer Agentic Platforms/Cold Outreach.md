@@ -76,3 +76,9 @@ linkedin.com/in/kanu-madhok • github.com/kmadhok
 - **Email accuracy.** All emails are inferred from Capgemini's dominant pattern — none verified. Rajesh Iyer's especially: very common name, real collision risk — verify before sending.
 - **Honesty note baked into the draft.** The JD names LangChain, **LangGraph**, and **DSPy** as core tooling. The drafts lean on what's real (LangChain, RAG, MCP, multi-agent, self-healing) and don't claim LangGraph/DSPy. Be ready to speak to LangGraph/DSPy conceptually if a conversation happens.
 - **Active-pipeline talking point** (for screens, not the email itself). The "two Walmart internal AI roles + BCG X Senior AI" line is true and current — Walmart Principal SWE Agent Builder is awaiting decision after the 5/18 panel; Walmart Principal Data Analyst HackerRank is Fri 5/29; BCG X first round is pending confirmation.
+
+---
+
+## 2026-06-10 update — Tier-2 Dennis Mottweiler email STAGED in Gmail ✅
+
+Kamal silent 11 business days after the 5/26 delivery (window closed ~6/3). **Draft 1 adapted for Dennis (dennis.mottweiler@capgemini.com) and staged as a Gmail draft with the tailored resume PDF attached.** Urgency line refreshed: the stale "Agent Builder + interview Friday" framing is replaced with "later-round processes at BCG X (round 2 June 16) and Walmart (Principal Data Analyst, next round June 19)" — both true and current. Review and send from Gmail drafts. Rajesh Iyer (Draft 2) remains the practice-leader fallback if Dennis is also silent after 5 business days; verify his email first (high collision risk).

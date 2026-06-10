@@ -1,7 +1,7 @@
 # Round 2 Prep Plan — BCG X (Senior) AI Factory Product Builder
 
 **Interview:** Tuesday, June 16, 2026 · 12:00 PM ET (11:00 AM CT) · Zoom `bcg.zoom.us/j/94249303795`
-**Interviewer:** Patrick Freyer, Consultant, BCG X
+**Interviewer:** Patrick Freyer — LinkedIn (verified 6/10): "Applied AI (Forward Deployment) Leader @BCG"; Head of Applied AI (Forward Deployment) Europe since Oct 2025; founded BCG's Forward Deployment pod Jul 2025. (BCG email listed "Consultant" — LinkedIn supersedes.)
 **Format (Reilly, 6/8):** "A deeper conversation about your background and experience building AI products. **No additional assessments or whiteboarding.**"
 **Honor code still applies:** no AI tools / external resources live; keep content confidential; destroy notes after.
 
@@ -16,8 +16,18 @@ Patrick is a **GenAI builder and shipper**, not an academic. Public signal is co
 - Describes himself as a **"Generative AI Builder, Developer, and Strategist."** Builds and *publishes* apps across podcasts, health, and forestry — i.e. he ships and maintains real products, not demos.
 - Built **AiAssist** — a secure LLM service for iOS/macOS that **detects and redacts sensitive information before requests hit the LLM**. Reportedly hit ~10k users in its first week and was commercialized.
 - Background: **Yale**, prior **investment banking at UBS (London)** → BCG (~5 yrs). Business-to-builder arc, not CS-PhD arc.
-- Runs a personal site with **his own AI assistant** as a contact channel and even a personal flights tracker — he automates his own life with the same tools he'd deploy for clients.
-- **Forward-deployment focus.** His confirmed title in the BCG email is **"Consultant,"** but multiple public sources list him as **"Head of Forward Deployment, Europe"** at BCG. *Treat the seniority as unconfirmed* — don't assert it to him — but the **forward-deployment orientation is well-corroborated** and is the single most useful thing to know: this role *is* forward-deployed AI product building, and you're talking to someone who lives that.
+- Runs a personal site with **his own AI assistant** as a contact channel and even a personal flights tracker — he automates his own life with the same tools he'd deploy for clients. Also shipped **Synthorated.com** — personalized AI-generated podcasts, built in public, weeks of late-night coding.
+- **Title CONFIRMED (LinkedIn, 6/10):** "Applied AI (Forward Deployment) Leader @BCG." Founded the Forward Deployment pod (Jul 2025, "created the rapid build function of BCG"), Head of Applied AI Europe since Oct 2025, started the team in Denver, scaled Europe, now expanding globally. You're talking to **the person who built and runs the function you're applying into** — not a line interviewer. He hires "strategise, develop, test and refine all in one" profiles.
+
+**Fresh post intel (last 3 months — use as rapport bridges, never quote his posts at him):**
+
+- **MCP post:** "The question isn't 'which framework' anymore — it's 'which MCP servers do we need and what governance?'" → your *"MCP layer is where I enforce what the agent is allowed to look at"* line is now a **direct hit**, not just an AiAssist bridge. If governance comes up, this is your strongest moment.
+- **Embed-in-workflow post:** he champions "AI that meets users where they already work (email, existing data systems, PowerPoint)" → identical to your *"don't build a destination, embed in the workflow"* V1-RAG lesson. He will recognize this instinct as his own.
+- **Claude Code:** his team reshares describe using **Claude Code daily** and presenting at an Anthropic stand → you use **Wibey (Walmart's internal Claude Code fork) daily**. Natural, specific tooling rapport — say "Walmart's internal fork of Claude Code," don't assume he knows "Wibey."
+- **Dev-pipeline post:** "testing merged into building… production became the test lab… the best software tests itself" → aligns with your A5 production-stability beat (state persisted, headless cron, no LLM-memory reliance).
+- **AI-news agent:** he ships a weekly AI recap "researched, curated, and produced entirely with an AI agent" — co-built with Claude. He values agents that ship artifacts, not chat.
+- **India trips:** ran hackathon-style trainings (idea → working prototype in an afternoon; "build, break, rebuild until it works"). Speed-to-working-thing is his core hiring filter.
+- **Mutual connections:** Bharath and Xingchen (Lulu) — only mention if genuinely relevant.
 
 **What this means for your prep, concretely:**
 
@@ -53,6 +63,8 @@ Pull from root `AI Build Walkthrough - Master.md`. For Patrick, the order shifts
 - *"Automating my role bought me the time to build the rest."* — portfolio effect / leverage.
 - *"It's live if you want to try it."* — demo-forward confidence.
 - *"I optimized for the analyst not having to babysit the pipeline."* — shipper's definition of done.
+- *"I use Walmart's internal fork of Claude Code daily — most of my builds start there."* — tooling rapport; his team lives in Claude Code.
+- *"The framework question matters less than which MCP servers you trust and what governance sits on them."* — his own publicly stated view; arrive at it independently from your Jira-agent experience.
 
 **Avoid:** leading with eval philosophy, "I fundamentally believe," tool-listing ("LangChain, Pinecone, Claude…"). Replace tool lists with *"I used X because Y; if Y weren't true I'd use Z."*
 
@@ -114,9 +126,10 @@ You already have a deep round-1 base (cheat sheet, walkthrough cue card, technic
 
 ## 6. Questions to ask Patrick (pick 3, tuned to him)
 
-1. "You've shipped a lot of your own products — AiAssist, the app portfolio. How much of AI Factory work is building net-new products for clients vs. embedding with their teams to change how *they* build?" *(signals you did your homework + probes the forward-deployment reality)*
+1. "You built the Forward Deployment function from scratch and scaled it from Denver to Europe and now globally. As it scales, what separates the builders who thrive in it from ones who don't?" *(he founded the function — let him talk about it; the answer tells you exactly what he's screening for)*
 2. "When you forward-deploy, what separates a build that the client team keeps using after you leave from one that quietly dies?" *(adoption — your core thesis, and his lived experience)*
 3. "What's an AI Factory pattern or internal tool you've shipped that you wish more of the org used?" *(invites a builder-to-builder exchange; reusable from round 1, still strong)*
+4. *(Spare)* "Your team runs idea-to-prototype-in-an-afternoon hackathons with clients. How do you keep those prototypes from dying after the workshop high wears off?" *(speed + adoption in one question; grounded in his India work without quoting his posts)*
 
 *Avoid* re-asking the Maan questions verbatim — Patrick's a different person; lead with the AiAssist/forward-deployment angle that's specific to him.
 
@@ -127,9 +140,9 @@ You already have a deep round-1 base (cheat sheet, walkthrough cue card, technic
 - **New failure mode is rambling**, not a blank whiteboard. Tight stories (≤4 min builds, ≤90 sec conversational answers), then hand the ball back.
 - **Pause 3 seconds before answering.** Structured-slow beats fast-rambling.
 - **Lead with the business problem**, close on adoption, name one tradeoff, offer the demo.
-- **Don't claim the seniority title** for him — let his role surface; you know the forward-deployment shape, that's enough.
+- **His title is confirmed** (Forward Deployment Leader / Head of Europe) — you can reference his function naturally, but don't recite his LinkedIn at him. Know it; don't perform it.
 - Honor code: no AI tools, no second screen, no notes you'd keep.
 
 ---
 
-*Sources for Patrick intel: his personal site (patrickfreyer.com), public LinkedIn/BCG posts, and a third-party contact aggregator (title unverified — flagged above). Substance content pulls from root `AI Build Walkthrough - Master.md` and round-1 `Interview Cheat Sheet.md`.*
+*Sources for Patrick intel: his personal site (patrickfreyer.com), his full LinkedIn profile + recent posts (pulled 6/10 — title now verified), and recruiter email (Reilly, 6/8). Substance content pulls from root `AI Build Walkthrough - Master.md` and round-1 `Interview Cheat Sheet.md`.*

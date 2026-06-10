@@ -122,3 +122,31 @@ Things to surface in the first conversation regardless of who picks up:
 - **Level fit** — JD says "1 year of experience" minimum. Kanu is 3+ yrs DA + MS ADS + shipping agents. Likely overqualified for the floor; worth asking whether there's a higher-leveled FDE on the same team.
 - **Travel up to 50%** — confirm fine.
 - **Prior Google rejections (FDE GenAI 2026-03-16, Engineering Analyst Safe Browsing 2026-03-20)** — be ready to address if it comes up in screening notes. Both were referral-driven; the rejections were before the Capgemini-format resume + the latest agent-shipping bullets.
+
+---
+
+## 2026-06-10 update — Tier-2 Matt Un message READY TO PASTE (LinkedIn, not email)
+
+Jeffrey silent 10 business days after the 5/27 delivery (escalation date was 6/4). Per the strategy above, Matt Un goes via **LinkedIn** — do not guess a Google email. Paste-ready text below; find him via name search ("Matt Un Google Cloud GenAI Recruiter", Austin TX).
+
+**Connection-request note (≤300 chars):**
+
+> Hi Matt — I applied to the FDE I, Applied AI role at Google Cloud (Cambridge) and saw you focus on GenAI recruiting inside Cloud TA. I ship production agents at Walmart Data Ventures, incl. an NL-to-SQL copilot live on GCP Cloud Run. Would love 15 min if you know who owns this req. — Kanu
+
+**Full InMail version (if credits available):**
+
+> **Subject:** Forward Deployed Engineer I, Applied AI (Cambridge) — quick note from Kanu Madhok
+>
+> Hi Matt,
+>
+> I applied to the Forward Deployed Engineer I, Applied AI role at Google Cloud (Cambridge MA) on May 26 and saw you focus on GenAI inside Google Cloud TA — figured Applied AI is close enough to ask.
+>
+> Quick background: I'm a Senior Data Analyst at Walmart Data Ventures, but the work is principal-level AI engineering — a 6-gate Jira agent that's drafted 400+ stakeholder responses, an autonomous data analyst on a 740K-panelist dataset, and a hybrid text-to-data orchestrator co-built with Data Science and Product. Live demo on GCP Cloud Run. I'm in later rounds at BCG X (June 16) and Walmart (June 19), but this FDE seat is the closer match for what I actually do.
+>
+> Do you know who owns the FDE I pipeline, or would you have 15 min this week?
+>
+> Best,
+> Kanu Madhok
+> madhok.kanu@gmail.com · linkedin.com/in/kanu-madhok · github.com/kmadhok
+
+If Matt is silent after 5 business days → Juan Trevino Cerna or Aaron Buehler, then Randy Peo with the "wrong level, can you forward?" framing.
