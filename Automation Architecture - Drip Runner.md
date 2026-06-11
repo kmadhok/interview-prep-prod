@@ -1,6 +1,6 @@
 # Automation Architecture — Application Drip-Runner
 
-_Saved 2026-06-10. Jump-off document for automating the application pipeline (Gmail sweep → Pipeline.md bookkeeping → jd-to-ready outreach machinery) on a schedule. Status: Phase 0 live, Phases 1–3 not started._
+_Saved 2026-06-10, updated 2026-06-11. Jump-off document for automating the application pipeline (Gmail sweep → Pipeline.md bookkeeping → jd-to-ready outreach machinery) on a schedule. Status: Phase 0 live, Phase 2 mostly done (settings allowlist pending), Phases 1 and 3 not started._
 
 ## The goal
 
@@ -17,7 +17,7 @@ A scheduled automation that runs the **real `jd-to-ready` machinery** — intake
 | **Cloud routine** "Application Drip-Runner (2x weekdays)" | **LIVE** | ID `trig_01Dhy19jRLQM6sggLQ4249rm` · cron `0 13,21 * * 1-5` UTC = 8 AM + 4 PM CT weekdays (shifts 1 hr when DST ends) · Sonnet 4.6 · repo `kmadhok/interview-prep` + Gmail connector · manage at https://claude.ai/code/routines/trig_01Dhy19jRLQM6sggLQ4249rm |
 | Cloud routine scope | Secretary only | Gmail sweep → Pipeline.md reconciliation → stage email drafts from existing folder material (max 2/run, backlog cap of 4 unsent). **Cannot run LinkedIn steps** — it writes `contact research needed (local)` markers into Pipeline.md instead. Commits with `drip-runner:` prefix and pushes to main. |
 | Local session `/loop` | Retired 6/10 | Proved the concept (2 iterations); replaced by the cloud routine. |
-| Pipeline skills | Mac-local only | `~/.claude/skills/` — NOT in the repo yet, NOT visible to the cloud agent or any other machine. |
+| Pipeline skills | **In the repo** (6/11) | Canonical copies live in repo `.claude/skills/` (jd-to-ready, find-contacts, enrich-contacts, tailor-resume, write-outreach, linkedin-mcp-operations, interview-prep-intake). Mac `~/.claude/skills/<name>` are now symlinks into the repo; pre-move originals backed up at `~/.claude/skills-backup-pre-repo-move/`. |
 | LinkedIn daemon | Mac-local | launchd job `com.kanu.linkedin-mcp`, http transport on `127.0.0.1:8765`. |
 
 **Lessons already encoded in the cloud routine's prompt** (port these to any future runner): verify every claim in a pre-written draft against current Pipeline.md before staging (stale urgency lines were caught twice on 6/10); respect per-folder channel decisions (Morgan Stanley + Google are LinkedIn-only); log `STAGED in Gmail <date>` in both the folder and the Pipeline row so runs never duplicate; pause staging when ≥4 job drafts sit unsent.
@@ -54,10 +54,15 @@ The skill already works when handed a JD. What a *scheduled* run adds — and wh
 
 ### Phase 2 — Make the repo self-contained
 
-- [ ] Copy these skills from `~/.claude/skills/` into repo `.claude/skills/`: `jd-to-ready`, `find-contacts`, `enrich-contacts`, `tailor-resume`, `write-outreach`, `linkedin-mcp-operations`, `interview-prep-intake`.
-- [ ] **Canonical-copy rule:** after the copy, the repo version is the source of truth. On the Mac, symlink `~/.claude/skills/<name>` → repo copy (or delete the user-level copies) so refinements can't diverge.
-- [ ] Commit a `.claude/settings.json` with the tool allowlist headless runs need (Bash, Read/Write/Edit, Glob/Grep, the Gmail MCP tools, `mcp__linkedin__*`) so cron runs never block on a permission prompt.
-- [ ] Push. Side benefit: the cloud routine immediately gets the real tailor-resume / write-outreach logic for its secretary work.
+- [x] _(6/11)_ Copy these skills from `~/.claude/skills/` into repo `.claude/skills/`: `jd-to-ready`, `find-contacts`, `enrich-contacts`, `tailor-resume`, `write-outreach`, `linkedin-mcp-operations`, `interview-prep-intake` (this one was never user-installed — unzipped from the root `.skill` file; the symlink also installs it on the Mac for the first time).
+- [x] _(6/11)_ **Canonical-copy rule:** the repo version is now the source of truth. Mac `~/.claude/skills/<name>` are symlinks into the repo; pre-move originals parked at `~/.claude/skills-backup-pre-repo-move/` (delete once confident). Verified `trace_step.py` resolves through the symlink.
+- [ ] Commit a `.claude/settings.json` with the tool allowlist headless runs need (Bash, Read/Write/Edit, Glob/Grep, WebFetch, `mcp__claude_ai_Gmail`, `mcp__linkedin`) so cron runs never block on a permission prompt. **Kanu must do this by hand** — the auto-mode classifier refuses to let an agent widen its own permissions, in any form.
+- [x] _(6/11)_ Push. Side benefit: the cloud routine immediately gets the real tailor-resume / write-outreach logic for its secretary work.
+
+**Discovered while executing (affects Phase 3):**
+
+- `jd-to-ready`'s SKILL.md and its hook scripts reference `~/.claude/skills/jd-to-ready/...` (e.g. `trace_step.py`, hooks resolve via `Path.home()`). The symlink keeps these working unchanged — but it means **every runner machine needs the same symlinks** (added to Phase 3).
+- `jd-to-ready`'s three hooks (PostToolUse, Stop) are registered in **user-level** `~/.claude/settings.json` on the Mac, not in the repo. A PC runner must register them too (added to Phase 3). Trace state goes to `~/.claude/logs/`, so relocation is safe.
 
 ### Phase 3 — Stand up the PC runner
 
@@ -67,6 +72,8 @@ _Prereq: know the PC's OS — service manager and paths differ (systemd on Linux
 - [ ] **LinkedIn daemon:** install `linkedin-scraper-mcp` pinned to the same version as the Mac; log into LinkedIn once in its browser profile; run as an always-on service; add the `linkedin` server to `~/.claude.json` as `"type": "http"` → `http://127.0.0.1:8765/mcp` (same invariant as the Mac — never stdio).
 - [ ] **⚠ Single-daemon rule:** automated LinkedIn browsing from two machines/IPs on one account is a flag risk. When the PC daemon goes live, stop using the Mac daemon for automation (interactive one-off use sparingly, or retire it).
 - [ ] **Git:** clone the repo; add push credentials (PAT or SSH deploy key).
+- [ ] **Skill symlinks:** `ln -s <repo>/.claude/skills/<name> ~/.claude/skills/<name>` for all 7 pipeline skills — skill internals and hooks reference `~/.claude/skills/...` paths.
+- [ ] **Hook registration:** add the three `jd-to-ready` hooks (PostToolUse `.*` → `jd-to-ready-post-tool.py`, Stop → `jd-to-ready-stop.py`, SubagentStop → `jd-to-ready-subagent-stop.py`) to the PC's user-level `~/.claude/settings.json`, copying the entries from the Mac's.
 - [ ] **Cron:** `git pull && claude -p "<Phase-1 frozen prompt>"` in the repo dir, weekday cadence chosen after Phase 1 reveals run duration (LinkedIn sequences run 35–60 min — don't schedule runs closer together than the longest observed run).
 - [ ] **Smoke test over SSH:** one manual run end-to-end (daemon healthy → skills load → Gmail drafts staged → push lands) before trusting cron.
 
