@@ -12,7 +12,7 @@ When he says "the interview" without qualifying which one, ask which role he mea
 
 ## Folder layout
 
-The root holds project-wide config, the pipeline tracker, and **cross-role reusables** — files that every role-specific prep folder pulls from. The rest is **one subfolder per role**.
+The root holds project-wide config, the pipeline tracker, and **cross-role reusables** — files that every role-specific prep folder pulls from. **Role folders live under `Roles/`** (active and considering roles); closed roles live in `_Archived/`. `Work Artifacts/` (internal Walmart write-ups) stays at root as an explicit exception.
 
 **Project-wide config:**
 
@@ -54,7 +54,7 @@ The root holds project-wide config, the pipeline tracker, and **cross-role reusa
 - `find-fresh-jobs.skill` — morning pulse: surfaces N (default 10) fresh LinkedIn roles posted in the last 24h that match `Job Search Target Profile.md`. Applies geo-adjusted comp floor, seniority, hard-skip list, leetcode filter, industry exclusions. Dedupes against `Pipeline.md`. Read-only — does not file roles.
 - `recruiter-contact-tracker.skill` — mines Gmail for recruiter/HM/referrer contacts and rebuilds `Recruiter Contacts.html`.
 
-**Per-role subfolders.** Named `Company - Role Title` (e.g., `Walmart - Principal SWE Agent Builder`, `BCG X - Senior AI Factory Product Builder`). Do not drop loose role-specific files at the root.
+**Per-role subfolders.** Live under `Roles/`, named `Roles/Company - Role Title` (e.g., `Roles/BCG X - Senior AI Factory Product Builder`). Do not drop loose role-specific files at the root.
 
 Inside a role's folder, the standard artifact set (build these out as prep deepens) is roughly:
 
@@ -95,7 +95,7 @@ If a `.html` version of a `.md` file exists, it's usually a rendered/printable c
 ## Working conventions
 
 - Prefer editing existing `.md` files in place over creating new variants. If a new variant is genuinely needed, name it clearly (e.g., `Interview Answers - v2 short.md`) and tell him why.
-- **Role-specific** new files go in the relevant `Company - Role` subfolder, never at the root. **Cross-role reusable** files (stories, TMAY variants, demo descriptions, outreach templates, resume bullets) belong in the root reusables — update those rather than scattering the same content into role folders.
+- **Role-specific** new files go in the relevant `Roles/Company - Role` subfolder, never at the root. **Cross-role reusable** files (stories, TMAY variants, demo descriptions, outreach templates, resume bullets) belong in the root reusables — update those rather than scattering the same content into role folders.
 - Quantified outcomes are gold — when drafting answers, push for real numbers (impact $, % lift, time saved, users affected). If a number is missing, leave a `[NUMBER?]` placeholder rather than inventing one.
 - Treat recruiter messages and interviewer bios as confidential context — use them to tailor, but don't paste verbatim quotes into outward-facing material without flagging.
 - When something genuinely cross-role surfaces (a new story worth pulling into multiple roles, a new demo URL, an outreach pattern that landed), the right move is the `interview-prep-reusables` skill — not piecemeal edits across role folders.

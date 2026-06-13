@@ -12,7 +12,7 @@ Read the root `AGENTS.md` (or `CLAUDE.md`) in the Interview Prep folder before y
 ## Where things live
 
 - Workspace root: `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/`
-- Role folders: `<workspace root>/<Company - Role Title>/`
+- Role folders: `<workspace root>/Roles/<Company - Role Title>/` (active/considering roles live under `Roles/`; closed roles in `_Archived/`)
 - Pipeline tracker: `<workspace root>/Pipeline.md` (rendered copy at `Pipeline.html`)
 - Auto-memory file for the active pipeline: `active_interview_pipeline.md`, in the memory directory listed in your system prompt (it lives under `Library/Application Support/Claude/.../spaces/<space-id>/memory/`). Don't hardcode the full path — read it from the system prompt for the current session, since the session-scoped part of the path can vary.
 

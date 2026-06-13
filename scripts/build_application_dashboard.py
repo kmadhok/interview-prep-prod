@@ -91,10 +91,13 @@ def parse_pipeline() -> list[Role]:
 
 def role_folders() -> set[str]:
     folders = set()
-    for path in ROOT.iterdir():
+    roles_dir = ROOT / "Roles"
+    if not roles_dir.is_dir():
+        return folders
+    for path in roles_dir.iterdir():
         if not path.is_dir():
             continue
-        if path.name.startswith(".") or path.name in {"scripts", "Work Artifacts"}:
+        if path.name.startswith("."):
             continue
         if (path / "Job Description.md").exists():
             folders.add(path.name)
@@ -126,7 +129,7 @@ def add_artifacts(roles: list[Role]) -> list[Role]:
         if role is None:
             role = Role(name=folder, folder=folder, section="Untracked folder")
             roles.append(role)
-        path = ROOT / folder
+        path = ROOT / "Roles" / folder
         jd_path = path / "Job Description.md"
         role.has_jd = jd_path.exists()
         role.jd_placeholder = jd_path.exists() and is_placeholder_jd(jd_path, role)

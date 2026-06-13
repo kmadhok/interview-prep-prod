@@ -1,5 +1,18 @@
 {
   "enabledPlugins": {
     "hunter@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "mcp__claude_ai_Gmail",
+      "mcp__linkedin"
+    ]
   }
 }

@@ -15,21 +15,21 @@ _Added 2026-05-31. This is the map of the whole application process, one stage a
 
 The funnel runs left to right. **Each outward-facing stage names exactly one source-of-truth file** — if a fact isn't in that file, the skill emits a `[VERIFY:]` / `[NUMBER?]` placeholder instead of inventing it. Fabrication enters the process whenever a skill pulls a "fact" from anything other than its named source.
 
-| # | Funnel stage | Owning skill | Source of truth (facts MUST come from here) | Anti-fabrication rule | Writes to |
-|---|---|---|---|---|---|
-| 0 | **Source** — find fresh roles | `find-fresh-jobs` | `Job Search Target Profile.md` | Read-only; surfaces, never files | chat only |
-| 1 | **File** — one JD into the workspace | `interview-prep-intake` | the JD itself | Copy JD verbatim; don't summarize claims into facts | role folder, `Pipeline.md`, memory |
-| 1b | **File (bulk)** — saved-jobs paste | `linkedin-saved-jobs-intake` | the paste + LinkedIn MCP URLs | Stub-with-placeholder where MCP finds no URL | `Saved Jobs Export.md`, role folders, `Pipeline.md` |
-| 2 | **Tailor resume** ⚠️ | `tailor-resume` | **`Resume Achievements Master.md`** (+ its `Resume Tailoring Contract`) | Don't quantify beyond verified proof points; leave `[VERIFY:]`. Scan draft against `Resume Claims To Verify.md` and strip unpromoted claims. Older tailored resumes are outputs, not evidence. | role folder resume `.md` |
-| 3 | **Find contacts** | `find-contacts` | LinkedIn MCP (live) | Never fabricate a person, title, or email; surface only what MCP returns | chat / role folder |
-| 3b | **Enrich contacts** (scrape recruiter activity → new people + hooks) | `enrich-contacts` | LinkedIn MCP (live, recruiter feeds) | Every surfaced person / hook must cite a real scraped post; does NOT rank — hands new people back to `find-contacts` | chat / role folder |
-| 4 | **Draft cold outreach** ⚠️ | `write-outreach` | **`Outreach Templates.md`** | No fabricated personalization — if no real hook exists, ask. Pull template, personalize only with verified facts (incl. `enrich-contacts` hooks) | role folder draft |
-| 2+3+4 | **Apply-ready (one-shot)** | `jd-to-ready` | **calls** the primitives below — owns no logic itself | Inherits every primitive's rules; merges their `gaps[]` | full role folder package |
-| 5 | **Submit + log applied** | `track-application` | `Pipeline.md` | Status/date facts only; no narrative invention | `Pipeline.md`, memory |
-| 6 | **Follow up / nudge** ⚠️ | `follow-up` | `Outreach Templates.md` + the role's prior correspondence | Reference only events that actually happened (a real round, a real silence window) | role folder draft |
-| 7 | **Interview prep** (answers, Q-bank, TMAY, walkthrough) | _no skill — normal Claude editing_ | `Master Story Bank.md`, `Tell Me About Yourself - Master.md`, `AI Build Walkthrough - Master.md` | Select + tailor from masters; `[NUMBER?]` for any missing metric | role folder |
-| 8 | **Library upkeep** | `interview-prep-reusables` | the five reusables (edits them) | Edit over rewrite; new claims land in `Resume Claims To Verify.md` until Kanu promotes them | root reusables |
-| — | **Contact list (cross-role)** | `recruiter-contact-tracker` | Gmail (live) | Mine only real correspondence | `Recruiter Contacts.html` |
+| #     | Funnel stage                                                         | Owning skill                       | Source of truth (facts MUST come from here)                                                      | Anti-fabrication rule                                                                                                                                                                          | Writes to                                           |
+| ----- | -------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| 0     | **Source** — find fresh roles                                        | `find-fresh-jobs`                  | `Job Search Target Profile.md`                                                                   | Read-only; surfaces, never files                                                                                                                                                               | chat only                                           |
+| 1     | **File** — one JD into the workspace                                 | `interview-prep-intake`            | the JD itself                                                                                    | Copy JD verbatim; don't summarize claims into facts                                                                                                                                            | role folder, `Pipeline.md`, memory                  |
+| 1b    | **File (bulk)** — saved-jobs paste                                   | `linkedin-saved-jobs-intake`       | the paste + LinkedIn MCP URLs                                                                    | Stub-with-placeholder where MCP finds no URL                                                                                                                                                   | `Saved Jobs Export.md`, role folders, `Pipeline.md` |
+| 2     | **Tailor resume** ⚠️                                                 | `tailor-resume`                    | **`Resume Achievements Master.md`** (+ its `Resume Tailoring Contract`)                          | Don't quantify beyond verified proof points; leave `[VERIFY:]`. Scan draft against `Resume Claims To Verify.md` and strip unpromoted claims. Older tailored resumes are outputs, not evidence. | role folder resume `.md`                            |
+| 3     | **Find contacts**                                                    | `find-contacts`                    | LinkedIn MCP (live)                                                                              | Never fabricate a person, title, or email; surface only what MCP returns                                                                                                                       | chat / role folder                                  |
+| 3b    | **Enrich contacts** (scrape recruiter activity → new people + hooks) | `enrich-contacts`                  | LinkedIn MCP (live, recruiter feeds)                                                             | Every surfaced person / hook must cite a real scraped post; does NOT rank — hands new people back to `find-contacts`                                                                           | chat / role folder                                  |
+| 4     | **Draft cold outreach** ⚠️                                           | `write-outreach`                   | **`Outreach Templates.md`**                                                                      | No fabricated personalization — if no real hook exists, ask. Pull template, personalize only with verified facts (incl. `enrich-contacts` hooks)                                               | role folder draft                                   |
+| 2+3+4 | **Apply-ready (one-shot)**                                           | `jd-to-ready`                      | **calls** the primitives below — owns no logic itself                                            | Inherits every primitive's rules; merges their `gaps[]`                                                                                                                                        | full role folder package                            |
+| 5     | **Submit + log applied**                                             | `track-application`                | `Pipeline.md`                                                                                    | Status/date facts only; no narrative invention                                                                                                                                                 | `Pipeline.md`, memory                               |
+| 6     | **Follow up / nudge** ⚠️                                             | `follow-up`                        | `Outreach Templates.md` + the role's prior correspondence                                        | Reference only events that actually happened (a real round, a real silence window)                                                                                                             | role folder draft                                   |
+| 7     | **Interview prep** (answers, Q-bank, TMAY, walkthrough)              | _no skill — normal Claude editing_ | `Master Story Bank.md`, `Tell Me About Yourself - Master.md`, `AI Build Walkthrough - Master.md` | Select + tailor from masters; `[NUMBER?]` for any missing metric                                                                                                                               | role folder                                         |
+| 8     | **Library upkeep**                                                   | `interview-prep-reusables`         | the five reusables (edits them)                                                                  | Edit over rewrite; new claims land in `Resume Claims To Verify.md` until Kanu promotes them                                                                                                    | root reusables                                      |
+| —     | **Contact list (cross-role)**                                        | `recruiter-contact-tracker`        | Gmail (live)                                                                                     | Mine only real correspondence                                                                                                                                                                  | `Recruiter Contacts.html`                           |
 
 ⚠️ = outward-facing text where a fabricated fact does real damage. These three (`tailor-resume`, `write-outreach`, `follow-up`) are where the "makes things up sometimes" symptom used to show up — caused by name-collision twins, now resolved (see next section).
 
@@ -102,13 +102,13 @@ These are bundled `.skill` files that live with the workspace, version-controlle
 
 ### `interview-prep-intake`
 
-**Intent.** File a new job description into the workspace. Creates the `Company - Role` subfolder, writes a clean `Job Description.md`, adds a row to `Pipeline.md`, updates the auto-memory `active_interview_pipeline.md`.
+**Intent.** File a new job description into the workspace. Creates the `Roles/Company - Role` subfolder, writes a clean `Job Description.md`, adds a row to `Pipeline.md`, updates the auto-memory `active_interview_pipeline.md`.
 
 **Reach for it when.** Kanu pastes, links, attaches, or shares a JD he wants tracked. Trigger language: "intake this JD", "add this to my pipeline", "track this role", "create a folder for this job", "save this JD", "file this role". Also triggers on bare JD shares inside this workspace when intent looks like saving.
 
 **Don't reach for it when.** He's already filed the JD and is asking for prep work (drafting answers, tailoring resume) — that's normal Claude editing inside the role folder. Or when he wants cold outreach drafted for a JD (that's `job-outreach` / `write-outreach`). Or when he wants the JD turned into a contact list (that's `recruiter-contact-tracker`).
 
-**Output.** `Company - Role/Job Description.md` + updated `Pipeline.md` + updated auto-memory.
+**Output.** `Roles/Company - Role/Job Description.md` + updated `Pipeline.md` + updated auto-memory.
 
 **File.** `interview-prep-intake.skill` at workspace root.
 
@@ -136,7 +136,7 @@ These are bundled `.skill` files that live with the workspace, version-controlle
 
 ### `linkedin-saved-jobs-intake`
 
-**Intent.** Bulk-file every job Kanu has copied from his LinkedIn "Saved Jobs" page in one pass. Parses the paste, runs sequential LinkedIn MCP searches to recover canonical URLs, appends a dated batch to root `Saved Jobs Export.md`, creates one `Company - Role` folder per job (skipping any that already exist), WebFetches the full JD into each new folder, and adds a "Bulk-imported YYYY-MM-DD" subsection to `Pipeline.md`.
+**Intent.** Bulk-file every job Kanu has copied from his LinkedIn "Saved Jobs" page in one pass. Parses the paste, runs sequential LinkedIn MCP searches to recover canonical URLs, appends a dated batch to root `Saved Jobs Export.md`, creates one `Roles/Company - Role` folder per job (skipping any that already exist), WebFetches the full JD into each new folder, and adds a "Bulk-imported YYYY-MM-DD" subsection to `Pipeline.md`.
 
 **Reach for it when.** Kanu pastes a block of 3+ jobs copied from `linkedin.com/my-items/saved-jobs/` and wants them all filed at once. Trigger language: "here are my saved jobs", "intake my saved jobs", "file all of these", "bulk import these jobs", "pulled my saved jobs list". Also triggers on a bare paste of LinkedIn-formatted job lines (`Title \n Company · Location \n Posted Xd ago`) when intent looks like bulk-tracking.
 
@@ -144,7 +144,7 @@ These are bundled `.skill` files that live with the workspace, version-controlle
 
 **Defaults.** APPEND to `Saved Jobs Export.md` across runs (cumulative log). SKIP jobs whose folder already exists (do not clobber prior prep). Stops at filing — does not auto-run `jd-to-ready` or draft outreach.
 
-**Output.** Updated `Saved Jobs Export.md` + one new `Company - Role/Job Description.md` per parsed job (full JD where MCP found the URL; stub with placeholder where it didn't) + a new dated subsection in `Pipeline.md` `Considering / not yet applied`.
+**Output.** Updated `Saved Jobs Export.md` + one new `Roles/Company - Role/Job Description.md` per parsed job (full JD where MCP found the URL; stub with placeholder where it didn't) + a new dated subsection in `Pipeline.md` `Considering / not yet applied`.
 
 **File.** `linkedin-saved-jobs-intake.skill` at workspace root.
 
@@ -172,7 +172,7 @@ These are bundled `.skill` files that live with the workspace, version-controlle
 
 **Reach for it when.** Kanu mentions new material that belongs in one of these files — a new project he shipped, a new live demo URL, an outreach pattern that worked, a new role archetype, a new flagship story, a new resume bullet. Or when he says "update story bank", "refresh demo portfolio", "rebuild my prep library", "bootstrap reusables". Or when any of those five files is missing and he wants it seeded.
 
-**Don't reach for it when.** He's editing a file inside a specific `Company - Role` folder (per-role work stays role-scoped) — unless the change he's making should be pulled out into a master. Or when he's filing a fresh JD (that's intake) or drafting cold email (that's outreach).
+**Don't reach for it when.** He's editing a file inside a specific `Roles/Company - Role` folder (per-role work stays role-scoped) — unless the change he's making should be pulled out into a master. Or when he's filing a fresh JD (that's intake) or drafting cold email (that's outreach).
 
 **Output.** Surgical edits to the five reusables. The skill prefers edit over rewrite — existing structure stays stable.
 

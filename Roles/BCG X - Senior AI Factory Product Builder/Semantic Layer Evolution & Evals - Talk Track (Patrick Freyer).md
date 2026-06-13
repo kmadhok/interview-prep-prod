@@ -27,6 +27,24 @@ Five beats: context engineering → trust problem → semantic layer → paralle
 
 ---
 
+## 1b. Under the hood — if he goes technical (~60 sec, optional)
+
+The shape is **deterministic → probabilistic → deterministic**, with exactly one model call in the path.
+
+> "Concretely: the governed definitions live in a registry — YAML for dimensions, tables, and allowed values, plus SQLite snapshots for the big vocabularies like product hierarchy and brands. A deterministic prompt builder generates the model's contract straight from that registry, so the LLM can only name things that legally exist. There's exactly one model call in the whole path, and it returns strict JSON intent — it never writes SQL, never picks tables. A deterministic gate then validates and canonicalizes that JSON into a typed intent: illegal field, unknown value, it fails before any SQL exists. Then a compiler turns the typed intent into BigQuery SQL. The compiler is boring on purpose — boring means testable like normal software."
+
+If he probes the obvious hole — "how can a registry constrain millions of product IDs?":
+
+> "High-cardinality identifiers like UPCs never go in the prompt. The model only flags 'this is a UPC' and extracts the string; deterministic code normalizes the format and optionally checks it exists in the warehouse before compiling. That separates 'real product nobody bought' — a valid zero — from a fake UPC, which should fail loudly instead of returning a bogus zero people learn to trust."
+
+**Why this feeds the eval story:** the registry + gate is what makes "only one probabilistic step left" literally true in code, not just diagram-true. And the fuzziness is split cleanly: interpreting messy language ("mael" → male) is the LLM's job; legality (is "Male" an allowed value) is the gate's job. Two different failure modes, two different owners.
+
+**15-sec worked example (use if he wants it concrete):**
+
+> "Someone types 'how many mael panelists bought UPC 078742012345 in the last 4 months.' The model fixes 'mael' to male and flags the number as a UPC. The gate canonicalizes male to the registry's 'Male' and pads the UPC to warehouse form. The compiler writes the cohort SQL. Every transformation between what the model said and what actually ran is logged — that's the traceability."
+
+---
+
 ## 2. The reframe (internalize before drilling answers)
 
 You've been thinking "I only verify the steps, not whether the intent of the question was answered." Flip it:
@@ -44,7 +62,7 @@ Two corollaries:
 
 **Did (claim precisely — this is all real):**
 
-> "Today my evals are process-level, and that's deliberate. On the semantic layer side: I verify the model selected a definition, that the compiler produced correct SQL from it, and that the number is right — every step logged and traceable, so when something's off I can see exactly which step broke. Misses become definition changes or inserts, and those go through the human gate. On the context-engineering side I had a golden set of questions and answers it had to score against, plus SQL correctness judging and full traces of every model action."
+> "Today my evals are process-level, and that's deliberate. On the semantic layer side: I verify the model selected a definition, that the compiler produced correct SQL from it, and that the number is right — every step logged and traceable, including the model's raw JSON next to the gate's canonicalized intent, so when something's off I can see exactly which step broke. Misses become definition changes or inserts, and those go through the human gate. On the context-engineering side I had a golden set of questions and answers it had to score against, plus SQL correctness judging and full traces of every model action."
 
 **Gap (volunteer it — drawing the line yourself reads senior):**
 
@@ -80,7 +98,13 @@ Two corollaries:
 > "The logs distinguish them. No-match means a coverage gap — that's an insert candidate. Wrong-match means the definition or its description needs fixing. Different failure, different fix, and the trace tells me which I'm looking at."
 
 **"What about ambiguous questions?"**
-> "Abstain or clarify over guess. And the answer shows which definition was used — so if the user meant something different by 'active panelist,' they can see the definition and catch it. Showing your work is part of the trust design."
+> "Abstain or clarify over guess — and that's in the model's contract, not just policy: the prompt instructs it to omit any predicate it can't name from the registry, and the system flags the gap instead of guessing. And the answer shows which definition was used — so if the user meant something different by 'active panelist,' they can see the definition and catch it. Showing your work is part of the trust design."
+
+**"How do you test a system with an LLM in the middle?"**
+> "The model call sits behind a pluggable callable, so tests inject a fake LLM and exercise the gate and compiler like normal deterministic software. The only piece that needs model-in-the-loop eval is the one probabilistic step — question to intent — and that's exactly what the golden set covers."
+
+**"What's the weakest part of it today?"** (own a wart — reads senior)
+> "Small but real: one hand-written example inside the otherwise registry-generated prompt has drifted — it says map 'male' to 'M', but the registry canonicalizes to 'Male'. It's harmless because the gate trusts the registry, not the prompt — which is the design doing its job — but it's also the argument for generating every part of the contract from the registry, examples included. That's on the list."
 
 **"Why not keep the parallel reconciliation agent?"**
 > "It was double compute in the request path for value that's really offline. The grading doesn't need to happen live — it needs to happen on the logs. Same improvement loop, removed from the hot path."
@@ -98,7 +122,10 @@ Two corollaries:
 - "If I can't write a cheap regression test for a system, that's an architecture smell."
 - "Determinism builds trust; the human gate is the governance."
 - "Judge as triage, business owner as truth."
+- "The LLM is a semantic parser boxed in by the registry — it never writes SQL."
+- "A fake UPC should fail before SQL exists, so no one trusts a bogus zero."
+- "The compiler is boring on purpose — boring means testable."
 
 ---
 
-*Companion to `Honest Framing - Research-Driven Builds & Eval Gaps.md` (the did/gap/would mechanics) and `Round 2 Prep Plan - Patrick Freyer.md` (overall strategy). Note: `Work Artifacts/customer-voice-semantic-layer.md` describes the earlier parallel/reconciliation design — superseded by the sequential approach described here.*
+*Companion to `Honest Framing - Research-Driven Builds & Eval Gaps.md` (the did/gap/would mechanics) and `Round 2 Prep Plan - Patrick Freyer.md` (overall strategy). Note: `Work Artifacts/customer-voice-semantic-layer.md` describes the earlier parallel/reconciliation design — superseded by the sequential approach described here. The current code-level architecture (registry, prompt builder, intent gate, UPC lane, compiler) is documented in `Work Artifacts/customer-voice-semantic-layer-code-walkthrough.md`.*

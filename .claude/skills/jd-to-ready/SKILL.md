@@ -40,7 +40,7 @@ Plus: a new row in `Pipeline.md`, an updated `active_interview_pipeline.md` memo
 - **Workspace root:** `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/`
 - **Reusables to read** (every run): `Resume Achievements Master.md`, `Outreach Templates.md`, `Demo Portfolio.md`, `Pipeline.md`
 - **Memory file:** `active_interview_pipeline.md` in the session memory directory (path from system prompt; do not hardcode)
-- **Role folder (to be created):** `<workspace root>/<Company - Role Title>/`
+- **Role folder (to be created):** `<workspace root>/Roles/<Company - Role Title>/` (active/considering roles live under `Roles/`; closed roles in `_Archived/`)
 - **LinkedIn MCP usage (step 4):** call `mcp__linkedin__*` tools directly, one at a time (sequential, never parallel). Follow `linkedin-mcp-operations` for the transport invariant, the sequential-only rule, and the per-op reference.
 - **Trace helper:** `~/.claude/skills/jd-to-ready/scripts/trace_step.py`
 - **Per-role trace:** `<role folder>/.jd-to-ready-trace.jsonl` (append-only step/tool/subagent events)
