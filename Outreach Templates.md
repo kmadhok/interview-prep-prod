@@ -9,6 +9,8 @@
 - One specific hook per message — a project, a person, a JD detail. Generic = ignored.
 - Short. If a paragraph isn't earning its place, cut it.
 - End with one clear, low-friction ask. "Could we chat for 15 min next week?" is better than "I'd love to learn more."
+- **Every generated draft must pass the installed `human-writing` skill** before it's considered done. That skill strips hedging, buzzwords, passive voice, and vague claims — run it on every email body.
+- **Body em-dash gate (separate hard rule).** `human-writing` does NOT catch em dashes, so there is a SEPARATE, non-negotiable gate: ZERO em dashes (` — `, U+2014) anywhere in the email **body prose** — em dashes are a top AI tell. Rewrite with a comma, period, or colon instead. **Exception:** subject lines MAY keep the prescribed em-dash forms shown in the subject formulas in this file (e.g. `Built a 400-ticket Jira agent — Interested in [Role]`). So: body prose = no em dashes; subjects = em dash allowed only where a template here prescribes it.
 
 **Signature block (use on every message unless context dictates otherwise):**
 
@@ -48,7 +50,7 @@ Under 70 chars. Prefix with the recruiter's first name only when there's real pe
 
 1. **Trigger line.** "I just applied for [exact role title] in your [practice/team]" (if applied), or "Found your post on [source]" / "Saw [Company]'s [specific thing]" (if cold).
 2. **One accomplishment with a number.** From canonical achievements — the autonomous Jira agent (400+ tickets, 30–60 min → under 10), the autonomous data analyst, the hybrid orchestrator. Hyperlink the live demo when natural.
-3. **Urgency / social proof (only if real).** Name-drop competing processes by company + role + stage. Skip this beat entirely if there are none — never fabricate.
+3. **Urgency / social proof (only if real, sourced from `Pipeline.md` at draft time).** Name real, CURRENTLY-LIVE competing processes from `Pipeline.md` by company + role + stage, phrased as the "...however [Company]'s [specific] is the closer match" pivot in the template below. **Freshness rule:** a process qualifies ONLY if its date is today-or-in-the-future relative to the draft date. DROP any item dated before today, and DROP anything flagged in `Pipeline.md` as STALE / PASSED / CLOSED / REJECTED. Never carry a "TODAY <past-date>" line forward. If zero live processes remain after filtering, OMIT beat 3 entirely. Never hardcode a date and never fabricate a process (`Pipeline.md` itself flags stale-date drafts as a failure).
 4. **Why-this-company (one line).** Tie to a specific JD detail — a practice, a stack item, a customer segment. Avoid generic flattery.
 5. **Specific ask.** "I'd like to start the interview process. Are you the right person, or can you point me to the recruiter who owns this req? Resume attached."
 
@@ -88,7 +90,9 @@ Under 70 chars. Prefix with the recruiter's first name only when there's real pe
 
 # 1a. Cold recruiter — follow-up drip
 
-**When to use.** Pair every Section 1 intro with all three follow-ups below, drafted at the same time. Send sequentially if silent. Data backs up the 3-touch cadence — responses often come on the 3rd, not the 1st.
+> **Standalone follow-up cadence — NOT used by the jd-to-ready pipeline.** The pipeline ships ONE intro email per top pick (no follow-ups). The FU1 / FU2 / Hail-Mary templates below are for MANUAL, silence-triggered sends only.
+
+**When to use.** Manual use only. Pair a Section 1 intro with the three follow-ups below, drafted at the same time. Send sequentially if silent. Data backs up the 3-touch cadence — responses often come on the 3rd, not the 1st.
 
 **Channel.** Reply to the original thread (`Re: [original subject]`). Never start a new one.
 
@@ -224,6 +228,7 @@ Same 5 beats as Section 1, with two tweaks:
 
 - **Beat 1** anchors to *them* (their work) instead of "I just applied". e.g., "Saw your post on [topic] — that's what made me look at the [role] req."
 - **Beat 5 ask** builds in an escape valve so they can route you to the right owner instead of feeling cornered: "Are you the right person to talk to, or can you point me to the recruiter who owns this req?"
+- **Beat 3 (urgency)** follows the SAME rule as Section 1: source it from `Pipeline.md` at draft time, name only CURRENTLY-LIVE processes (date today-or-in-the-future), DROP anything dated before today or flagged STALE / PASSED / CLOSED / REJECTED, never carry a "TODAY <past-date>" line forward, and OMIT beat 3 entirely if zero live processes remain. Never hardcode a date, never fabricate a process. Tie the pivot to their work where possible.
 
 ### Template
 
@@ -258,7 +263,9 @@ Before sending, look at their LinkedIn for: a post they wrote, a talk they gave,
 
 # 4a. Cold HM / peer IC — follow-up drip
 
-Same cadence as Section 1a. Reply to the original thread.
+> **Standalone follow-up cadence — NOT used by the jd-to-ready pipeline.** The pipeline ships ONE intro email per top pick (no follow-ups). The FU1 / FU2 / Hail-Mary templates below are for MANUAL, silence-triggered sends only.
+
+Same cadence as Section 1a. Manual use only. Reply to the original thread.
 
 ### Follow-up 1 — send 3–4 business days after intro if silent
 
