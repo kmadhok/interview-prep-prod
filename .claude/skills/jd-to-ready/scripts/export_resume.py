@@ -43,7 +43,11 @@ body {{ font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
 h1 {{ font-size: {h1}pt; margin: 0 0 0 0; }}
 h2 {{ font-size: {h2}pt; text-transform: uppercase; letter-spacing: 0.3px;
       border-bottom: 1px solid #999; padding-bottom: 1px; margin: {h2top}pt 0 2pt 0; }}
-h3 {{ font-size: {fs}pt; margin: {h3top}pt 0 0 0; }}
+h3 {{ font-size: {fs}pt; margin: {h3top}pt 0 0 0;
+      display: flex; justify-content: space-between; align-items: baseline; gap: 8pt; }}
+h3 .org {{ font-weight: 700; min-width: 0; }}
+h3 .meta {{ font-weight: 400; color: #555; white-space: nowrap; flex: 0 0 auto; }}
+h1 {{ text-align: center; }}
 ul {{ margin: {ulm}pt 0; padding-left: 13pt; }}
 li {{ margin-bottom: {lim}pt; }}
 p {{ margin: 0.5pt 0; }}
@@ -65,20 +69,50 @@ def page_budget_px(margin_in):
     return int(1056 - 2 * margin_in * 96) - 8  # 8px safety
 
 
+def _split_h3_columns(html):
+    """Wrap company-header h3 inner text into left (.org) / right (.meta) columns.
+
+    Each h3 looks like `Org [— Sub-org] — City, ST · Date`. The right column is
+    the final ` — `-delimited segment (the City · Date meta); the left column is
+    everything before it. Defensive: only rewraps when the split yields 2 parts
+    AND the right part contains the ` · ` meta separator, so non-matching h3s
+    (and any with an embedded newline) pass through untouched.
+    """
+    SPLIT = " — "  # space + em-dash + space
+    DOT = " · "    # space + middle-dot + space
+
+    def repl(m):
+        open_tag, inner, close_tag = m.group(1), m.group(2), m.group(3)
+        if "\n" in inner:
+            return m.group(0)
+        parts = inner.rsplit(SPLIT, 1)
+        if len(parts) != 2 or DOT not in parts[1]:
+            return m.group(0)
+        left, right = parts
+        return (f'{open_tag}<span class="org">{left}</span>'
+                f'<span class="meta">{right}</span>{close_tag}')
+
+    return re.sub(r'(<h3\b[^>]*>)(.*?)(</h3>)', repl, html, flags=re.DOTALL)
+
+
 def render_html(md_path, css, tmp):
     html_path = os.path.join(tmp, "resume.html")
     # strip the internal editor-note line; it's not resume content
     clean = os.path.join(tmp, "clean.md")
     with open(md_path, encoding="utf-8") as f:
-        body = "".join(l for l in f if "_Text source for the .docx" not in l)
+        body = "".join(
+            l for l in f
+            if "_Text source for the .docx" not in l and "right-aligned" not in l
+        )
     with open(clean, "w", encoding="utf-8") as f:
         f.write(body)
     subprocess.run(
-        ["pandoc", clean, "-s", "--metadata", "title=Resume", "-o", html_path],
+        ["pandoc", clean, "-s", "--wrap=none", "-o", html_path],
         check=True,
     )
     with open(html_path, encoding="utf-8") as f:
         html = f.read()
+    html = _split_h3_columns(html)
     html = html.replace("</head>", f"<style>{css}</style></head>")
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(html)
@@ -120,7 +154,10 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         clean = os.path.join(tmp, "clean.md")
         with open(md, encoding="utf-8") as f:
-            body = "".join(l for l in f if "_Text source for the .docx" not in l)
+            body = "".join(
+                l for l in f
+                if "_Text source for the .docx" not in l and "right-aligned" not in l
+            )
         with open(clean, "w", encoding="utf-8") as f:
             f.write(body)
         subprocess.run(["pandoc", clean, "-o", base + ".docx"], check=True)
