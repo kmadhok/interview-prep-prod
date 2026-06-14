@@ -83,6 +83,7 @@ Required traced steps:
 | 1 | `interview-prep-intake` | `role folder, Job Description.md, Pipeline row, and memory update are created or a safe existing-folder decision is reached` |
 | 2 | `jd-classification` | `classification returns valid JSON with 4-6 in-vocab themes, evidence quotes, and one in-vocab archetype` |
 | 3 | `tailor-resume` | `resume covers >=4 JD themes, uses canonical achievements only, and contains zero unsafe unverified claims` |
+| 3.5 | `resume-export` | `one-page PDF + DOCX are exported from the tailored resume with no title leak; overflow/defects/missing-tools are logged as gaps` |
 | 4 | `find-contacts` | `5 recruiter and 5 HM/peer-IC candidates are attempted, .contacts-ledger.md is written, and low-confidence emails are flagged` |
 | 4b | `enrich-contacts` | `recruiter activity is checked when available, hooks are captured, and any new people are scored into .contacts-ledger.md` |
 | 4c | `verify-emails` | `top 3 recruiters' emails are SMTP-verified via EmailFinder (cached), Verified Emails.md is written, and misses degrade to inferred/flagged` |
@@ -210,15 +211,35 @@ tailor-resume(
 
 ### Step 3.5 — Export the resume to PDF + DOCX
 
-After `tailor-resume` writes the `.md`, render a polished **one-page PDF** and an editable **DOCX** next to it. Run the helper:
+After `tailor-resume` writes the `.md`, render a polished **one-page PDF** and an editable **DOCX** next to it. This is a traced step — wrap the export call in `begin`/`end` (no mode for this step) using the documented begin/end syntax:
 
 ```bash
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step 3.5 --primitive resume-export --mode "" --prediction "one-page PDF + DOCX are exported from the tailored resume with no title leak; overflow/defects/missing-tools are logged as gaps"
+
 python3 ~/.claude/skills/jd-to-ready/scripts/export_resume.py "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md"
 ```
 
-The script (md → styled HTML → headless-Chrome PDF; pandoc → DOCX) **measures rendered height and auto-tightens font/margins until it fits one US-Letter page**, then writes `.pdf` + `.docx` siblings. If the content genuinely exceeds one page at the 9pt floor, it stops at 9pt, writes the (2-page) files anyway, and prints `OVERFLOW` — surface that in the step-6 report so Kanu can decide whether to trim a bullet. (A resume that won't fit is a tailoring decision Kanu owns — never silently cut canonical bullets to win the page break.)
+The script (md → styled HTML → headless-Chrome PDF; pandoc → DOCX) **measures rendered height and auto-tightens font/margins until it fits one US-Letter page**, then writes `.pdf` + `.docx` siblings. (A resume that won't fit is a tailoring decision Kanu owns — never silently cut canonical bullets to win the page break.)
 
-Graceful degradation: if pandoc or Chrome is missing, skip export, record `{source:"resume-export", kind:"export-unavailable", detail:"<which tool> missing; .md written, no PDF/DOCX"}`, and continue. The `.md` is always the source of truth; PDF/DOCX are conveniences.
+**Parse the export-quality contract.** On every exit the script prints exactly one machine-readable line to stdout: `PAGES=<n|NA> TITLE_LEAK=<0|1|NA>` (alongside its human `DOCX:`/`PDF:`/`OVERFLOW:`/`SKIP:`/`SKIP-PDF:` lines). Grep stdout for that `PAGES=… TITLE_LEAK=…` line and parse the two values **tolerantly** — if the line is missing or either value won't parse, do NOT crash: record one gap `{source:"resume-export", kind:"export-quality-unknown", detail:"could not parse export contract"}` and treat the export quality as unknown.
+
+**Map the parsed values to gaps on the step-3.5 `end --gaps` array:**
+- `PAGES` > 1 → `{source:"resume-export", kind:"pdf-overflow", detail:"<n>-page PDF; trim a bullet to fit one page"}`
+- `TITLE_LEAK` = 1 → `{source:"resume-export", kind:"pdf-formatting-defect", detail:"'Resume' title leaked into PDF"}`
+- `PAGES` = `NA` (script printed `SKIP`/`SKIP-PDF`, or `not found`/`pandoc failed`) → `{source:"resume-export", kind:"export-unavailable", detail:"<reason: pandoc or Chrome missing, or export failed>"}` (read the human `SKIP:`/`SKIP-PDF:`/`ERROR:` line for the reason). The `.md` is always the source of truth; PDF/DOCX are conveniences, so this degrades gracefully — continue.
+- clean (`PAGES=1`, `TITLE_LEAK=0`) → empty gaps `[]`, status `ok`.
+
+These gaps can stack (e.g. overflow + title leak). Surface any `pdf-overflow` in the step-6 report so Kanu can decide whether to trim a bullet.
+
+**Failure pattern — known taxonomy gap.** Set `--failure-pattern` to the closest enum only when one exists. For `pdf-overflow` and `pdf-formatting-defect` there is **no matching value in the allowed `failure_pattern` taxonomy** (it covers content/contact defects like `generic-resume-language`, `verify-placeholder-leak`, `low-confidence-emails` — nothing for a PDF render/overflow defect). Leave `--failure-pattern ""` (empty) for those: the defect is fully captured in `gaps[]`, but there is **no enum value to name it yet**. Do NOT invent a new `failure_pattern` value — the schema validator would reject it. This is a flagged gap for a future schema decision (add a `pdf-export-defect`-style enum). For `export-unavailable`/`export-quality-unknown`, also leave `--failure-pattern ""` (no taxonomy match).
+
+Close the step with the parsed status and gaps, e.g.:
+
+```bash
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.5 --primitive resume-export --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Kanu Madhok Resume - <Company> <Short Role>.pdf","Kanu Madhok Resume - <Company> <Short Role>.docx"]' --gaps '<gaps from the mapping above, or []>' --failure-pattern "" --tokens "$UNKNOWN_TOKENS"
+```
+
+Use `status: ok` when the clean case holds, `partial` when files were written but a defect/overflow was logged, `failed` when no files were produced (export-unavailable). Merge whatever gaps you recorded into the step-6 report and step-7 log alongside the other primitives' gaps.
 
 ### Step 4 — Contact research (sequential LinkedIn MCP)
 
@@ -315,7 +336,7 @@ End with the obvious next step: review the drafts, run `.docx` conversion if he 
 
 ### Step 7 — Log the run
 
-Close the trace by wrapping this step and then calling `finish-run`. This appends one compact summary line to `~/.claude/logs/jd-to-ready.jsonl`, links that summary to `<role folder>/.jd-to-ready-trace.jsonl`, and clears the active-run state used by hooks. Before calling `finish-run`, confirm that steps `1`, `2`, `3`, `4`, `4b`, `4c`, `5`, `6`, and `7` all have `step_end` events. See `RUNBOOK.md` for inspection commands.
+Close the trace by wrapping this step and then calling `finish-run`. This appends one compact summary line to `~/.claude/logs/jd-to-ready.jsonl`, links that summary to `<role folder>/.jd-to-ready-trace.jsonl`, and clears the active-run state used by hooks. Before calling `finish-run`, confirm that steps `1`, `2`, `3`, `3.5`, `4`, `4b`, `4c`, `5`, `6`, and `7` all have `step_end` events. See `RUNBOOK.md` for inspection commands.
 
 Begin Step 7:
 
