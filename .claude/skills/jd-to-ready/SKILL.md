@@ -15,7 +15,7 @@ This skill is **near-pure orchestration** (the docker-compose model). It wires t
 | 4 | `find-contacts` | `full` | LinkedIn contact research (5+5, emails) + ranking; **writes `.contacts-ledger.md`** |
 | 4b | `enrich-contacts` | — | scrape recruiter activity → appends new people (scored on find-contacts' rubric) + hooks; **extends `.contacts-ledger.md`** |
 | 4c | `verify-emails` (deterministic script) | — | SMTP-verifying the top-3 recruiters' emails via EmailFinder.dev; **writes `Verified Emails.md`** |
-| 5 | `write-outreach` | `drip` | cold outreach (per `Outreach Templates.md`); **reads ledger top rows** |
+| 5 | `write-outreach` | `drip` | two intro emails (recruiter #1 + HM #1) (per `Outreach Templates.md`); **reads ledger top rows** |
 
 **The contacts ledger (`<role folder>/.contacts-ledger.md`) is a shared artifact, not a callback.** `find-contacts` writes it; `enrich-contacts` reads it, appends activity-surfaced people scored on find-contacts' *published* rubric, and re-sorts it; `write-outreach` reads its top rows. The pipeline is strictly **linear** — no step loops back into an earlier one. This is what keeps "ranking logic lives in one skill" true (find-contacts owns the rubric) while letting enrichment extend the ranking (it applies that rubric to new rows).
 
@@ -30,11 +30,11 @@ By the end of one invocation, the role folder contains:
 1. `Job Description.md` — clean reading copy of the JD (from intake)
 2. `Kanu Madhok Resume - <Company> <Short Role>.md` — tailored resume pulling bullets from `Resume Achievements Master.md`, **plus a one-page `.pdf` and editable `.docx` exported from it** (step 3.5)
 3. `.contacts-ledger.md` + `Verified Emails.md` — scored contacts with the top 3 recruiters' emails **SMTP-verified via EmailFinder.dev** (step 4c)
-4. `Cold Outreach.md` — researched contacts with drafted cold emails, **and the lead intro auto-created as a Gmail draft** (write-outreach step 6; never sent)
+4. `Cold Outreach.md` — researched contacts with two drafted intro emails (recruiter #1 + HM/peer-IC #1), **both auto-created as Gmail drafts** (write-outreach; never sent)
 
 Plus: a new row in `Pipeline.md`, an updated `active_interview_pipeline.md` memory entry, and a short report-back with paths, hard gates, and gaps.
 
-**End state:** the only things left for Kanu are to click **Apply** on the ATS and hit **Send** on the Gmail draft. Everything upstream (resume export, email verification, draft creation) is automated, degrading gracefully to gaps if EmailFinder/Gmail are unavailable.
+**End state:** the only things left for Kanu are to click **Apply** on the ATS and hit **Send** on the two Gmail drafts. Everything upstream (resume export, email verification, draft creation) is automated, degrading gracefully to gaps if EmailFinder/Gmail are unavailable.
 
 ## Workspace paths (resolved once, used throughout)
 
@@ -299,7 +299,7 @@ The script reads the ledger's `**Email pattern:**` line for the domain + local-p
 
 ### Step 5 — Draft Cold Outreach.md
 
-**Call the `write-outreach` primitive in `drip` mode** (it owns all outreach drafting — the 5-beat body, length, subject formula, the 4-email drip cadence, hook-finding, channel choice, and the `Cold Outreach.md` output structure, all per `Outreach Templates.md` which is the single source of truth). Do not reimplement the outreach spec here.
+**Call the `write-outreach` primitive in `drip` mode** (it owns all outreach drafting — the 5-beat body, length, subject formula, the two-intro pipeline output (recruiter #1 + HM/peer-IC #1, no follow-ups), hook-finding, channel choice, and the `Cold Outreach.md` output structure, all per `Outreach Templates.md` which is the single source of truth). Do not reimplement the outreach spec here.
 
 Invoke:
 ```
@@ -311,15 +311,15 @@ write-outreach(
   company:     <company from step 1>,
   archetype:   <archetype from step 2>,
   lead_theme:  <top theme from step 2>,
-  urgency:     <real competing-processes list, or `none` — never fabricated>,
+  urgency:     <derive from Pipeline.md live processes — write-outreach applies the freshness filter (today-or-future only; drops STALE/PASSED/CLOSED/REJECTED); pass `none` only to force-omit; never fabricated>,
   mode:        drip,
   role_folder: <role folder from step 1>
 )
 ```
 
-**Ask Kanu for `urgency` at the start of this step** if competing processes aren't already known (drives beat 3; omit the beat entirely if none — never invent).
+**`urgency` defaults to live processes derived from `Pipeline.md`** (write-outreach applies the freshness filter); pass `none` only to force-omit beat 3, and never invent competing processes.
 
-**Wire the output forward:** `write-outreach` writes `<role folder>/Cold Outreach.md` (two contact tables + a 4-email drip per top pick + Notes). Capture its returned `gaps[]` (`{source: "outreach", ...}`) and merge into the step-6 report and step-7 log.
+**Wire the output forward:** `write-outreach` writes `<role folder>/Cold Outreach.md` (two contact tables + two intro emails (one per top pick) + a Notes block incl. the same-company double-send guard). Capture its returned `gaps[]` (`{source: "outreach", ...}`) and merge into the step-6 report and step-7 log.
 
 ### Step 6 — Report back
 
