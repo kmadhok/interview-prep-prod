@@ -143,20 +143,38 @@ def measure_px(chrome, html_path, tmp):
     return int(m.group(1)) if m else 10**9
 
 
+def _emit_contract(pages, title_leak):
+    # Machine-readable export-quality contract; exactly one per exit path,
+    # printed to STDOUT so a downstream caller can grep for it.
+    print(f"PAGES={pages} TITLE_LEAK={title_leak}")
+
+
 def main():
     if len(sys.argv) < 2:
         print("usage: export_resume.py <resume.md>", file=sys.stderr)
+        _emit_contract("NA", "NA")
         return 2
     md = sys.argv[1]
     if not os.path.exists(md):
         print(f"SKIP: not found: {md}", file=sys.stderr)
+        _emit_contract("NA", "NA")
         return 2
     if not shutil.which("pandoc"):
         print("SKIP: pandoc missing; .md only, no PDF/DOCX")
+        _emit_contract("NA", "NA")
         return 0
     chrome = find_chrome()
     base = os.path.splitext(md)[0]
 
+    try:
+        return _run(md, base, chrome)
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        print(f"ERROR: pandoc failed: {e}", file=sys.stderr)
+        _emit_contract("NA", "NA")
+        return 1
+
+
+def _run(md, base, chrome):
     # DOCX always (pandoc-only).
     with tempfile.TemporaryDirectory() as tmp:
         clean = os.path.join(tmp, "clean.md")
@@ -167,6 +185,7 @@ def main():
 
     if not chrome:
         print("SKIP-PDF: no Chrome; DOCX written, no PDF")
+        _emit_contract("NA", "NA")
         return 0
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -200,6 +219,11 @@ def main():
             print(f"OVERFLOW: {pages}-page PDF at {fs}pt floor "
                   f"(content {h}px vs {budget}px budget). "
                   f"Trim a bullet to fit one page.")
+        # Regression guard: if B1's title fix reverts, pandoc re-emits
+        # <header id="title-block-header"> and this flips to 1.
+        with open(html_path, encoding="utf-8") as f:
+            title_leak = 1 if "title-block-header" in f.read() else 0
+        _emit_contract(pages, title_leak)
     return 0
 
 
