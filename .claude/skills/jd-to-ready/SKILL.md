@@ -374,8 +374,8 @@ The final summary line contains this shape:
   "role_folder": "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Cohere - Forward Deployed Engineer Prompt Specialist",
   "trace_file": "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Cohere - Forward Deployed Engineer Prompt Specialist/.jd-to-ready-trace.jsonl",
   "status": "ok",
-  "steps_closed": ["1", "2", "3", "4", "4b", "4c", "5", "6", "7"],
-  "required_steps": ["1", "2", "3", "4", "4b", "4c", "5", "6", "7"],
+  "steps_closed": ["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"],
+  "required_steps": ["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"],
   "gaps": [],
   "files_written": ["Job Description.md", "Kanu Madhok Resume - Cohere FDE Prompt Specialist.md", "Cold Outreach.md"],
   "steps": [{"event": "step_end", "...": "..."}]
