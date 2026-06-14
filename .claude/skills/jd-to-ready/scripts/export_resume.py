@@ -57,6 +57,19 @@ hr {{ display: none; }}
 """
 
 
+def _strip_editor_lines(path):
+    # Drop the internal editor-note line (not resume content). It reads:
+    # "_Text source for the .docx ... city · date sit right-aligned to the page edge._"
+    # Match the full instructional fragment, not the bare word "right-aligned",
+    # so a real bullet like "right-aligned the dashboard KPIs" survives.
+    with open(path, encoding="utf-8") as f:
+        return "".join(
+            l for l in f
+            if "_Text source for the .docx" not in l
+            and "sit right-aligned to the page edge" not in l
+        )
+
+
 def find_chrome():
     for c in CHROME_CANDIDATES:
         if c and os.path.exists(c):
@@ -97,15 +110,9 @@ def _split_h3_columns(html):
 
 def render_html(md_path, css, tmp):
     html_path = os.path.join(tmp, "resume.html")
-    # strip the internal editor-note line; it's not resume content
     clean = os.path.join(tmp, "clean.md")
-    with open(md_path, encoding="utf-8") as f:
-        body = "".join(
-            l for l in f
-            if "_Text source for the .docx" not in l and "right-aligned" not in l
-        )
     with open(clean, "w", encoding="utf-8") as f:
-        f.write(body)
+        f.write(_strip_editor_lines(md_path))
     subprocess.run(
         ["pandoc", clean, "-s", "--wrap=none", "-o", html_path],
         check=True,
@@ -153,13 +160,8 @@ def main():
     # DOCX always (pandoc-only).
     with tempfile.TemporaryDirectory() as tmp:
         clean = os.path.join(tmp, "clean.md")
-        with open(md, encoding="utf-8") as f:
-            body = "".join(
-                l for l in f
-                if "_Text source for the .docx" not in l and "right-aligned" not in l
-            )
         with open(clean, "w", encoding="utf-8") as f:
-            f.write(body)
+            f.write(_strip_editor_lines(md))
         subprocess.run(["pandoc", clean, "-o", base + ".docx"], check=True)
     print(f"DOCX: {base}.docx")
 
