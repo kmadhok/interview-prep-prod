@@ -25,6 +25,10 @@ CHROME_CANDIDATES = [
     shutil.which("chromium") or "",
 ]
 
+# Pandoc-emitted id for the document title header; B1's title fix suppresses it.
+# Named so a future pandoc rename can't silently break the TITLE_LEAK guard.
+PANDOC_TITLE_HEADER = "title-block-header"
+
 # (font_pt, margin_in, line_height, h2top, h3top, ul_margin, li_margin) tiers:
 # comfortable -> tightest readable floor (9pt). The 9pt floor matches the
 # hand-verified one-page render (lh 1.15, h2top 6, li 1.5).
@@ -144,37 +148,41 @@ def measure_px(chrome, html_path, tmp):
 
 
 def _emit_contract(pages, title_leak):
-    # Machine-readable export-quality contract; exactly one per exit path,
-    # printed to STDOUT so a downstream caller can grep for it.
+    # Machine-readable export-quality contract; printed exactly once from the
+    # single funnel below, to STDOUT so a downstream caller can grep for it.
     print(f"PAGES={pages} TITLE_LEAK={title_leak}")
 
 
 def main():
+    # Funnel: run the body, then emit the contract in exactly ONE place. Every
+    # exit path returns (return_code, pages, title_leak) so none can forget it.
+    rc, pages, title_leak = _run()
+    _emit_contract(pages, title_leak)
+    return rc
+
+
+def _run():
     if len(sys.argv) < 2:
         print("usage: export_resume.py <resume.md>", file=sys.stderr)
-        _emit_contract("NA", "NA")
-        return 2
+        return 2, "NA", "NA"
     md = sys.argv[1]
     if not os.path.exists(md):
         print(f"SKIP: not found: {md}", file=sys.stderr)
-        _emit_contract("NA", "NA")
-        return 2
+        return 2, "NA", "NA"
     if not shutil.which("pandoc"):
         print("SKIP: pandoc missing; .md only, no PDF/DOCX")
-        _emit_contract("NA", "NA")
-        return 0
+        return 0, "NA", "NA"
     chrome = find_chrome()
     base = os.path.splitext(md)[0]
 
     try:
-        return _run(md, base, chrome)
+        return _export(md, base, chrome)
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"ERROR: pandoc failed: {e}", file=sys.stderr)
-        _emit_contract("NA", "NA")
-        return 1
+        return 1, "NA", "NA"
 
 
-def _run(md, base, chrome):
+def _export(md, base, chrome):
     # DOCX always (pandoc-only).
     with tempfile.TemporaryDirectory() as tmp:
         clean = os.path.join(tmp, "clean.md")
@@ -185,8 +193,7 @@ def _run(md, base, chrome):
 
     if not chrome:
         print("SKIP-PDF: no Chrome; DOCX written, no PDF")
-        _emit_contract("NA", "NA")
-        return 0
+        return 0, "NA", "NA"
 
     with tempfile.TemporaryDirectory() as tmp:
         chosen = None
@@ -222,9 +229,8 @@ def _run(md, base, chrome):
         # Regression guard: if B1's title fix reverts, pandoc re-emits
         # <header id="title-block-header"> and this flips to 1.
         with open(html_path, encoding="utf-8") as f:
-            title_leak = 1 if "title-block-header" in f.read() else 0
-        _emit_contract(pages, title_leak)
-    return 0
+            title_leak = 1 if PANDOC_TITLE_HEADER in f.read() else 0
+    return 0, pages, title_leak
 
 
 if __name__ == "__main__":
