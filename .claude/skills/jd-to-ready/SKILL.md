@@ -28,7 +28,7 @@ Read the root `AGENTS.md` (or `CLAUDE.md`) at `/Users/kanumadhok/Documents/Claud
 By the end of one invocation, the role folder contains:
 
 1. `Job Description.md` — clean reading copy of the JD (from intake)
-2. `Kanu Madhok Resume - <Company> <Short Role>.md` — tailored resume pulling bullets from `Resume Achievements Master.md`, **plus a one-page `.pdf` and editable `.docx` exported from it** (step 3.5)
+2. `Kanu Madhok Resume - <Company> <Short Role>.md` — tailored resume pulling bullets from `Resume Achievements Master.md`, **plus a one-page `.pdf` rendered from it (BCG X gold-standard layout) and vision-verified** (step 3.5)
 3. `.contacts-ledger.md` + `Verified Emails.md` — scored contacts with the top 3 recruiters' emails **SMTP-verified via EmailFinder.dev** (step 4c)
 4. `Cold Outreach.md` — researched contacts with two drafted intro emails (recruiter #1 + HM/peer-IC #1), **both auto-created as Gmail drafts** (write-outreach; never sent)
 
@@ -83,7 +83,7 @@ Required traced steps:
 | 1 | `interview-prep-intake` | `role folder, Job Description.md, Pipeline row, and memory update are created or a safe existing-folder decision is reached` |
 | 2 | `jd-classification` | `classification returns valid JSON with 4-6 in-vocab themes, evidence quotes, and one in-vocab archetype` |
 | 3 | `tailor-resume` | `resume covers >=4 JD themes, uses canonical achievements only, and contains zero unsafe unverified claims` |
-| 3.5 | `resume-export` | `one-page PDF + DOCX are exported from the tailored resume with no title leak; overflow/defects/missing-tools are logged as gaps` |
+| 3.5 | `resume-export` | `one-page PDF is exported from the tailored resume, matches BCG X gold standard (verified by vision agent); overflow/defects/missing-tools are logged as gaps` |
 | 4 | `find-contacts` | `5 recruiter and 5 HM/peer-IC candidates are attempted, .contacts-ledger.md is written, and low-confidence emails are flagged` |
 | 4b | `enrich-contacts` | `recruiter activity is checked when available, hooks are captured, and any new people are scored into .contacts-ledger.md` |
 | 4c | `verify-emails` | `top 3 recruiters' emails are SMTP-verified via EmailFinder (cached), Verified Emails.md is written, and misses degrade to inferred/flagged` |
@@ -209,24 +209,28 @@ tailor-resume(
 
 **Wire the output forward:** capture the returned `gaps[]` (cross-skill schema `{source: "resume", kind, detail}` objects, or `[]`) and merge it into the step-6 report and the step-7 log alongside the other primitives' gaps — they all share the `source`-keyed schema. The primitive writes the resume to `<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md`; record that path for step 6.
 
-### Step 3.5 — Export the resume to PDF + DOCX
+### Step 3.5 — Export the resume to PDF + visually verify
 
-After `tailor-resume` writes the `.md`, render a polished **one-page PDF** and an editable **DOCX** next to it. This is a traced step — wrap the export call in `begin`/`end` (no mode for this step) using the documented begin/end syntax:
+After `tailor-resume` writes the `.md`, render a polished **one-page PDF** next to it. This is a traced step — wrap the export call in `begin`/`end` (no mode for this step) using the documented begin/end syntax:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step 3.5 --primitive resume-export --mode "" --prediction "one-page PDF + DOCX are exported from the tailored resume with no title leak; overflow/defects/missing-tools are logged as gaps"
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step 3.5 --primitive resume-export --mode "" --prediction "a one-page PDF matching the BCG X gold standard is rendered from the tailored resume with no title leak and PASSes vision verification; overflow/defects/missing-tools are logged as gaps"
 
-python3 ~/.claude/skills/jd-to-ready/scripts/export_resume.py "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md"
+python3 "<repo root>/scripts/build_resume_pdf.py" "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md"
 ```
 
-The script (md → styled HTML → headless-Chrome PDF; pandoc → DOCX) **measures rendered height and auto-tightens font/margins until it fits one US-Letter page**, then writes `.pdf` + `.docx` siblings. (A resume that won't fit is a tailoring decision Kanu owns — never silently cut canonical bullets to win the page break.)
+(Repo root is the Interview Prep workspace root: /Users/kanumadhok/Documents/Claude/Projects/Interview Prep)
 
-**Parse the export-quality contract.** On every exit the script prints exactly one machine-readable line to stdout: `PAGES=<n|NA> TITLE_LEAK=<0|1|NA>` (alongside its human `DOCX:`/`PDF:`/`OVERFLOW:`/`SKIP:`/`SKIP-PDF:` lines). Grep stdout for that `PAGES=… TITLE_LEAK=…` line and parse the two values **tolerantly** — if the line is missing or either value won't parse, do NOT crash: record one gap `{source:"resume-export", kind:"export-quality-unknown", detail:"could not parse export contract"}` and treat the export quality as unknown.
+The script (`build_resume_pdf.py`, reportlab) renders a one-page PDF that matches the BCG X gold-standard layout, **auto-tightening font/margins through tiers down to a 9pt floor** until the content fits one US-Letter page, then prints the `PAGES=<n> TITLE_LEAK=<0|1>` contract. It writes a `.pdf` sibling only — no `.docx` (the docx-export path produced malformed layouts and is retired). A resume that won't fit even at the 9pt floor is a tailoring decision Kanu owns — never silently cut canonical bullets to win the page break.
+
+**Parse the export-quality contract.** On every exit the script prints exactly one machine-readable line to stdout: `PAGES=<n|NA> TITLE_LEAK=<0|1|NA>` (alongside its human `Wrote <path>` line). Grep stdout for that `PAGES=… TITLE_LEAK=…` line and parse the two values **tolerantly** — if the line is missing or either value won't parse, do NOT crash: record one gap `{source:"resume-export", kind:"export-quality-unknown", detail:"could not parse export contract"}` and treat the export quality as unknown.
+
+**Visually verify against the gold standard.** After the PDF is written and the contract parsed, run `python3 "<repo root>/scripts/verify_resume.py" "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.pdf"` — it rasterizes the PDF and the BCG X reference to PNG and writes a `verify.json` packet. Then dispatch a vision sub-agent (general-purpose Agent) that reads `page-1.png` and `reference-1.png` from the packet's out-dir and judges the resume against the 9 visual criteria in `verify.json`, returning PASS/FAIL with per-criterion reasons. **On FAIL** (e.g. title leak, wrapping dates, two-column defect, overflow), record the agent's specific defects as gaps `{source:"resume-export", kind:"pdf-formatting-defect", detail:"<agent reason>"}` and, when the defect is mechanically fixable (overflow/leak), re-render once and re-verify before moving on. The `.md` is always the source of truth, so this degrades gracefully — if Playwright/rasterization or the vision agent is unavailable, record `{source:"resume-export", kind:"export-quality-unknown", detail:"vision verify unavailable"}` and continue.
 
 **Map the parsed values to gaps on the step-3.5 `end --gaps` array:**
 - `PAGES` > 1 → `{source:"resume-export", kind:"pdf-overflow", detail:"<n>-page PDF; trim a bullet to fit one page"}`
 - `TITLE_LEAK` = 1 → `{source:"resume-export", kind:"pdf-formatting-defect", detail:"'Resume' title leaked into PDF"}`
-- `PAGES` = `NA` (script printed `SKIP`/`SKIP-PDF`, or `not found`/`pandoc failed`) → `{source:"resume-export", kind:"export-unavailable", detail:"<reason: pandoc or Chrome missing, or export failed>"}` (read the human `SKIP:`/`SKIP-PDF:`/`ERROR:` line for the reason). The `.md` is always the source of truth; PDF/DOCX are conveniences, so this degrades gracefully — continue.
+- `PAGES` = `NA` (script printed `not found` or the render failed) → `{source:"resume-export", kind:"export-unavailable", detail:"<reason: reportlab missing or export failed>"}` (read the human error line for the reason). The `.md` is always the source of truth; the PDF is a convenience, so this degrades gracefully — continue.
 - clean (`PAGES=1`, `TITLE_LEAK=0`) → empty gaps `[]`, status `ok`.
 
 These gaps can stack (e.g. overflow + title leak). Surface any `pdf-overflow` in the step-6 report so Kanu can decide whether to trim a bullet.
@@ -236,7 +240,7 @@ These gaps can stack (e.g. overflow + title leak). Surface any `pdf-overflow` in
 Close the step with the parsed status and gaps, e.g.:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.5 --primitive resume-export --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Kanu Madhok Resume - <Company> <Short Role>.pdf","Kanu Madhok Resume - <Company> <Short Role>.docx"]' --gaps '<gaps from the mapping above, or []>' --failure-pattern "" --tokens "$UNKNOWN_TOKENS"
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.5 --primitive resume-export --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Kanu Madhok Resume - <Company> <Short Role>.pdf"]' --gaps '<gaps from the mapping above, or []>' --failure-pattern "" --tokens "$UNKNOWN_TOKENS"
 ```
 
 Use `status: ok` when the clean case holds, `partial` when files were written but a defect/overflow was logged, `failed` when no files were produced (export-unavailable). Merge whatever gaps you recorded into the step-6 report and step-7 log alongside the other primitives' gaps.
@@ -332,7 +336,7 @@ Keep the recap short and actionable. Include:
 - **Gaps** — any `[NUMBER?]` placeholders in the resume, low-confidence emails, missing demo URL, anything else worth a second look
 - **`Pipeline.html` is now stale** — ask if he wants it regenerated
 
-End with the obvious next step: review the drafts, run `.docx` conversion if he wants a Word resume, send the outreach.
+End with the obvious next step: review the drafts, regenerate the PDF or tweak a bullet if he wants the page tighter, send the outreach.
 
 ### Step 7 — Log the run
 
@@ -402,6 +406,6 @@ For coding agents changing this trace layer: keep `SKILL.md` operational, but tr
 ## What this skill does NOT do
 
 - It does NOT send messages. All outreach is drafted to a file for Kanu's review.
-- It does NOT generate `.docx` / `.pdf` automatically. Mention it as a follow-up if relevant.
+- In `standalone` mode it does NOT auto-render the `.pdf` (and never a `.docx`). Mention `scripts/build_resume_pdf.py` as a follow-up if relevant. In `pipeline` mode, step 3.5 renders + vision-verifies the PDF.
 - It does NOT build out the full prep artifact set (Question Bank, Interview Answers, TMAY cue card, mock rubric, prep schedule). That's for after an interview is scheduled — not at apply time.
 - It does NOT modify `Resume Achievements Master.md`, `Outreach Templates.md`, or any other reusable. If the JD surfaces a gap in those, mention it in the report — that's the `interview-prep-reusables` skill's job, not this one's.

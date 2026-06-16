@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Export a tailored resume markdown to a one-page PDF + editable DOCX.
+"""RETIRED 2026-06-16 — do not use. The md→pandoc-HTML→Chrome-PDF + pandoc-DOCX
+path here produced malformed layouts (leaked "Resume" title, wrapping dates,
+run-on Education, 2-page spill). Resume PDFs are now rendered by the repo-root
+`scripts/build_resume_pdf.py` (reportlab) and vision-verified by
+`scripts/verify_resume.py` against the BCG X gold standard. Kept for reference
+only; jd-to-ready step 3.5 no longer calls it.
+
+Export a tailored resume markdown to a one-page PDF + editable DOCX.
 
 Pipeline: md --pandoc--> styled HTML --headless Chrome--> PDF, and md --pandoc--> DOCX.
 Auto-tightens font/margin until the rendered content fits one US-Letter page,

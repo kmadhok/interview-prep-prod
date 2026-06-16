@@ -55,6 +55,8 @@ Customize Kanu's resume for a specific role and JD, pulling only from canonical,
 ## Format
 Match the Deloitte FDE GPS resume's structure (`# Kanu Madhok` header, `## PROFESSIONAL EXPERIENCE`, `## SELECTED PROJECT`, `## SKILLS`, `## EDUCATION`). Bullets, not paragraphs. Sub-headings for company + role + dates as in the Deloitte resume.
 
+The rendered PDF must match the **BCG X gold-standard layout** (`Roles/BCG X - Senior AI Factory Product Builder/Kanu Madhok Resume - BCG X Senior AI Factory.pdf`): centered name with no 'Resume' title, two-column company/location-date headers, italic role line, tight bullets, bold inline Skills labels, and two-column Education. The PDF is produced deterministically by `scripts/build_resume_pdf.py` (reportlab), which auto-tightens font/margins through tiers down to a 9pt floor to fit one US-Letter page. Never hand-format the PDF or route it through a `.docx` export — the markdown is the source of truth and the script owns the layout.
+
 **Canonical-only exception — fixed biographical blocks.** The contact/header block, the EDUCATION block (degrees + GPAs), and the dates/titles are stable biographical facts not stored as achievement entries in the master. Copy them from the master's `Header - Contact Block` where present, and from the gold Deloitte FDE GPS resume for Education. These fixed blocks are the ONE exception to "older resumes are outputs not evidence" — they are biographical constants, not claims. Everything else (every bullet, every skill) follows the canonical-only rule.
 
 ## Output filename
@@ -64,7 +66,7 @@ Match the Deloitte FDE GPS resume's structure (`# Kanu Madhok` header, `## PROFE
 - `Kanu Madhok Resume - Harrison Street AVP AI Engineer.md`
 - `Kanu Madhok Resume - Deloitte FDE GPS.md` (gold reference — match its format)
 
-Do NOT generate `.docx` or `.pdf` automatically. Mention in the output that those can be regenerated on request.
+In `standalone` mode this skill writes the `.md` only; the PDF is generated on request via `python3 scripts/build_resume_pdf.py "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md"`. (In `pipeline` mode, `jd-to-ready` step 3.5 renders + verifies the PDF automatically.) Do NOT generate a `.docx` — the `.docx` export path produced malformed layouts and has been retired.
 
 ## Self-check before declaring done
 - [ ] Every bullet derives from a canonical A/U/F/I entry, using only the master's allowed transformations (no new facts/numbers/status upgrades).
@@ -74,3 +76,4 @@ Do NOT generate `.docx` or `.pdf` automatically. Mention in the output that thos
 - [ ] Fixed blocks (contact header, EDUCATION) copied per the canonical-only exception, not invented.
 - [ ] Every unmatched JD theme is captured in the returned `gaps[]` as a structured object (empty list `[]` if none).
 - [ ] Filename matches `Kanu Madhok Resume - <Company> <Short Role>.md` per the Short-Role rule.
+- [ ] If a PDF was rendered, its `PAGES=… TITLE_LEAK=…` contract line shows `PAGES=1 TITLE_LEAK=0`; otherwise the overflow/leak is recorded as a gap (never auto-cut a canonical bullet to win the page).
