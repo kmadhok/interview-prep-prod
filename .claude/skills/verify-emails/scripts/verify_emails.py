@@ -205,7 +205,10 @@ def load_env_file() -> dict[str, str]:
     values: dict[str, str] = {}
     if not path.exists():
         return values
-    for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+    # utf-8-sig tolerates a leading BOM (e.g. PowerShell `Set-Content -Encoding utf8`
+    # writes one), which would otherwise mangle the first key name and silently
+    # drop the API key. Reads plain UTF-8 unchanged when no BOM is present.
+    for line in path.read_text(encoding="utf-8-sig", errors="ignore").splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
