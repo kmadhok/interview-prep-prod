@@ -1,5 +1,7 @@
 # Automation Architecture — Application Drip-Runner
 
+> **Split into two focused plans (2026-06-20).** This file is the history + provisioning master. The forward-looking work now lives in two companions: **`Automation Architecture - Runtime (Email to Pipeline).md`** (how a job flows through the system) and **`Automation Architecture - Skill Sync (Mac to PC).md`** (how skill changes deploy safely). The Runtime plan depends on the Skill Sync plan's safety gate.
+
 _Saved 2026-06-10, updated 2026-06-19. Jump-off document for automating the application pipeline (Gmail sweep → Pipeline.md bookkeeping → jd-to-ready outreach machinery) on a schedule. Status: Phase 0 live; Phase 2 done (allowlist already committed); **Phase 3 plumbing provisioned on the Windows PC runner (2026-06-19)** — see "Windows PC runner — provisioning" below; Phase 1 (queue rule) drafted but not yet validated. Remaining Phase 3 steps are all gated on Kanu (auto-mode self-modification / untrusted-build guards, plus a one-time LinkedIn login)._
 
 ## The goal
