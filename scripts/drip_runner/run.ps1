@@ -2,6 +2,8 @@
 $ErrorActionPreference = "Stop"
 $repo = "G:\projects\interview-prep"
 $log  = Join-Path $env:USERPROFILE ".claude\logs\drip-runner.log"
+$logDir = Split-Path $log
+if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Force $logDir | Out-Null }
 Set-Location $repo
 
 function Log($m) { "$(Get-Date -Format o) $m" | Tee-Object -FilePath $log -Append }

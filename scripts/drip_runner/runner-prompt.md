@@ -22,5 +22,5 @@ ALERT (failures only)
 Maintain a single Gmail draft-to-self titled "[DRIP-RUNNER] failures <YYYY-MM-DD>": create it (To: madhok.kanu@gmail.com) the first time a job parks this run, and append one line per parked job (role, failing step, reason). Never send it.
 
 FINISH
-- git add the role folders + Pipeline.md you changed; commit with a "drip-runner:" prefix summarizing roles staged/parked; push (git push). If push fails on rebase, git pull --rebase then push once more.
+- git add the role folders + Pipeline.md you changed; commit with a "drip-runner:" prefix summarizing roles staged/parked; push (git push). If there is nothing to commit (queue was empty, or all jobs were duplicates / health-checked out), skip the commit+push entirely and say so in the summary. If push is rejected because the remote has diverged, git pull --rebase then push once more.
 - End with a one-line summary: roles staged, roles parked, gaps.
