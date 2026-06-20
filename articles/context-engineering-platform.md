@@ -191,7 +191,7 @@ That's the whole point. The platform is what you keep maintaining; the agents ar
 
 ---
 
-*This is the first in a series on the analytics agent ecosystem I've built. Next: how a dual-path orchestrator answers every question two ways and reconciles the results — turning "I built another text-to-SQL" into "I built a system that knows when it doesn't know."*
+*This is the first in a series on the analytics agent ecosystem I've built. Next: [The Semantic Layer Was an Eval Decision](/articles/semantic-layer-evolution) — how the text-to-data system on top of this substrate got rebuilt twice in six weeks, and why eval difficulty turned out to be an architecture signal.*
 
 ---
 

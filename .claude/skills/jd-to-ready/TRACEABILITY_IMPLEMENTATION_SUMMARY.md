@@ -1,5 +1,14 @@
 # jd-to-ready Traceability Implementation Summary
 
+Historical note: this file describes the first traceability implementation pass.
+The active contract for future coding agents now lives in:
+
+- `TRACEABILITY.md`
+- `TRACE_SCHEMA.md`
+- `TOKEN_ACCOUNTING.md`
+- `RUNBOOK.md`
+- `TRACE_TEST_PLAN.md`
+
 ## What Changed
 
 Implemented a traceability harness for the `jd-to-ready` skill so every apply-ready run can be inspected step-by-step instead of only summarized at the end.

@@ -38,40 +38,57 @@ EDU_HEADERS = {"EDUCATION"}
 HONORS_HEADERS = {"HONORS", "AWARDS"}
 SKIP_HEADERS_PREFIX = ("TAILORING NOTES",)
 
-STYLES = {
-    "name": ParagraphStyle(
-        "name", fontName="Helvetica-Bold", fontSize=20, leading=24,
-        alignment=TA_CENTER, spaceAfter=4,
-    ),
-    "contact": ParagraphStyle(
-        "contact", fontName="Helvetica", fontSize=10, leading=12,
-        alignment=TA_CENTER, spaceAfter=8,
-    ),
-    "section": ParagraphStyle(
-        "section", fontName="Helvetica-Bold", fontSize=10.5, leading=13,
-        alignment=TA_LEFT, spaceBefore=6, spaceAfter=2, textColor=black,
-    ),
-    "company": ParagraphStyle(
-        "company", fontName="Helvetica-Bold", fontSize=10.5, leading=13,
-        alignment=TA_LEFT,
-    ),
-    "city_date": ParagraphStyle(
-        "city_date", fontName="Helvetica-Oblique", fontSize=10, leading=13,
-        alignment=TA_RIGHT,
-    ),
-    "title": ParagraphStyle(
-        "title", fontName="Helvetica-Oblique", fontSize=10, leading=12,
-        alignment=TA_LEFT, spaceAfter=2,
-    ),
-    "bullet": ParagraphStyle(
-        "bullet", fontName="Helvetica", fontSize=9.5, leading=11.8,
-        alignment=TA_LEFT, leftIndent=14, bulletIndent=2, spaceAfter=1.5,
-    ),
-    "body": ParagraphStyle(
-        "body", fontName="Helvetica", fontSize=9.5, leading=11.8,
-        alignment=TA_LEFT, spaceAfter=1.5,
-    ),
-}
+TIERS = [
+    {"body_pt": 10.5, "margin_in": 0.65},
+    {"body_pt": 10.0, "margin_in": 0.58},
+    {"body_pt": 9.5, "margin_in": 0.50},
+    {"body_pt": 9.25, "margin_in": 0.45},
+    {"body_pt": 9.0, "margin_in": 0.42},
+]
+
+
+def _leading(font_size: float) -> float:
+    return round(font_size * 1.24, 2)
+
+
+def build_styles(body_pt: float) -> dict[str, ParagraphStyle]:
+    name_pt = body_pt + 10.5
+    section_pt = body_pt + 1
+    meta_pt = body_pt - 0.5
+    return {
+        "name": ParagraphStyle(
+            "name", fontName="Helvetica-Bold", fontSize=name_pt, leading=_leading(name_pt),
+            alignment=TA_CENTER, spaceAfter=4,
+        ),
+        "contact": ParagraphStyle(
+            "contact", fontName="Helvetica", fontSize=meta_pt, leading=_leading(meta_pt),
+            alignment=TA_CENTER, spaceAfter=8,
+        ),
+        "section": ParagraphStyle(
+            "section", fontName="Helvetica-Bold", fontSize=section_pt, leading=_leading(section_pt),
+            alignment=TA_LEFT, spaceBefore=6, spaceAfter=2, textColor=black,
+        ),
+        "company": ParagraphStyle(
+            "company", fontName="Helvetica-Bold", fontSize=section_pt, leading=_leading(section_pt),
+            alignment=TA_LEFT,
+        ),
+        "city_date": ParagraphStyle(
+            "city_date", fontName="Helvetica-Oblique", fontSize=meta_pt, leading=_leading(meta_pt),
+            alignment=TA_RIGHT,
+        ),
+        "title": ParagraphStyle(
+            "title", fontName="Helvetica-Oblique", fontSize=meta_pt, leading=_leading(meta_pt),
+            alignment=TA_LEFT, spaceAfter=2,
+        ),
+        "bullet": ParagraphStyle(
+            "bullet", fontName="Helvetica", fontSize=body_pt, leading=_leading(body_pt),
+            alignment=TA_LEFT, leftIndent=14, bulletIndent=2, spaceAfter=1.5,
+        ),
+        "body": ParagraphStyle(
+            "body", fontName="Helvetica", fontSize=body_pt, leading=_leading(body_pt),
+            alignment=TA_LEFT, spaceAfter=1.5,
+        ),
+    }
 
 
 # ---------- markdown inline -> reportlab HTML ----------
@@ -104,11 +121,17 @@ def md_inline(text: str) -> str:
 
 # ---------- layout helpers ----------
 
-def header_row(left_html: str, right_html: str, left_style, right_style, col_split: float = 4.7):
-    total = 7.2
+def header_row(left_html: str, right_html: str, left_style, right_style,
+               col_split: float = 4.7, frame_width_in: float = 7.2):
+    # The table must fill the full frame width and left-align within it, or it
+    # centers itself (reportlab default hAlign=CENTER) and the company name drifts
+    # right by half the (frame - table) gap — an amount that varies per font/margin
+    # tier. Track the real frame width and pin the right column to the right margin.
+    right_w = frame_width_in - col_split
     t = Table(
         [[Paragraph(left_html, left_style), Paragraph(right_html, right_style)]],
-        colWidths=[col_split * inch, (total - col_split) * inch],
+        colWidths=[col_split * inch, right_w * inch],
+        hAlign="LEFT",
     )
     t.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -120,17 +143,17 @@ def header_row(left_html: str, right_html: str, left_style, right_style, col_spl
     return t
 
 
-def section_header_flow(title: str):
+def section_header_flow(title: str, styles: dict[str, ParagraphStyle]):
     return [
         Spacer(1, 2),
-        Paragraph(title, STYLES["section"]),
+        Paragraph(title, styles["section"]),
         HRFlowable(width="100%", thickness=0.6, color=black,
                    spaceBefore=0, spaceAfter=3),
     ]
 
 
-def bullet_flow(text: str):
-    return Paragraph(f"• {md_inline(text)}", STYLES["bullet"])
+def bullet_flow(text: str, styles: dict[str, ParagraphStyle]):
+    return Paragraph(f"• {md_inline(text)}", styles["bullet"])
 
 
 # ---------- markdown parser ----------
@@ -334,17 +357,111 @@ def parse_lines_generic(section_lines: list[str]):
 
 # ---------- builder ----------
 
-def build_pdf(md_path: Path, pdf_path: Path) -> None:
-    md_text = md_path.read_text(encoding="utf-8")
+def _detect_title_leak(md_text: str) -> int:
+    saw_resume_title = False
+    for ln in md_text.splitlines():
+        stripped = ln.strip()
+        if not stripped:
+            continue
+        heading = re.match(r"^#{1,6}\s+(.+?)\s*#*\s*$", stripped)
+        title_text = heading.group(1).strip() if heading else stripped
+        if title_text.lower() == "resume":
+            saw_resume_title = True
+            continue
+        if stripped.startswith("# "):
+            return 1 if saw_resume_title else 0
+    return 1 if saw_resume_title else 0
+
+
+def _count_pdf_pages(pdf_path: Path) -> int:
+    return len(re.findall(rb"/Type\s*/Page[^s]", pdf_path.read_bytes()))
+
+
+def _build_story(md_text: str, styles: dict[str, ParagraphStyle], frame_width_in: float = 7.2):
     name, contact_html, sections = parse_resume(md_text)
+    story = []
+    story.append(Paragraph(name, styles["name"]))
+    if contact_html:
+        story.append(Paragraph(contact_html, styles["contact"]))
+
+    for title, lines in sections:
+        up = title.upper()
+        if up in EXP_HEADERS:
+            story.extend(section_header_flow("PROFESSIONAL EXPERIENCE", styles))
+            jobs = parse_experience(lines)
+            for idx, job in enumerate(jobs):
+                if idx > 0:
+                    story.append(Spacer(1, 3))
+                story.append(header_row(
+                    f"<b>{md_inline(job['company'])}</b>",
+                    f"<i>{md_inline(job['city_date'])}</i>" if job["city_date"] else "",
+                    styles["company"], styles["city_date"],
+                    col_split=4.7, frame_width_in=frame_width_in,
+                ))
+                if job.get("title"):
+                    story.append(Paragraph(f"<i>{md_inline(job['title'])}</i>", styles["title"]))
+                for p in job.get("preamble", []):
+                    story.append(Paragraph(md_inline(p), styles["body"]))
+                for b in job["bullets"]:
+                    story.append(bullet_flow(b, styles))
+        elif up in PROJECT_HEADERS:
+            story.extend(section_header_flow("SELECTED PROJECT", styles))
+            for kind, text in parse_lines_generic(lines):
+                if kind == "bullet":
+                    story.append(bullet_flow(text, styles))
+                else:
+                    story.append(Paragraph(md_inline(text), styles["body"]))
+        elif up in SKILLS_HEADERS:
+            story.extend(section_header_flow("SKILLS", styles))
+            for kind, text in parse_lines_generic(lines):
+                # Bold the lead label "X:" if pattern matches and not already bold
+                if kind == "para":
+                    m = re.match(r"^([A-Z][^:]{1,40}):\s+(.+)$", text)
+                    if m and "**" not in text:
+                        text = f"**{m.group(1)}:** {m.group(2)}"
+                    story.append(Paragraph(md_inline(text), styles["body"]))
+                else:
+                    story.append(bullet_flow(text, styles))
+        elif up in EDU_HEADERS:
+            story.extend(section_header_flow("EDUCATION", styles))
+            for left, right in parse_education(lines):
+                story.append(header_row(
+                    md_inline(left),
+                    f"<i>{md_inline(right)}</i>" if right else "",
+                    styles["body"], styles["city_date"],
+                    col_split=5.5, frame_width_in=frame_width_in,
+                ))
+        elif up in HONORS_HEADERS:
+            story.extend(section_header_flow("HONORS", styles))
+            for kind, text in parse_lines_generic(lines):
+                if kind == "bullet":
+                    story.append(bullet_flow(text, styles))
+                else:
+                    story.append(Paragraph(md_inline(text), styles["body"]))
+        else:
+            # Unknown section — render as a generic section
+            story.extend(section_header_flow(up, styles))
+            for kind, text in parse_lines_generic(lines):
+                if kind == "bullet":
+                    story.append(bullet_flow(text, styles))
+                else:
+                    story.append(Paragraph(md_inline(text), styles["body"]))
+    return name, story
+
+
+def _render_pdf_once(md_text: str, pdf_path: Path, tier: dict[str, float]) -> None:
+    styles = build_styles(tier["body_pt"])
+    frame_width_in = 8.5 - 2 * tier["margin_in"]
+    name, story = _build_story(md_text, styles, frame_width_in=frame_width_in)
+    margin = tier["margin_in"] * inch
 
     doc = BaseDocTemplate(
         str(pdf_path),
         pagesize=LETTER,
-        leftMargin=0.65 * inch,
-        rightMargin=0.65 * inch,
-        topMargin=0.45 * inch,
-        bottomMargin=0.45 * inch,
+        leftMargin=margin,
+        rightMargin=margin,
+        topMargin=margin,
+        bottomMargin=margin,
         title=f"{name} Resume",
         author=name,
     )
@@ -354,73 +471,33 @@ def build_pdf(md_path: Path, pdf_path: Path) -> None:
     )
     doc.addPageTemplates(PageTemplate(id="all", frames=[frame]))
 
-    story = []
-    story.append(Paragraph(name, STYLES["name"]))
-    if contact_html:
-        story.append(Paragraph(contact_html, STYLES["contact"]))
-
-    for title, lines in sections:
-        up = title.upper()
-        if up in EXP_HEADERS:
-            story.extend(section_header_flow("PROFESSIONAL EXPERIENCE"))
-            jobs = parse_experience(lines)
-            for idx, job in enumerate(jobs):
-                if idx > 0:
-                    story.append(Spacer(1, 3))
-                story.append(header_row(
-                    f"<b>{md_inline(job['company'])}</b>",
-                    f"<i>{md_inline(job['city_date'])}</i>" if job["city_date"] else "",
-                    STYLES["company"], STYLES["city_date"], col_split=4.7,
-                ))
-                if job.get("title"):
-                    story.append(Paragraph(f"<i>{md_inline(job['title'])}</i>", STYLES["title"]))
-                for p in job.get("preamble", []):
-                    story.append(Paragraph(md_inline(p), STYLES["body"]))
-                for b in job["bullets"]:
-                    story.append(bullet_flow(b))
-        elif up in PROJECT_HEADERS:
-            story.extend(section_header_flow("SELECTED PROJECT"))
-            for kind, text in parse_lines_generic(lines):
-                if kind == "bullet":
-                    story.append(bullet_flow(text))
-                else:
-                    story.append(Paragraph(md_inline(text), STYLES["body"]))
-        elif up in SKILLS_HEADERS:
-            story.extend(section_header_flow("SKILLS"))
-            for kind, text in parse_lines_generic(lines):
-                # Bold the lead label "X:" if pattern matches and not already bold
-                if kind == "para":
-                    m = re.match(r"^([A-Z][^:]{1,40}):\s+(.+)$", text)
-                    if m and "**" not in text:
-                        text = f"**{m.group(1)}:** {m.group(2)}"
-                    story.append(Paragraph(md_inline(text), STYLES["body"]))
-                else:
-                    story.append(bullet_flow(text))
-        elif up in EDU_HEADERS:
-            story.extend(section_header_flow("EDUCATION"))
-            for left, right in parse_education(lines):
-                story.append(header_row(
-                    md_inline(left),
-                    f"<i>{md_inline(right)}</i>" if right else "",
-                    STYLES["body"], STYLES["city_date"], col_split=5.5,
-                ))
-        elif up in HONORS_HEADERS:
-            story.extend(section_header_flow("HONORS"))
-            for kind, text in parse_lines_generic(lines):
-                if kind == "bullet":
-                    story.append(bullet_flow(text))
-                else:
-                    story.append(Paragraph(md_inline(text), STYLES["body"]))
-        else:
-            # Unknown section — render as a generic section
-            story.extend(section_header_flow(up))
-            for kind, text in parse_lines_generic(lines):
-                if kind == "bullet":
-                    story.append(bullet_flow(text))
-                else:
-                    story.append(Paragraph(md_inline(text), STYLES["body"]))
-
     doc.build(story)
+
+
+def build_pdf(md_path: Path, pdf_path: Path) -> tuple[int, int, dict[str, float]]:
+    md_text = md_path.read_text(encoding="utf-8")
+    title_leak = _detect_title_leak(md_text)
+    last_error = None
+    last_success = None
+    floor_tier = TIERS[-1]
+
+    for tier in TIERS:
+        try:
+            _render_pdf_once(md_text, pdf_path, tier)
+            pages = _count_pdf_pages(pdf_path)
+        except Exception as e:
+            last_error = e
+            continue
+
+        last_success = (pages, tier)
+        if pages <= 1:
+            return pages, title_leak, tier
+
+    if last_success is not None:
+        pages, tier = last_success
+        if tier is floor_tier:
+            return pages, title_leak, tier
+    raise RuntimeError(f"reportlab failed before a floor render: {last_error}")
 
 
 # ---------- discovery ----------
@@ -446,35 +523,78 @@ def discover_unpaired() -> list[Path]:
     return out
 
 
-def main():
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+def _title_leak_for_path(md_path: Path):
+    try:
+        return _detect_title_leak(md_path.read_text(encoding="utf-8"))
+    except Exception:
+        return "NA"
+
+
+def _emit_contract(pages, title_leak, prefix: str | None = None) -> None:
+    line = f"PAGES={pages} TITLE_LEAK={title_leak}"
+    if prefix:
+        line = f"{prefix} {line}"
+    print(line)
+
+
+def _run(argv: list[str] | None = None):
     ap = argparse.ArgumentParser()
     ap.add_argument("md_path", nargs="?", help="Specific .md to convert")
     ap.add_argument("--all", action="store_true", help="All unpaired .md resumes")
     ap.add_argument("--out", help="Output .pdf path (single-file mode only)")
-    args = ap.parse_args()
+    try:
+        args = ap.parse_args(argv)
+    except SystemExit as e:
+        return int(e.code) if isinstance(e.code, int) else 2, [(None, "NA", "NA")]
 
     if args.all:
         targets = discover_unpaired()
         if not targets:
             print("No unpaired resume markdowns found.")
-            return
+            return 0, [(None, "NA", "NA")]
         print(f"Building {len(targets)} resume PDFs...")
+        contracts = []
+        rc = 0
         for md in targets:
             pdf = md.with_suffix(".pdf")
             try:
-                build_pdf(md, pdf)
+                pages, title_leak, _ = build_pdf(md, pdf)
                 print(f"  ✓ {pdf.relative_to(ROOT)}")
+                contracts.append((_display_path(pdf), pages, title_leak))
             except Exception as e:
                 print(f"  ✗ {md.relative_to(ROOT)} — {e}", file=sys.stderr)
-        return
+                contracts.append((_display_path(pdf), "NA", _title_leak_for_path(md)))
+                rc = 1
+        return rc, contracts
 
     if not args.md_path:
-        ap.error("provide md_path or --all")
+        ap.print_usage(sys.stderr)
+        print("build_resume_pdf.py: error: provide md_path or --all", file=sys.stderr)
+        return 2, [(None, "NA", "NA")]
     md = Path(args.md_path)
     pdf = Path(args.out) if args.out else md.with_suffix(".pdf")
-    build_pdf(md, pdf)
-    print(f"Wrote {pdf}")
+    try:
+        pages, title_leak, _ = build_pdf(md, pdf)
+        print(f"Wrote {pdf}")
+        return 0, [(None, pages, title_leak)]
+    except Exception as e:
+        print(f"ERROR: {md} — {e}", file=sys.stderr)
+        return 1, [(None, "NA", _title_leak_for_path(md))]
+
+
+def main():
+    rc, contracts = _run()
+    for prefix, pages, title_leak in contracts:
+        _emit_contract(pages, title_leak, prefix)
+    return rc
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -1,6 +1,6 @@
 ---
 name: jd-to-ready
-description: Use this skill when Kanu Madhok shares a job description and wants the full apply-ready package in one shot — folder filed, resume tailored, 5 recruiter + 5 hiring-manager/peer-IC contacts surfaced through sequential LinkedIn MCP calls (then enriched from recruiter activity), and cold outreach drafted. Trigger language includes "full intake", "intake and prep", "do everything for this JD", "get me apply-ready", "paste this JD" (when intent is to apply, not just track), or sharing a JD with phrases like "get this ready to send" / "I want to apply to this". Near-pure orchestration: composes primitives in sequence — `interview-prep-intake` (file the JD) → JD-classification (the one bit of logic it owns) → `tailor-resume(pipeline)` → `find-contacts(full)` → `enrich-contacts` → `write-outreach(drip)` — and wires their outputs together via a shared contacts-ledger artifact. Each primitive owns its own domain logic. Do NOT trigger when Kanu only wants to file the JD with no further prep (use `interview-prep-intake` alone) or only wants outreach for a JD already filed (use `write-outreach` alone). If ambiguous, ask whether he wants the full pipeline or just one piece.
+description: Use this skill when Kanu Madhok shares a job description and wants the full apply-ready package in one shot — folder filed, resume tailored, 5 recruiter + 5 hiring-manager/peer-IC contacts surfaced through sequential LinkedIn MCP calls (then enriched from recruiter activity), and cold outreach drafted. Trigger language includes "full intake", "intake and prep", "do everything for this JD", "get me apply-ready", "paste this JD" (when intent is to apply, not just track), or sharing a JD with phrases like "get this ready to send" / "I want to apply to this". Near-pure orchestration: composes primitives in sequence — `interview-prep-intake` (file the JD) → JD-classification (the one bit of logic it owns) → `tailor-resume(pipeline)` → `find-contacts(full)` → `enrich-contacts` → `verify-emails` → `write-outreach(drip)` — and wires their outputs together via a shared contacts-ledger artifact. Each primitive owns its own domain logic. Do NOT trigger when Kanu only wants to file the JD with no further prep (use `interview-prep-intake` alone) or only wants outreach for a JD already filed (use `write-outreach` alone). If ambiguous, ask whether he wants the full pipeline or just one piece.
 ---
 
 # JD → Apply-Ready (one-shot intake + resume + outreach)
@@ -14,7 +14,8 @@ This skill is **near-pure orchestration** (the docker-compose model). It wires t
 | 3 | `tailor-resume` | `pipeline` | resume tailoring (canonical-only) |
 | 4 | `find-contacts` | `full` | LinkedIn contact research (5+5, emails) + ranking; **writes `.contacts-ledger.md`** |
 | 4b | `enrich-contacts` | — | scrape recruiter activity → appends new people (scored on find-contacts' rubric) + hooks; **extends `.contacts-ledger.md`** |
-| 5 | `write-outreach` | `drip` | cold outreach (per `Outreach Templates.md`); **reads ledger top rows** |
+| 4c | `verify-emails` (deterministic script) | — | SMTP-verifying the top-3 recruiters' emails via EmailFinder.dev; **writes `Verified Emails.md`** |
+| 5 | `write-outreach` | `drip` | two intro emails (recruiter #1 + HM #1) (per `Outreach Templates.md`); **reads ledger top rows** |
 
 **The contacts ledger (`<role folder>/.contacts-ledger.md`) is a shared artifact, not a callback.** `find-contacts` writes it; `enrich-contacts` reads it, appends activity-surfaced people scored on find-contacts' *published* rubric, and re-sorts it; `write-outreach` reads its top rows. The pipeline is strictly **linear** — no step loops back into an earlier one. This is what keeps "ranking logic lives in one skill" true (find-contacts owns the rubric) while letting enrichment extend the ranking (it applies that rubric to new rows).
 
@@ -27,13 +28,13 @@ Read the root `AGENTS.md` (or `CLAUDE.md`) at `/Users/kanumadhok/Documents/Claud
 By the end of one invocation, the role folder contains:
 
 1. `Job Description.md` — clean reading copy of the JD (from intake)
-2. `Kanu Madhok Resume - <Company> <Short Role>.md` — tailored resume pulling bullets from `Resume Achievements Master.md`, **plus a one-page `.pdf` and editable `.docx` exported from it** (step 3.5)
-3. `.contacts-ledger.md` + `Verified Emails.md` — scored contacts with top-pick emails **verified via Apollo** (find-contacts step 4.5)
-4. `Cold Outreach.md` — researched contacts with drafted cold emails, **and the lead intro auto-created as a Gmail draft** (write-outreach step 6; never sent)
+2. `Kanu Madhok Resume - <Company> <Short Role>.md` — tailored resume pulling bullets from `Resume Achievements Master.md`, **plus a one-page `.pdf` rendered from it (BCG X gold-standard layout) and vision-verified** (step 3.5)
+3. `.contacts-ledger.md` + `Verified Emails.md` — scored contacts with the top 3 recruiters' emails **SMTP-verified via EmailFinder.dev** (step 4c)
+4. `Cold Outreach.md` — researched contacts with two drafted intro emails (recruiter #1 + HM/peer-IC #1), **both auto-created as Gmail drafts** (write-outreach; never sent)
 
 Plus: a new row in `Pipeline.md`, an updated `active_interview_pipeline.md` memory entry, and a short report-back with paths, hard gates, and gaps.
 
-**End state:** the only things left for Kanu are to click **Apply** on the ATS and hit **Send** on the Gmail draft. Everything upstream (resume export, email verification, draft creation) is automated, degrading gracefully to gaps if Apollo/Gmail are unavailable.
+**End state:** the only things left for Kanu are to click **Apply** on the ATS and hit **Send** on the two Gmail drafts. Everything upstream (resume export, email verification, draft creation) is automated, degrading gracefully to gaps if EmailFinder/Gmail are unavailable.
 
 ## Workspace paths (resolved once, used throughout)
 
@@ -45,14 +46,15 @@ Plus: a new row in `Pipeline.md`, an updated `active_interview_pipeline.md` memo
 - **Trace helper:** `~/.claude/skills/jd-to-ready/scripts/trace_step.py`
 - **Per-role trace:** `<role folder>/.jd-to-ready-trace.jsonl` (append-only step/tool/subagent events)
 - **Global summary log:** `~/.claude/logs/jd-to-ready.jsonl` (one compact final line per run)
+- **Trace docs for coding agents:** `TRACEABILITY.md`, `TRACE_SCHEMA.md`, `TOKEN_ACCOUNTING.md`, `RUNBOOK.md`, and `TRACE_TEST_PLAN.md` in this skill folder. Read these before editing trace behavior.
 
 ## Workflow
 
 Run steps 1 → 7 in order. Don't pepper Kanu with questions mid-flow — make sensible defaults and surface fixes in the step 6 report.
 
-### Trace contract — mandatory for every run
+### Trace contract - mandatory for every run
 
-Create a run trace before Step 1 and close each step as it finishes. This is the observability contract for the orchestrator; hooks only enrich and enforce it.
+Create a run trace before Step 1 and close each step as it finishes. This is the observability contract for the orchestrator; hooks only enrich and check it. The trace helper is fail-closed for production runs: one active step at a time, required steps must close before `finish-run`, and interrupted runs must use `abort-run`. The deterministic contract for coding agents is documented in `TRACEABILITY.md` and `TRACE_SCHEMA.md`.
 
 1. Start the run before intake:
 
@@ -66,11 +68,12 @@ python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py start-run --company "
 python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py set-role-folder --role-folder "<absolute role folder>" --company "<company>" --role "<role title>"
 ```
 
-3. Wrap every step with `begin` before work and `end` after work. The `prediction` must be a one-line, checkable claim stated before the step runs; `prediction_met` is scored after.
+3. Wrap every step with `begin` before work and `end` after work. The `prediction` must be a one-line, checkable claim stated before the step runs; `prediction_met` is scored after. Include a `tokens` object on each `end` event; if counts are unavailable, use the explicit unknown token shape from `TOKEN_ACCOUNTING.md`.
 
 ```bash
+UNKNOWN_TOKENS='{"input":null,"output":null,"cache_read":null,"cache_write":null,"total":null,"source":null,"notes":"runtime did not expose token counts"}'
 python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --prediction "<checkable claim>"
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --status "ok|partial|failed|skipped" --prediction-met "true|false|partial|unknown" --produced '["file-or-artifact"]' --gaps '[]' --failure-pattern "<taxonomy-tag-or-empty>"
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --status "ok|partial|failed|skipped" --prediction-met "true|false|partial|unknown" --produced '["file-or-artifact"]' --gaps '[]' --failure-pattern "<taxonomy-tag-or-empty>" --tokens "$UNKNOWN_TOKENS"
 ```
 
 Required traced steps:
@@ -80,8 +83,10 @@ Required traced steps:
 | 1 | `interview-prep-intake` | `role folder, Job Description.md, Pipeline row, and memory update are created or a safe existing-folder decision is reached` |
 | 2 | `jd-classification` | `classification returns valid JSON with 4-6 in-vocab themes, evidence quotes, and one in-vocab archetype` |
 | 3 | `tailor-resume` | `resume covers >=4 JD themes, uses canonical achievements only, and contains zero unsafe unverified claims` |
+| 3.5 | `resume-export` | `one-page PDF is exported from the tailored resume, matches BCG X gold standard (verified by vision agent); overflow/defects/missing-tools are logged as gaps` |
 | 4 | `find-contacts` | `5 recruiter and 5 HM/peer-IC candidates are attempted, .contacts-ledger.md is written, and low-confidence emails are flagged` |
 | 4b | `enrich-contacts` | `recruiter activity is checked when available, hooks are captured, and any new people are scored into .contacts-ledger.md` |
+| 4c | `verify-emails` | `top 3 recruiters' emails are SMTP-verified via EmailFinder (cached), Verified Emails.md is written, and misses degrade to inferred/flagged` |
 | 5 | `write-outreach` | `Cold Outreach.md is drafted with real contacts/hooks only and no fabricated urgency` |
 | 6 | `report-back` | `report includes paths, hard gates, classification evidence, contacts, gaps, and stale Pipeline.html note` |
 | 7 | `final-log` | `global jd-to-ready summary is appended and active run state is cleared` |
@@ -89,6 +94,8 @@ Required traced steps:
 Use only these `failure_pattern` values unless the value is `null`: `generic-resume-language`, `verify-placeholder-leak`, `non-decision-maker-contact`, `low-confidence-emails`, `fabricated-hook`, `thin-jd-stub`, `theme-unmatched`, `thin-results`.
 
 If a step fails or is skipped, still write its `end` event with `status: failed|skipped`, the known `gaps`, and the closest `failure_pattern`. If a value is unknown, use `null` rather than inventing.
+
+When editing trace behavior, do not rely on corrected summary lines. The McKinsey run showed why: artifacts can exist while steps 4/4b/5/6 are missing from the per-role trace. `finish-run` now fails closed unless all required production steps are closed; use `abort-run --reason "<reason>"` when a run cannot continue.
 
 ### Step 1 — Run intake (file the JD)
 
@@ -202,17 +209,41 @@ tailor-resume(
 
 **Wire the output forward:** capture the returned `gaps[]` (cross-skill schema `{source: "resume", kind, detail}` objects, or `[]`) and merge it into the step-6 report and the step-7 log alongside the other primitives' gaps — they all share the `source`-keyed schema. The primitive writes the resume to `<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md`; record that path for step 6.
 
-### Step 3.5 — Export the resume to PDF + DOCX
+### Step 3.5 — Export the resume to PDF + visually verify
 
-After `tailor-resume` writes the `.md`, render a polished **one-page PDF** and an editable **DOCX** next to it. Run the helper:
+After `tailor-resume` writes the `.md`, render a polished **one-page PDF** next to it. This is a traced step — wrap the export call in `begin`/`end` (no mode for this step) using the documented begin/end syntax:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/export_resume.py "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md"
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step 3.5 --primitive resume-export --mode "" --prediction "a one-page PDF matching the BCG X gold standard is rendered from the tailored resume with no title leak and PASSes vision verification; overflow/defects/missing-tools are logged as gaps"
+
+python3 "<repo root>/scripts/build_resume_pdf.py" "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md"
 ```
 
-The script (md → styled HTML → headless-Chrome PDF; pandoc → DOCX) **measures rendered height and auto-tightens font/margins until it fits one US-Letter page**, then writes `.pdf` + `.docx` siblings. If the content genuinely exceeds one page at the 9pt floor, it stops at 9pt, writes the (2-page) files anyway, and prints `OVERFLOW` — surface that in the step-6 report so Kanu can decide whether to trim a bullet. (A resume that won't fit is a tailoring decision Kanu owns — never silently cut canonical bullets to win the page break.)
+(Repo root is the Interview Prep workspace root: /Users/kanumadhok/Documents/Claude/Projects/Interview Prep)
 
-Graceful degradation: if pandoc or Chrome is missing, skip export, record `{source:"resume-export", kind:"export-unavailable", detail:"<which tool> missing; .md written, no PDF/DOCX"}`, and continue. The `.md` is always the source of truth; PDF/DOCX are conveniences.
+The script (`build_resume_pdf.py`, reportlab) renders a one-page PDF that matches the BCG X gold-standard layout, **auto-tightening font/margins through tiers down to a 9pt floor** until the content fits one US-Letter page, then prints the `PAGES=<n> TITLE_LEAK=<0|1>` contract. It writes a `.pdf` sibling only — no `.docx` (the docx-export path produced malformed layouts and is retired). A resume that won't fit even at the 9pt floor is a tailoring decision Kanu owns — never silently cut canonical bullets to win the page break.
+
+**Parse the export-quality contract.** On every exit the script prints exactly one machine-readable line to stdout: `PAGES=<n|NA> TITLE_LEAK=<0|1|NA>` (alongside its human `Wrote <path>` line). Grep stdout for that `PAGES=… TITLE_LEAK=…` line and parse the two values **tolerantly** — if the line is missing or either value won't parse, do NOT crash: record one gap `{source:"resume-export", kind:"export-quality-unknown", detail:"could not parse export contract"}` and treat the export quality as unknown.
+
+**Visually verify against the gold standard.** After the PDF is written and the contract parsed, run `python3 "<repo root>/scripts/verify_resume.py" "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.pdf"` — it rasterizes the PDF and the BCG X reference to PNG and writes a `verify.json` packet. Then dispatch a vision sub-agent (general-purpose Agent) that reads `page-1.png` and `reference-1.png` from the packet's out-dir and judges the resume against the 9 visual criteria in `verify.json`, returning PASS/FAIL with per-criterion reasons. **On FAIL** (e.g. title leak, wrapping dates, two-column defect, overflow), record the agent's specific defects as gaps `{source:"resume-export", kind:"pdf-formatting-defect", detail:"<agent reason>"}` and, when the defect is mechanically fixable (overflow/leak), re-render once and re-verify before moving on. The `.md` is always the source of truth, so this degrades gracefully — if Playwright/rasterization or the vision agent is unavailable, record `{source:"resume-export", kind:"export-quality-unknown", detail:"vision verify unavailable"}` and continue.
+
+**Map the parsed values to gaps on the step-3.5 `end --gaps` array:**
+- `PAGES` > 1 → `{source:"resume-export", kind:"pdf-overflow", detail:"<n>-page PDF; trim a bullet to fit one page"}`
+- `TITLE_LEAK` = 1 → `{source:"resume-export", kind:"pdf-formatting-defect", detail:"'Resume' title leaked into PDF"}`
+- `PAGES` = `NA` (script printed `not found` or the render failed) → `{source:"resume-export", kind:"export-unavailable", detail:"<reason: reportlab missing or export failed>"}` (read the human error line for the reason). The `.md` is always the source of truth; the PDF is a convenience, so this degrades gracefully — continue.
+- clean (`PAGES=1`, `TITLE_LEAK=0`) → empty gaps `[]`, status `ok`.
+
+These gaps can stack (e.g. overflow + title leak). Surface any `pdf-overflow` in the step-6 report so Kanu can decide whether to trim a bullet.
+
+**Failure pattern — known taxonomy gap.** Set `--failure-pattern` to the closest enum only when one exists. For `pdf-overflow` and `pdf-formatting-defect` there is **no matching value in the allowed `failure_pattern` taxonomy** (it covers content/contact defects like `generic-resume-language`, `verify-placeholder-leak`, `low-confidence-emails` — nothing for a PDF render/overflow defect). Leave `--failure-pattern ""` (empty) for those: the defect is fully captured in `gaps[]`, but there is **no enum value to name it yet**. Do NOT invent a new `failure_pattern` value — the schema validator would reject it. This is a flagged gap for a future schema decision (add a `pdf-export-defect`-style enum). For `export-unavailable`/`export-quality-unknown`, also leave `--failure-pattern ""` (no taxonomy match).
+
+Close the step with the parsed status and gaps, e.g.:
+
+```bash
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.5 --primitive resume-export --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Kanu Madhok Resume - <Company> <Short Role>.pdf"]' --gaps '<gaps from the mapping above, or []>' --failure-pattern "" --tokens "$UNKNOWN_TOKENS"
+```
+
+Use `status: ok` when the clean case holds, `partial` when files were written but a defect/overflow was logged, `failed` when no files were produced (export-unavailable). Merge whatever gaps you recorded into the step-6 report and step-7 log alongside the other primitives' gaps.
 
 ### Step 4 — Contact research (sequential LinkedIn MCP)
 
@@ -231,9 +262,9 @@ find-contacts(
 )
 ```
 
-**Wire the output forward:** `find-contacts(full)` **writes the scored-ledger artifact to `<role folder>/.contacts-ledger.md`** (Recruiters · Hiring Managers · Peer ICs, every candidate scored, each row carrying email + confidence). Its step 4.5 **verifies the top 3 recruiters + the lead pick's emails via Apollo** (`mcp__claude_ai_Apollo_MCP__apollo_people_match`) and writes `<role folder>/Verified Emails.md` — the table `write-outreach` reads for the Gmail draft. If Apollo is unauthed/out of credits it falls back to inferred emails + a gap, never blocking. It also returns the three rendered tables, a provisional `top_picks` + `recommended_lead`, and `gaps[]` (`{source: "contacts", ...}`). **Do not bind `top_picks` for outreach yet** — step 4b may append a higher-ranked person and re-sort the ledger. The authoritative picks are read from the ledger *after* 4b. Capture the gaps for steps 6/7 now.
+**Wire the output forward:** `find-contacts(full)` **writes the scored-ledger artifact to `<role folder>/.contacts-ledger.md`** (Recruiters · Hiring Managers · Peer ICs, every candidate scored, each row carrying email + confidence). Each ledger row carries a pattern-inferred email at Medium confidence; the top picks are SMTP-verified later in **step 4c** (after enrichment), which writes `<role folder>/Verified Emails.md` — the table `write-outreach` reads for the Gmail draft. It also returns the three rendered tables, a provisional `top_picks` + `recommended_lead`, and `gaps[]` (`{source: "contacts", ...}`). **Do not bind `top_picks` for outreach yet** — step 4b may append a higher-ranked person and re-sort the ledger. The authoritative picks are read from the ledger *after* 4b. Capture the gaps for steps 6/7 now.
 
-**Warm-tie check (recommended before/alongside Apollo):** if Gmail is connected, search it for prior correspondence with the company (`from:<domain> OR to:<domain>`). A recruiter Kanu already interviewed with is a header-verified, warm contact that outranks any cold pick — promote them to the top of the ledger with `High (header-verified)` email and pivot the outreach to a warm reconnect (see `write-outreach`). This is how the McKinsey run surfaced Caroline DeCorrevont over a cold top-pick.
+**Warm-tie check (recommended before step 4c):** if Gmail is connected, search it for prior correspondence with the company (`from:<domain> OR to:<domain>`). A recruiter Kanu already interviewed with is a header-verified, warm contact that outranks any cold pick — promote them to the top of the ledger with `High (header-verified)` email and pivot the outreach to a warm reconnect (see `write-outreach`). This is how the McKinsey run surfaced Caroline DeCorrevont over a cold top-pick.
 
 ### Step 4b — Enrich recruiters from their activity
 
@@ -252,9 +283,27 @@ enrich-contacts(
 
 **Now read the authoritative top picks from the (post-enrichment) ledger:** the top recruiter row + the `recommended_lead` pick. Because there is one ledger file and one final sort, these are never stale — there is no pre/post fork to confuse. If `find-contacts` returned incomplete results (LinkedIn unreachable, no ledger written), skip 4b and proceed to step 5 with empty contacts and the failure noted — never invent contacts.
 
+### Step 4c — Verify top-recruiter emails (EmailFinder.dev)
+
+**Run the `verify-emails` deterministic script** (it owns all email-resolution logic — parsing the ledger, calling EmailFinder.dev's `/find-email/person` endpoint, caching paid results, and inferring-and-flagging on a miss). It runs **after** 4b so it verifies the *final*, post-enrichment top-3 recruiters. Do not reimplement it here; EmailFinder.dev owns verification.
+
+```bash
+python3 "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/.claude/skills/verify-emails/scripts/verify_emails.py" \
+  --ledger "<role folder>/.contacts-ledger.md" \
+  --emails-md-default \
+  --max-credits 5 \
+  --json
+```
+
+The script reads the ledger's `**Email pattern:**` line for the domain + local-part pattern, selects the top 3 `Recruiter` rows by rank, SMTP-verifies each via EmailFinder.dev (1 credit per verified hit; 404 misses are free), and writes two things: a `## Verified Emails` section back into the ledger, and a standalone **`<role folder>/Verified Emails.md`** (`| Name | Email | Confidence |`) — the file `write-outreach` reads. A `.email-cache.json` keyed by name+company makes re-runs free (already-verified people are never re-charged).
+
+**Wire forward:** `Verified Emails.md` now exists with one row per resolved recruiter — Confidence `High (EmailFinder-verified)` for SMTP hits, `Medium (inferred <pattern>)` for misses that fell back to the ledger's pattern. Capture a `gaps[]` entry per outcome worth surfacing: `{source:"verify-emails", kind:"inferred-email", detail:"<name>: EmailFinder miss; using inferred <pattern> address"}` for inferred rows, `{source:"verify-emails", kind:"emailfinder-unavailable", detail:"<reason>; top picks use inferred emails"}` if the API key is missing or returns 402/429 (the script marks those rows SKIPPED — never blocks). Merge into steps 6/7.
+
+**Graceful degradation:** if the `Email_Finder_Dev` key is absent or the ledger has no `**Email pattern:**` line, the script still runs by company name and degrades to NOT FOUND / inferred rows rather than crashing. A missing `Verified Emails.md` is not fatal — `write-outreach` falls back to Kanu's own address with a flagged gap.
+
 ### Step 5 — Draft Cold Outreach.md
 
-**Call the `write-outreach` primitive in `drip` mode** (it owns all outreach drafting — the 5-beat body, length, subject formula, the 4-email drip cadence, hook-finding, channel choice, and the `Cold Outreach.md` output structure, all per `Outreach Templates.md` which is the single source of truth). Do not reimplement the outreach spec here.
+**Call the `write-outreach` primitive in `drip` mode** (it owns all outreach drafting — the 5-beat body, length, subject formula, the two-intro pipeline output (recruiter #1 + HM/peer-IC #1, no follow-ups), hook-finding, channel choice, and the `Cold Outreach.md` output structure, all per `Outreach Templates.md` which is the single source of truth). Do not reimplement the outreach spec here.
 
 Invoke:
 ```
@@ -266,15 +315,15 @@ write-outreach(
   company:     <company from step 1>,
   archetype:   <archetype from step 2>,
   lead_theme:  <top theme from step 2>,
-  urgency:     <real competing-processes list, or `none` — never fabricated>,
+  urgency:     <derive from Pipeline.md live processes — write-outreach applies the freshness filter (today-or-future only; drops STALE/PASSED/CLOSED/REJECTED); pass `none` only to force-omit; never fabricated>,
   mode:        drip,
   role_folder: <role folder from step 1>
 )
 ```
 
-**Ask Kanu for `urgency` at the start of this step** if competing processes aren't already known (drives beat 3; omit the beat entirely if none — never invent).
+**`urgency` defaults to live processes derived from `Pipeline.md`** (write-outreach applies the freshness filter); pass `none` only to force-omit beat 3, and never invent competing processes.
 
-**Wire the output forward:** `write-outreach` writes `<role folder>/Cold Outreach.md` (two contact tables + a 4-email drip per top pick + Notes). Capture its returned `gaps[]` (`{source: "outreach", ...}`) and merge into the step-6 report and step-7 log.
+**Wire the output forward:** `write-outreach` writes `<role folder>/Cold Outreach.md` (two contact tables + two intro emails (one per top pick) + a Notes block incl. the same-company double-send guard). Capture its returned `gaps[]` (`{source: "outreach", ...}`) and merge into the step-6 report and step-7 log.
 
 ### Step 6 — Report back
 
@@ -287,11 +336,11 @@ Keep the recap short and actionable. Include:
 - **Gaps** — any `[NUMBER?]` placeholders in the resume, low-confidence emails, missing demo URL, anything else worth a second look
 - **`Pipeline.html` is now stale** — ask if he wants it regenerated
 
-End with the obvious next step: review the drafts, run `.docx` conversion if he wants a Word resume, send the outreach.
+End with the obvious next step: review the drafts, regenerate the PDF or tweak a bullet if he wants the page tighter, send the outreach.
 
 ### Step 7 — Log the run
 
-Close the trace by wrapping this step and then calling `finish-run`. This appends one compact summary line to `~/.claude/logs/jd-to-ready.jsonl`, links that summary to `<role folder>/.jd-to-ready-trace.jsonl`, and clears the active-run state used by hooks.
+Close the trace by wrapping this step and then calling `finish-run`. This appends one compact summary line to `~/.claude/logs/jd-to-ready.jsonl`, links that summary to `<role folder>/.jd-to-ready-trace.jsonl`, and clears the active-run state used by hooks. Before calling `finish-run`, confirm that steps `1`, `2`, `3`, `3.5`, `4`, `4b`, `4c`, `5`, `6`, and `7` all have `step_end` events. See `RUNBOOK.md` for inspection commands.
 
 Begin Step 7:
 
@@ -302,13 +351,20 @@ python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step 7 --prim
 End Step 7 before `finish-run`:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 7 --primitive final-log --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["~/.claude/logs/jd-to-ready.jsonl"]' --gaps '<merged gaps JSON array>' --failure-pattern "<taxonomy-tag-or-empty>"
+UNKNOWN_TOKENS='{"input":null,"output":null,"cache_read":null,"cache_write":null,"total":null,"source":null,"notes":"runtime did not expose token counts"}'
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 7 --primitive final-log --mode "" --status "ok|partial|failed|skipped" --prediction-met "true|false|partial|unknown" --produced '["~/.claude/logs/jd-to-ready.jsonl"]' --gaps '<merged gaps JSON array>' --failure-pattern "<taxonomy-tag-or-empty>" --tokens "$UNKNOWN_TOKENS"
 ```
 
 Then finish the run:
 
 ```bash
 python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py finish-run --status "ok|partial|failed" --gaps '<merged gaps JSON array>' --files-written '["Job Description.md","Kanu Madhok Resume - <Company> <Short Role>.md","Cold Outreach.md"]'
+```
+
+`finish-run` computes the final status from the step results and rejects a mismatched `--status`; the argument is kept only as an explicit caller assertion. If the run is interrupted, close it with:
+
+```bash
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py abort-run --reason "<why the run cannot continue>" --gaps '<merged gaps JSON array>'
 ```
 
 The final summary line contains this shape:
@@ -322,8 +378,8 @@ The final summary line contains this shape:
   "role_folder": "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Cohere - Forward Deployed Engineer Prompt Specialist",
   "trace_file": "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Cohere - Forward Deployed Engineer Prompt Specialist/.jd-to-ready-trace.jsonl",
   "status": "ok",
-  "steps_closed": ["1", "2", "3", "4", "4b", "5", "6", "7"],
-  "required_steps": ["1", "2", "3", "4", "4b", "5", "6", "7"],
+  "steps_closed": ["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"],
+  "required_steps": ["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"],
   "gaps": [],
   "files_written": ["Job Description.md", "Kanu Madhok Resume - Cohere FDE Prompt Specialist.md", "Cold Outreach.md"],
   "steps": [{"event": "step_end", "...": "..."}]
@@ -331,6 +387,8 @@ The final summary line contains this shape:
 ```
 
 If any field is unknown for a run, set it to `null` rather than omitting the key. Keep JSON valid and one line per event. The per-role trace is the audit trail for "why did the skill pick this recruiter" questions. When a run's output looks off, read `<role folder>/.jd-to-ready-trace.jsonl` first; the answer should be visible there before re-running anything.
+
+For coding agents changing this trace layer: keep `SKILL.md` operational, but treat `TRACEABILITY.md`, `TRACE_SCHEMA.md`, and `TOKEN_ACCOUNTING.md` as the implementation contract, with `TRACE_TEST_PLAN.md` as the regression plan. The implemented baseline is fail-closed production logging with per-step token accounting, one active step at a time, monotonic event sequence numbers, and an explicit abort path for interrupted runs.
 
 **Regression discipline.** Self-predicted regressions are unreliable (per the AHE source: ~11% precision). Don't trust a step's own forecast of what it'll break — keep a **golden set** of already-prepped roles (Morningstar, BCG X) and, after any primitive edit, re-run and diff against the known-good output before trusting the change. The primitive-upgrade git history (`~/.claude/skills` repo) makes a bad edit one `git revert` away.
 
@@ -348,6 +406,6 @@ If any field is unknown for a run, set it to `null` rather than omitting the key
 ## What this skill does NOT do
 
 - It does NOT send messages. All outreach is drafted to a file for Kanu's review.
-- It does NOT generate `.docx` / `.pdf` automatically. Mention it as a follow-up if relevant.
+- In `standalone` mode it does NOT auto-render the `.pdf` (and never a `.docx`). Mention `scripts/build_resume_pdf.py` as a follow-up if relevant. In `pipeline` mode, step 3.5 renders + vision-verifies the PDF.
 - It does NOT build out the full prep artifact set (Question Bank, Interview Answers, TMAY cue card, mock rubric, prep schedule). That's for after an interview is scheduled — not at apply time.
 - It does NOT modify `Resume Achievements Master.md`, `Outreach Templates.md`, or any other reusable. If the JD surfaces a gap in those, mention it in the report — that's the `interview-prep-reusables` skill's job, not this one's.

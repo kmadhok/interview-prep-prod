@@ -7,3 +7,10 @@ __pycache__/
 
 # Claude Code local machine settings
 .claude/settings.local.json
+.apollo-scrape/
+
+# Secrets — API keys (EmailFinder, LeadMagic, etc.)
+.env
+
+# verify-emails derived credit cache (local, regenerated on demand)
+.claude/skills/verify-emails/.email-cache.json

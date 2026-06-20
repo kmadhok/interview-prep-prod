@@ -31,7 +31,7 @@ Identify the right people to contact at a target company — **and specifically 
 |------|------|-------|
 | Ranked contact table(s) | always | returned to caller / chat. `shortlist` = one combined table (~5 people). `full` = **three separate tables: Recruiters (5), Hiring Managers (3–5), Peer ICs (3–5)** |
 | `.contacts-ledger.md` | `full` mode | **the shared scored-ledger artifact** written to `<role_folder>/.contacts-ledger.md` (Sub-step 2 schema). `enrich-contacts` reads, appends activity-surfaced rows, re-sorts, writes back; `write-outreach` reads its top rows. Each row carries email + confidence so downstream skills don't re-derive. |
-| `Verified Emails.md` | `full` mode | `<role_folder>/Verified Emails.md` — `| Name | Email | Confidence |` table for the top picks, emails verified via Apollo where possible (Sub-step 4.5). This is the file `write-outreach` reads to set Gmail-draft `To:` addresses. |
+| _(inferred emails only)_ | `full` mode | Each ledger row carries a pattern-inferred email + confidence. Verification of the top picks (and writing `Verified Emails.md`) is done downstream by jd-to-ready **step 4c** (`verify-emails` + EmailFinder.dev), not here. |
 | `top_picks` | `full` mode | the #1 of EACH category (top recruiter + top HM + top peer-IC) **as read from the top of the ledger**, each flagged, plus a `recommended_lead` hint (see "Who to lead with" below). Each pick carries its inferred email + confidence. After `enrich-contacts` re-sorts the ledger, the authoritative top_picks are the post-enrichment top rows. |
 | `gaps[]` | always | **Cross-skill gap schema** (shared by all primitives): list of `{source: "contacts", kind, detail}` objects — e.g. `{source: "contacts", kind: "thin-results", detail: "only 2 plausible HMs found"}`, `{source: "contacts", kind: "no-email", detail: "<name>: InMail only"}`. `source` lets jd-to-ready merge resume-gaps + contact-gaps into one step-6 report / step-7 log without a schema clash. Empty `[]` if none. |
 
@@ -134,23 +134,7 @@ Pick per table (`full`): top 5 recruiters, top 3–5 hiring managers, top 3–5 
 
 **Never fabricate.** If no pattern can be inferred, leave email empty, mark "InMail only", and record `{kind: "no-email", detail: "<name>: InMail only"}` in `gaps[]`.
 
-**Sub-step 4.5 — Verify the top picks' emails via Apollo** (`full` mode). Pattern-inferred emails are Medium-confidence guesses; Apollo turns them into verified addresses. To bound credit cost (~1 credit/person), verify **only the top 3 recruiters + the recommended_lead pick** (≤4 people), never the whole ledger.
-
-For each, call `mcp__claude_ai_Apollo_MCP__apollo_people_match` with every identifier you have — `first_name`, `last_name`, `organization_name` (or `domain`), and `linkedin_url` (from the Sub-step 3 drilldown). Do NOT set `reveal_personal_emails` (work email only — this is cold professional outreach). One call per person, sequentially.
-
-- **Apollo returns a verified work email** → overwrite the inferred email on that ledger row; set Confidence **High (Apollo-verified)**; record the source.
-- **Apollo has the person but no email** → keep the inferred email, leave Confidence as inferred, record `{kind: "no-verified-email", detail: "<name>: Apollo matched but no email; using inferred"}`.
-- **Apollo can't match / is unauthed / out of credits** → keep inferred emails, do NOT block the pipeline, record `{kind: "apollo-unavailable", detail: "<reason>; top picks use inferred emails"}`. (First call surfaces an auth prompt if the Apollo MCP isn't connected — if so, note it and proceed with inferred emails.)
-
-**Write `<role_folder>/Verified Emails.md`** — the table `write-outreach` reads to populate Gmail-draft `To:` addresses. One row per verified-or-inferred top pick:
-
-```
-| Name | Email | Confidence |
-|------|-------|------------|
-| <name> | <email> | High (Apollo-verified) / Medium (inferred <pattern>) / Low (guess) |
-```
-
-A header-verified email from prior Kanu correspondence (e.g. found in Gmail) outranks Apollo — if a row already carries a `High (header-verified)` email, keep it and skip the Apollo call for that person (don't spend a credit re-verifying a known-good address).
+**Email confidence (`full` mode).** Each ledger row carries a pattern-inferred work email at Medium confidence (e.g. `first.last@<domain>`). This skill does NOT verify them — verification of the top 3 recruiters is a downstream concern owned by jd-to-ready **step 4c** (the `verify-emails` script + EmailFinder.dev), which writes `Verified Emails.md`. A `High (header-verified)` email already present from prior Kanu correspondence (e.g. found in Gmail) should be kept as-is and is exempt from downstream re-verification.
 
 **Sub-step 5 — Hand off to `enrich-contacts` via the ledger artifact** (`full` mode, recommended). Discovery by keyword search alone misses people the recruiters have *amplified* — a practice-aligned recruiter who reposts "we're hiring an AI Specialist Leader" has surfaced both a live req and its sourcer that no title search returns.
 

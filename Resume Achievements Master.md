@@ -104,6 +104,18 @@ Demo: https://sql-rag-frontend-simple-481433773942.us-central1.run.app/
 
 **Verified proof points:** CubeJS semantic-layer skill - co-built with DS and product team - context-engineered agent - Wibey/Claude Code fork skill interface - parallel routing - disagreement review/refinement loop - Product requests previously came as tickets - manual analyst execution usually took 30-60 minutes per request - agent returns usable answers in <=10 minutes (verified by Kanu) - 67-92% response-time reduction from the prior 30-60 minute manual workflow - Product can now ask those questions directly through the Wibey skill instead of filing a ticket to Kanu.
 
+**Architecture evolution — current state as of 6/10/2026** (source: `Work Artifacts/customer-voice-semantic-layer-code-walkthrough.md`). The parallel comparison flow above is retired — it was double compute in the request path for offline value. The current system is sequential and registry-driven (custom-built, not CubeJS). The bullets above stay accurate as past-tense history; use the bullets below for present-tense claims.
+
+**Resume bullet, current architecture (conservative):**
+
+> Evolved the analytics skill into a registry-governed semantic layer over BigQuery: YAML definitions plus SQLite vocabulary snapshots define legal dimensions, values, and table wiring; a deterministic prompt builder generates the LLM contract from the registry; a single LLM call maps the question to strict JSON intent (the model never writes SQL); a deterministic gate validates and canonicalizes intent into a typed dataclass before a deterministic compiler emits the SQL — same question, same answer, every time. New or changed definitions pass a human review gate before entering the registry.
+
+**Compact variant:**
+
+> Built a registry-governed semantic layer that boxes the LLM into semantic parsing — one call, strict JSON intent, never SQL — with deterministic validation, value canonicalization, UPC normalization with live BigQuery existence checks, and a deterministic SQL compiler, making answers reproducible and the only probabilistic step regression-testable.
+
+**Verified proof points (current architecture):** single LLM call in the request path - LLM emits strict JSON intent, never SQL - registry = YAML (dimensions, tables, feasibility wiring) + SQLite vocab snapshots (product hierarchy, brands, surveys) - typed `FeasibilityIntent` gate with case-insensitive canonical matching and synonym lookup - UPC regex normalization to 13-digit warehouse form + optional live BigQuery existence check - deterministic `compile_feasibility()` SQL generation - 5 output types (count, response rate, completion rate, panelist list, dimension ranking) - 16 governed demographic dimensions - sequential architecture, parallel reconciliation retired - human gate on definition changes/inserts.
+
 ---
 
 ### A3. Autonomous Jira Ticket-Resolution Agent

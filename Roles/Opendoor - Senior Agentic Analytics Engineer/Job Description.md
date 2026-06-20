@@ -1,4 +1,4 @@
-	# Senior+ Agentic Analytics Engineer
+		# Senior+ Agentic Analytics Engineer
 
 **Company:** Opendoor
 **Locations:** _Not listed_ (pay note says "varies by work location"; remote/hybrid not specified)

@@ -2,7 +2,7 @@
 
 **Role:** Senior+ Agentic Analytics Engineer · **Location:** Seattle / Miami / Toronto (resolved from recruiter posts; JD left it blank) · **Comp:** $186K–$256K base + RSUs + bonus
 
-**Strategy:** Two parallel tracks. Lead with **Denzzel (recruiter, Day 0)** — he posted the req and invited DMs. Follow with **Paras (HM, Day 2–3)** as a peer-to-peer, content-led message. Don't send both the same day. Both via **LinkedIn InMail** (neither is a 1st-degree connection; we only have Medium-confidence guessed emails, so InMail beats a cold-email-to-a-guess).
+**Strategy:** Two parallel tracks. Lead with **Denzzel (recruiter, Day 0)** — he posted the req and invited DMs. Follow with **Paras (HM, Day 2–3)** as a peer-to-peer, content-led message. Don't send both the same day. **Channel updated 2026-06-14:** Denzzel + Rob now reachable by **verified email** (EmailFinder SMTP-verified, High confidence) — both staged as **UNSENT Gmail drafts**. Paras stays **LinkedIn InMail** (no verifiable email; reach via LinkedIn or route through Denzzel).
 
 **Real urgency referenced (verified from Pipeline.md, not fabricated):** BCG X second-round technical loop (passed round 1, advanced 6/3) + Walmart Principal Data Analyst next round 6/19.
 
@@ -15,18 +15,49 @@ Full scored ledger + per-recruiter hooks: see `.contacts-ledger.md`.
 
 ---
 
-## Message 1 — Denzzel Martin (Recruiter) · Day 0 · LinkedIn InMail
+## Message 1 — Denzzel Martin (Recruiter) · Day 0 · Email (UNSENT Gmail draft staged 2026-06-14)
+
+**To:** denzzel.martin@opendoor.com (verified, High) · **Subject:** Ex-Walmart Agent Builder — your Opendoor Agentic Analytics req
 
 Hi Denzzel,
 
-Saw your post for the Agentic Analytics Engineer role — the part about analytics that tells people what to look at before they ask is pretty much my last year at Walmart Data Ventures.
+Saw your post for the Senior+ Agentic Analytics Engineer role — the line about an analytics function that anticipates questions instead of waiting to be asked is pretty much my last year at Walmart Data Ventures.
 
-I built a self-service analytics agent over our BigQuery warehouse that business teams actually use day to day — it's the only AI tool that made it into their hands so far. Also a KPI monitor that watches the numbers on its own, digs into what moved, and drops the answer in Slack before anyone files a ticket.
+I built a self-service analytics agent over our BigQuery warehouse that business teams use day to day — the only AI tool that's made it into their hands so far — plus a KPI monitor that watches the numbers on its own, digs into what moved, and drops the answer in Slack before anyone files a ticket.
 
-I'm in a second-round technical loop with BCG X and have another round coming at Walmart, but Opendoor's the one I actually want. I'd like to get the process started for the Agentic Analytics Engineer role — are you the right person, or can you point me to whoever owns it?
+I'm in a second-round technical loop with BCG X and have another round coming at Walmart, but Opendoor's the one I actually want. I'd like to start the process for this role — are you the right person, or can you point me to whoever owns the req? Resume attached.
 
 Best,
+
 Kanu
+
+---
+Kanu Madhok
+madhok.kanu@gmail.com · linkedin.com/in/kanu-madhok · github.com/kmadhok
+
+---
+
+## Message 1b — Rob Ortega (Recruiter, backup) · Email (UNSENT Gmail draft staged 2026-06-14)
+
+**To:** robert.ortega@opendoor.com (verified, High) · **Subject:** Ex-Walmart Agent Builder — your Seattle Agentic Analytics req
+
+Hi Rob,
+
+Saw you're hiring in Seattle for the Senior Agentic Analytics Engineer role — that's exactly the role I'm reaching out about.
+
+At Walmart Data Ventures I built a self-service analytics agent over our BigQuery warehouse that business teams use day to day — the only AI tool that's made it into their hands so far — plus a KPI monitor that watches the numbers on its own, digs into what moved, and drops the answer in Slack before anyone files a ticket.
+
+I'm in a second-round technical loop with BCG X and have another round coming at Walmart, but Opendoor's the one I actually want. I'd like to start the process for this role — are you the right person, or can you point me to whoever owns the req? Resume attached.
+
+Best,
+
+Kanu
+
+---
+Kanu Madhok
+madhok.kanu@gmail.com · linkedin.com/in/kanu-madhok · github.com/kmadhok
+
+**Send order:** Lead with Denzzel (Seattle, freshest post, invited DMs). Use Rob only if Denzzel goes silent through FU2 — don't email both the same week.
 
 ---
 
