@@ -121,11 +121,17 @@ def md_inline(text: str) -> str:
 
 # ---------- layout helpers ----------
 
-def header_row(left_html: str, right_html: str, left_style, right_style, col_split: float = 4.7):
-    total = 7.2
+def header_row(left_html: str, right_html: str, left_style, right_style,
+               col_split: float = 4.7, frame_width_in: float = 7.2):
+    # The table must fill the full frame width and left-align within it, or it
+    # centers itself (reportlab default hAlign=CENTER) and the company name drifts
+    # right by half the (frame - table) gap — an amount that varies per font/margin
+    # tier. Track the real frame width and pin the right column to the right margin.
+    right_w = frame_width_in - col_split
     t = Table(
         [[Paragraph(left_html, left_style), Paragraph(right_html, right_style)]],
-        colWidths=[col_split * inch, (total - col_split) * inch],
+        colWidths=[col_split * inch, right_w * inch],
+        hAlign="LEFT",
     )
     t.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -371,7 +377,7 @@ def _count_pdf_pages(pdf_path: Path) -> int:
     return len(re.findall(rb"/Type\s*/Page[^s]", pdf_path.read_bytes()))
 
 
-def _build_story(md_text: str, styles: dict[str, ParagraphStyle]):
+def _build_story(md_text: str, styles: dict[str, ParagraphStyle], frame_width_in: float = 7.2):
     name, contact_html, sections = parse_resume(md_text)
     story = []
     story.append(Paragraph(name, styles["name"]))
@@ -389,7 +395,8 @@ def _build_story(md_text: str, styles: dict[str, ParagraphStyle]):
                 story.append(header_row(
                     f"<b>{md_inline(job['company'])}</b>",
                     f"<i>{md_inline(job['city_date'])}</i>" if job["city_date"] else "",
-                    styles["company"], styles["city_date"], col_split=4.7,
+                    styles["company"], styles["city_date"],
+                    col_split=4.7, frame_width_in=frame_width_in,
                 ))
                 if job.get("title"):
                     story.append(Paragraph(f"<i>{md_inline(job['title'])}</i>", styles["title"]))
@@ -421,7 +428,8 @@ def _build_story(md_text: str, styles: dict[str, ParagraphStyle]):
                 story.append(header_row(
                     md_inline(left),
                     f"<i>{md_inline(right)}</i>" if right else "",
-                    styles["body"], styles["city_date"], col_split=5.5,
+                    styles["body"], styles["city_date"],
+                    col_split=5.5, frame_width_in=frame_width_in,
                 ))
         elif up in HONORS_HEADERS:
             story.extend(section_header_flow("HONORS", styles))
@@ -443,7 +451,8 @@ def _build_story(md_text: str, styles: dict[str, ParagraphStyle]):
 
 def _render_pdf_once(md_text: str, pdf_path: Path, tier: dict[str, float]) -> None:
     styles = build_styles(tier["body_pt"])
-    name, story = _build_story(md_text, styles)
+    frame_width_in = 8.5 - 2 * tier["margin_in"]
+    name, story = _build_story(md_text, styles, frame_width_in=frame_width_in)
     margin = tier["margin_in"] * inch
 
     doc = BaseDocTemplate(

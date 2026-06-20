@@ -1,3 +1,43 @@
+
+- Success here is explicitly _adoption by consulting teams_. How does the AI Factory measure that in practice, and what's the bar for an asset graduating from a pilot team to firm-wide?
+
+- What makes a solution actually become a reusable accelerator versus staying a one-off — and where do most builds die on that path?
+
+- As a product builder partnering with front-line consultants and offer teams, who owns the roadmap when a consultant's urgent request conflicts with building something that scales?
+
+- The JD frames this as balancing speed of experimentation against robustness, security, and maintainability. Where does the AI Factory currently sit on that spectrum, and is it trying to move?
+
+- When an asset is adopted across practices, regions, and client contexts, who maintains it? Does the original builder keep owning it, or does it hand off to a platform team?
+
+- How does the AI Factory decide _what_ to build — is it bottom-up from consultants spotting repeatable pain, top-down from product leadership, or some mix?
+
+- The role centers on Claude Code and Claude/Markdown-based development. How standardized is the tooling and the architecture across the team versus builder's choice?
+
+- What separates a (Senior) Product Builder who's having outsized impact here in their first year from one who's just shipping?
+
+- You built the Forward Deployment function and scaled it Denver → Europe → global. As the AI Factory scales, what's the hardest thing to keep intact? _(rapport — his lived experience)_
+
+- What's an AI Factory asset or pattern you've shipped that you wish more of the firm used — and what got in the way? _(builder-to-builder)_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Questions to Ask — BCG X / Maan · Mon 6/1, 2 PM ET
 
 > **Two kinds of questions matter in this round.** The end-of-interview ones (for Maan) are a final read on how you think — he grades them like your case structure. The *clarifying* ones (during the case) are explicitly on the rubric: structure, clarity, logical reasoning. Both are below.

@@ -5,6 +5,8 @@
 **Panel:** Máximo Lau (Sr Manager, Ecommerce Analytics), Michael Hawkins (Director, Data & Analytics), Bashir Ghellali (unconfirmed)
 **Project featured:** Self-service analytics agent over 67 BigQuery tables (achievement A1)
 
+> **⚠️ NO-SLIDE MODE (updated 6/17).** Bashir never confirmed a slide is required, so prep on the assumption you deliver this **verbally**. Ignore the "build the slide" layout section below — keep it only as a fallback if the recruiter confirms a slide is wanted. When telling it without a visual, open with verbal signposting so the panel still gets the structure the slide used to give: *"Let me take this in four parts — the problem, what I owned, the outcome, and the stack."* Then walk the four beats below in order. Say the three anchor numbers slowly (67 tables · 23-case golden set · only AI skill in active business use) since there's no screen to point at.
+
 ---
 
 ## Why this project for this panel

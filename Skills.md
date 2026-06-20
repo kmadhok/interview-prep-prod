@@ -162,6 +162,8 @@ These are bundled `.skill` files that live with the workspace, version-controlle
 
 **Output.** Role folder with `Job Description.md` + `Kanu Madhok Resume - <Company> <Short Role>.md` + `Cold Outreach.md`, plus updated `Pipeline.md` and `active_interview_pipeline.md` memory.
 
+**Traceability.** Before editing `jd-to-ready` logging, read the canonical docs in `.claude/skills/jd-to-ready/`: `TRACEABILITY.md`, `TRACE_SCHEMA.md`, `TOKEN_ACCOUNTING.md`, `RUNBOOK.md`, and `TRACE_TEST_PLAN.md`. The intended contract is fail-closed production tracing with per-step token accounting.
+
 **File.** `~/.claude/skills/jd-to-ready/SKILL.md` (the stale root `jd-to-ready.skill` was deleted in the 2026-05-31 containerization refactor — see the Process Map note).
 
 ---
