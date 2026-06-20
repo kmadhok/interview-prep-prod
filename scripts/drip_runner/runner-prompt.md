@@ -12,8 +12,8 @@ Repeat until `search_threads "label:drip-queue"` is empty OR you have staged 2 r
   c. Get the JD text:
      - source "linkedin" -> mcp__linkedin__get_job_details(job_id). If it errors/empty -> drip-error + alert, continue.
      - source "ats" -> WebFetch the url for the JD. If it returns no JD -> drip-error + alert, continue.
-  d. DEDUPE: py -3 scripts/drip_runner/dedupe.py --company "<employer>" --job-id "<job_id>" --pipeline Pipeline.md.
-     - If DUPLICATE -> drip-done (already handled), remove drip-processing, continue (do not re-file).
+  d. DEDUPE: py -3 scripts/drip_runner/dedupe.py --company "<employer>" --job-id "<job_id>" --pipeline Pipeline.md. (Dedupe keys on the LinkedIn job_id; for ATS jobs with no id it returns NEW — in that case ALSO treat as duplicate if a `Roles/<Company - Role>` folder already exists.)
+     - If DUPLICATE (or the role folder already exists) -> drip-done (already handled), remove drip-processing, continue (do not re-file).
   e. Run the jd-to-ready skill end-to-end on the JD text (real run into Roles/). Drafts only; never send. The memory step is a no-op on this PC (note as a gap; do not create active_interview_pipeline.md).
   f. On success -> drip-done (ID), remove drip-processing.
   g. On any failure in (e) -> drip-error (ID), remove drip-processing, append role + failing step + reason to the failures alert, continue.

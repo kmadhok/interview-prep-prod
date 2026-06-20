@@ -17,6 +17,10 @@ def test_linkedin_job_parsed():
     assert r.is_job and r.source == "linkedin" and r.job_id == "4428726955"
     assert r.url == "https://www.linkedin.com/jobs/view/4428726955/"
 
+def test_linkedin_slug_url_parsed():
+    r = parse_job_email("JOB Acme", "https://www.linkedin.com/jobs/view/staff-engineer-at-acme-4395930432/")
+    assert r.is_job and r.source == "linkedin" and r.job_id == "4395930432"
+
 def test_ats_url_is_ats_no_jobid():
     r = parse_job_email("JOB Acme", "apply here https://boards.greenhouse.io/acme/jobs/123")
     assert r.is_job and r.source == "ats" and r.job_id == ""

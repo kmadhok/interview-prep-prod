@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse, json, re, sys
 from dataclasses import dataclass, asdict
 
-LINKEDIN_JOB_RE = re.compile(r"linkedin\.com/jobs/view/(\d+)", re.IGNORECASE)
+LINKEDIN_JOB_RE = re.compile(r"linkedin\.com/jobs/view/(?:[\w-]*-)?(\d+)", re.IGNORECASE)  # /view/<id> and /view/<slug>-<id>
 URL_RE = re.compile(r"https?://[^\s<>\"')]+", re.IGNORECASE)
 
 
