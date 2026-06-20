@@ -86,4 +86,18 @@ Per `Outreach Templates.md` 1a/4a — reply on the same thread, never start a ne
 ## Notes
 - **Send timing:** Tue–Thu, ~11am or ~2pm recipient TZ (Seattle/Pacific for both). Avoid Mon/Fri.
 - **Channel:** both LinkedIn InMail. If Denzzel accepts a connection request first, you can send Message 1 as a free DM instead of spending an InMail credit.
-- **Emails NOT used:** `first@opendoor.com` is a Medium-confidence guess (no `Verified Emails.md` for this role). Don't cold-email the guess; LinkedIn is the safer channel.
+- **Emails NOT used (original plan):** `first@opendoor.com` is a Medium-confidence guess (no `Verified Emails.md` for this role). Don't cold-email the guess; LinkedIn is the safer channel.
+
+---
+
+## Send Log
+
+| Date | Contact | Channel | Subject | Notes |
+|------|---------|---------|---------|-------|
+| 2026-06-07 | Denzzel Martin | LinkedIn InMail | Agentic Analytics Engineer role | Initial Tier-1 recruiter outreach |
+| 2026-06-14 ~1:48 PM CT | Denzzel Martin (denzzel.martin@opendoor.com) | Email | Agentic Analytics Engineer req | Direct email; resume (Kanu Madhok 2026.pdf) attached; BCG X + Walmart urgency cited; sent by Kanu (not staged by drip-runner) |
+| 2026-06-14 ~1:47 PM CT | Rob Ortega (robert.ortega@opendoor.com) | Email | Agentic Analytics Engineer req | Direct email; resume attached; same message as Denzzel variant; sent by Kanu (not staged by drip-runner) |
+
+**Note:** Two additional draft variants (drafted ~2:17 AM 6/14, different content from what was sent) are sitting in Gmail drafts — `19ec3eb804fc21af` (to Denzzel) and `19ec3eba3116fe12` (to Rob). These were superseded by the emails sent at 1:47–1:48 PM. Review and delete if no longer needed.
+
+**Paras Doshi InMail window:** Day 2–3 window (6/10–6/11) has elapsed. Late note still possible if desired.

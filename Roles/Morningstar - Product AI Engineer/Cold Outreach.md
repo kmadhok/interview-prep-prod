@@ -349,3 +349,9 @@ Some orgs frown on candidates pinging the hiring manager *and* multiple recruite
 ## 2026-06-10 update — Jeanine nudge STAGED in Gmail ✅
 
 Jeanine silent 15 days after the 5/26 intro (no FU1 had gone out; the 6/3 nudge trigger passed). **FU1-style nudge drafted in Gmail as a reply on the original thread** — Jira-agent restate + fresh urgency line (BCG X round 2 June 16, Walmart next round June 19; replaces the stale "interview Friday" line). Review and send from Gmail drafts. If still silent 4–5 business days after sending, Ashley (Draft 5) is the next parallel ping, then Mary Kay (Draft 6).
+
+---
+
+## 2026-06-17 update — Jeanine nudge MOOT; HR interview SCHEDULED ✅
+
+**Do NOT send the Jeanine nudge (Gmail draft r-5752901612215702305).** Morningstar HR reached out directly on 2026-06-17: Workday scheduling email ~2:19 PM CT from morningstar@myworkday.com + calendar invite from Brittany.Giacomo@morningstar.com ~3:58 PM CT. 25-min HR Zoom interview with **Brittany Giacomo** now booked (Zoom: morningstar.zoom.us/j/99896459116; exact date/time in Gmail calendar ICS invite). All recruiter outreach (Jeanine, Ashley, Eric, Mary Kay) is superseded — Morningstar initiated the process; let it run.
