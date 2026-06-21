@@ -6,7 +6,13 @@ $logDir = Split-Path $log
 if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Force $logDir | Out-Null }
 Set-Location $repo
 
-function Log($m) { "$(Get-Date -Format o) $m" | Tee-Object -FilePath $log -Append }
+# Echo to console AND append UTF-8 (no BOM) — Tee-Object writes UTF-16 on PS 5.1,
+# which garbles the log and trips this repo's BOM-sensitive readers.
+function Log($m) {
+  $line = "$(Get-Date -Format o) $m"
+  Write-Host $line
+  [System.IO.File]::AppendAllText($log, $line + [Environment]::NewLine, (New-Object System.Text.UTF8Encoding($false)))
+}
 
 Log "run start"
 git pull --rebase
