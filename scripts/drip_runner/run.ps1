@@ -27,6 +27,14 @@ Log "invoking claude -p (prompt=$promptFile)"
 # Pipe the prompt via stdin, NOT as a -p argument: PowerShell 5.1's native-arg
 # quoting breaks on embedded quotes (e.g. --company "") and leaks prompt text like
 # --job-id to claude as bogus CLI options. Stdin sidesteps arg parsing entirely.
-$prompt | claude -p
-Log "run end (exit $LASTEXITCODE)"
-exit $LASTEXITCODE
+#
+# Capture stdout so the run summary lands in the persistent log (this is an
+# unattended cron run; without this the only durable record is the 4 wrapper
+# lines). stdout only: do NOT 2>&1 a native exe under -ErrorActionPreference Stop
+# (PS 5.1 wraps stderr as a terminating NativeCommandError). $LASTEXITCODE survives.
+$out = $prompt | claude -p | Out-String
+$code = $LASTEXITCODE
+Write-Host $out
+[System.IO.File]::AppendAllText($log, "---- claude output ----" + [Environment]::NewLine + $out + [Environment]::NewLine, (New-Object System.Text.UTF8Encoding($false)))
+Log "run end (exit $code)"
+exit $code
