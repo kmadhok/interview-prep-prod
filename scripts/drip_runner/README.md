@@ -1,20 +1,43 @@
 # Application Drip-Runner — Ops
 
-## One-time setup (Kanu, in the Gmail UI / a terminal)
-1. **Labels** already exist: drip-queue, drip-processing, drip-done, drip-error.
-2. **Gmail filter:** Settings -> Filters -> Create. Criteria: Subject `JOB`. Action: Apply label `drip-queue`, Skip Inbox (optional). This auto-queues a self-sent "JOB <title>" email with a URL in the body.
-3. **`.env`** at repo root contains `Email_Finder_Dev=<key>` (no BOM — create via an editor or `Set-Content ... -Encoding utf8NoBOM`).
-4. **Deps:** `py -3 -m pip install reportlab`. Optional: install poppler (`pdftoppm`) for the resume vision-verify.
-5. **Daemon auto-start:** run `install-tasks.ps1` once (elevated).
+Two ingestion modes, one pipeline. Both run `jd-to-ready` end-to-end, stage Gmail
+drafts only (never send), and honor the `>=4 unsent job drafts` backpressure pause.
 
-## How to send a job
-Email yourself: Subject `JOB <anything>`, body = one job URL (LinkedIn or ATS).
+## Mode: saved (default, primary)
+Ingests your **LinkedIn saved-jobs list** — save a job on LinkedIn = consent to
+process it. No email step.
 
-## Run manually (smoke test)
-`powershell -ExecutionPolicy Bypass -File scripts\drip_runner\run.ps1`
+- **How to queue a job:** click **Save** on any LinkedIn job posting.
+- **Run manually:** `powershell -ExecutionPolicy Bypass -File scripts\drip_runner\run.ps1`
+- **What it does:** `get_saved_jobs` (pages 1-5, newest first) -> for each id skip if
+  already filed (Pipeline.md), already attempted (`saved_seen.json` ledger), or a role
+  folder exists -> pick the first survivor -> `get_job_details` -> `jd-to-ready` ->
+  Pipeline row + ledger `done` -> commit `drip-runner:` + push. Failures -> ledger
+  `error` + a `[DRIP-RUNNER] failures` Gmail draft. One role per run.
+- **Re-attempt a parked job:** remove its id from `scripts/drip_runner/saved_seen.json`.
+- **Requires:** the daemon running the `feature/522-get-saved-jobs` branch (stride-10
+  fix) so `get_saved_jobs` is served. `install-tasks.ps1` starts it from the repo dir.
 
-## What it does
-Drains label:drip-queue oldest-first -> claim -> URL->JD -> dedupe -> jd-to-ready (drafts only) -> Pipeline row -> drip-done. Failures park to drip-error and append to a "[DRIP-RUNNER] failures" Gmail draft. Never sends.
+## Mode: email (secondary — ATS / any non-LinkedIn URL)
+Ingests the Gmail `drip-queue` label. Use for postings that aren't LinkedIn-native.
 
-## Re-queue a parked job
-In Gmail, relabel it drip-error -> drip-queue.
+- **One-time:** labels `drip-queue/processing/done/error` exist; Gmail filter
+  (Subject `JOB` -> apply `drip-queue`). **Known issue:** the filter is not currently
+  matching self-sent mail — apply the label by hand or fix the filter before relying on it.
+- **How to queue:** email yourself Subject `JOB <anything>`, body = one job URL.
+- **Run manually:** `powershell -ExecutionPolicy Bypass -File scripts\drip_runner\run.ps1 -Mode email`
+- **Re-queue a parked job:** in Gmail, relabel `drip-error` -> `drip-queue`.
+
+## One-time setup
+1. **Daemon auto-start + cron:** `install-tasks.ps1` once (registers `LinkedInDaemon`
+   at-logon and `DripRunner` weekday 08:00, the latter DISABLED until smoke-tested).
+2. **Deps (optional):** `py -3 -m pip install reportlab` for resume PDF export; without
+   it the resume renders to `.md` and the PDF step graceful-skips. Optional poppler
+   (`pdftoppm`) for the resume vision-verify.
+3. **.env** at repo root carries `Email_Finder_Dev=<key>` (no BOM).
+
+## Enable the cron once smoke-tested
+`Enable-ScheduledTask -TaskName DripRunner`  (runs `run.ps1` with default `-Mode saved`).
+
+## Tests
+`py -3 -m pytest scripts/drip_runner -q`

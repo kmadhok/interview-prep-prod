@@ -1,4 +1,7 @@
 # Application Drip-Runner entrypoint. Run by Task Scheduler.
+#   -Mode saved (default): ingest from the LinkedIn saved-jobs list.
+#   -Mode email          : ingest from the Gmail drip-queue (ATS / any-URL escape hatch).
+param([ValidateSet('saved','email')][string]$Mode = 'saved')
 $ErrorActionPreference = "Stop"
 $repo = "G:\projects\interview-prep"
 $log  = Join-Path $env:USERPROFILE ".claude\logs\drip-runner.log"
@@ -14,12 +17,13 @@ function Log($m) {
   [System.IO.File]::AppendAllText($log, $line + [Environment]::NewLine, (New-Object System.Text.UTF8Encoding($false)))
 }
 
-Log "run start"
+Log "run start (mode=$Mode)"
 git pull --rebase
 if (-not $?) { Log "git pull failed; aborting run (no claude invocation)"; exit 1 }
 
-$prompt = Get-Content -Raw (Join-Path $repo "scripts\drip_runner\runner-prompt.md")
-Log "invoking claude -p"
+$promptFile = if ($Mode -eq 'email') { 'runner-prompt.md' } else { 'runner-prompt-saved.md' }
+$prompt = Get-Content -Raw (Join-Path $repo "scripts\drip_runner\$promptFile")
+Log "invoking claude -p (prompt=$promptFile)"
 claude -p $prompt
 Log "run end (exit $LASTEXITCODE)"
 exit $LASTEXITCODE
