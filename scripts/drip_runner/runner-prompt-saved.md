@@ -6,9 +6,6 @@ PRE-RUN HEALTH CHECK
 1. Call `mcp__linkedin__get_saved_jobs` with max_pages=5. This both fetches the worklist AND proves the daemon is up. If it errors with a transport/login error, STOP — write nothing, exit. (Jobs are still saved for the next run.)
 2. The result's `job_ids` (newest-saved first) is your worklist. Note the count and that this is pages 1-5 (~50 newest saved); saved jobs older than that are NOT considered this run — say so in the summary (no silent caps).
 
-BACKPRESSURE GUARD (check BEFORE processing)
-- Call `list_drafts`. Count the unsent **job-outreach** drafts (cold emails to recruiters/HMs at target companies — ignore old personal drafts). If >=4 sit unsent, STOP before processing anything: staging more would flood Kanu's review queue. Say in the summary that you halted on backpressure and list the unsent job drafts. Claim/process nothing.
-
 SELECT EXACTLY ONE ROLE (bounds runtime; a LinkedIn sequence runs 35-60 min)
 Walk `job_ids` in order. For each, skip it if ANY of these is true:
   a. `py -3 scripts/drip_runner/saved_jobs_ledger.py check --job-id <id> --ledger scripts/drip_runner/saved_seen.json` prints PROCESSED.
@@ -30,5 +27,5 @@ ALERT (failures only)
 Maintain a single Gmail draft-to-self titled "[DRIP-RUNNER] failures <YYYY-MM-DD>": create it (To: madhok.kanu@gmail.com) the first time a job errors this run, and append one line per failure (job_id, company if known, failing step, reason). Never send it.
 
 FINISH
-- git add the role folder + Pipeline.md + scripts/drip_runner/saved_seen.json you changed; commit with a "drip-runner:" prefix naming the role staged or errored; push (git push). If nothing was processed (backpressure halt, empty worklist, or all duplicates), skip commit+push and say so. If push is rejected because the remote diverged, git pull --rebase then push once more.
+- git add the role folder + Pipeline.md + scripts/drip_runner/saved_seen.json you changed; commit with a "drip-runner:" prefix naming the role staged or errored; push (git push). If nothing was processed (empty worklist or all duplicates), skip commit+push and say so. If push is rejected because the remote diverged, git pull --rebase then push once more.
 - End with a one-line summary: role staged (or errored/none), how many saved jobs scanned, and any gaps.

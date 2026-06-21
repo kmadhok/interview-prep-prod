@@ -5,7 +5,7 @@ PRE-RUN HEALTH CHECK
 2. Resolve the four label IDs with `list_labels`, matching names: drip-queue, drip-processing, drip-done, drip-error. Remember: mutate by ID, query by NAME.
 
 DRAIN THE QUEUE (oldest first, one job at a time)
-Repeat until `search_threads "label:drip-queue"` is empty OR you have staged 2 roles this run OR >=4 job drafts already sit unsent (check list_drafts):
+Repeat until `search_threads "label:drip-queue"` is empty OR you have staged 2 roles this run:
   a. Take the oldest drip-queue thread. CLAIM it: add drip-processing (ID), remove drip-queue (ID).
   b. Read the thread (get_thread). Run: py -3 scripts/drip_runner/job_parser.py --subject "<subject>" --body "<body>" -> JSON.
      - If is_job is false -> drip-error (ID), remove drip-processing, append the reason to the failures alert (see ALERT), continue.

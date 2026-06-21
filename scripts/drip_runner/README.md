@@ -1,7 +1,8 @@
 # Application Drip-Runner — Ops
 
-Two ingestion modes, one pipeline. Both run `jd-to-ready` end-to-end, stage Gmail
-drafts only (never send), and honor the `>=4 unsent job drafts` backpressure pause.
+Two ingestion modes, one pipeline. Both run `jd-to-ready` end-to-end and stage Gmail
+drafts only (never send). One role per run bounds runtime (a LinkedIn sequence is
+35-60 min); there is no draft-backlog cap.
 
 ## Mode: saved (default, primary)
 Ingests your **LinkedIn saved-jobs list** — save a job on LinkedIn = consent to
