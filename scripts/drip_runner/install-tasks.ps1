@@ -5,10 +5,9 @@
 # Run once. Per-user at-logon / time-of-day triggers do NOT require elevation; if
 # Register-ScheduledTask reports access denied, re-run from an elevated PowerShell.
 #
-# DripRunner is registered DISABLED on purpose: smoke-test run.ps1 by hand first,
-# then enable it with `Enable-ScheduledTask -TaskName DripRunner`. (The old
-# "disabled until the safety gate lands" rule was dropped 2026-06-21 - we learn
-# from real runs + logging instead of a canary; see Drip Runner plan.)
+# DripRunner is registered ENABLED (validated by a full end-to-end run 2026-06-21).
+# The old "disabled until the safety gate lands" rule was dropped 2026-06-21 - we
+# learn from real runs + logging instead of a canary; see Drip Runner plan.
 $ErrorActionPreference = "Stop"
 $repo      = "G:\projects\interview-prep"
 $daemonDir = "G:\projects\linkedin-mcp-server"
@@ -30,13 +29,12 @@ Register-ScheduledTask -TaskName "LinkedInDaemon" -Action $dAction -Trigger $dTr
 Write-Host "Registered LinkedInDaemon (at logon)."
 
 # --- 2. Drip-runner: weekday cadence ---
-# CADENCE (tunable): weekday mornings 08:00 local. One role per run; LinkedIn
-# sequences run 35-60 min, so never schedule runs closer together than the longest
-# observed run. Re-tune after the first real runs reveal actual duration.
+# CADENCE: every day at 05:00 local (Central). One role per run; runs are ~15-60 min
+# and never overlap (MultipleInstances IgnoreNew). The trigger time is local, so the
+# box's Central time zone makes this 5 AM CST/CDT.
 $runner     = Join-Path $repo "scripts\drip_runner\run.ps1"
 $rAction    = New-ScheduledTaskAction -Execute $ps -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$runner`"" -WorkingDirectory $repo
-$rTrigger   = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday,Thursday,Friday -At 8am
+$rTrigger   = New-ScheduledTaskTrigger -Daily -At 5am
 $rSettings  = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) -MultipleInstances IgnoreNew
 Register-ScheduledTask -TaskName "DripRunner" -Action $rAction -Trigger $rTrigger -Settings $rSettings -Principal $principal -Force | Out-Null
-Disable-ScheduledTask -TaskName "DripRunner" | Out-Null
-Write-Host "Registered DripRunner (weekday 08:00) - DISABLED until smoke-tested. Enable with: Enable-ScheduledTask -TaskName DripRunner"
+Write-Host "Registered DripRunner (daily 05:00, ENABLED)."
