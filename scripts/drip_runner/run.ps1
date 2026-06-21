@@ -24,6 +24,9 @@ if (-not $?) { Log "git pull failed; aborting run (no claude invocation)"; exit 
 $promptFile = if ($Mode -eq 'email') { 'runner-prompt.md' } else { 'runner-prompt-saved.md' }
 $prompt = Get-Content -Raw (Join-Path $repo "scripts\drip_runner\$promptFile")
 Log "invoking claude -p (prompt=$promptFile)"
-claude -p $prompt
+# Pipe the prompt via stdin, NOT as a -p argument: PowerShell 5.1's native-arg
+# quoting breaks on embedded quotes (e.g. --company "") and leaks prompt text like
+# --job-id to claude as bogus CLI options. Stdin sidesteps arg parsing entirely.
+$prompt | claude -p
 Log "run end (exit $LASTEXITCODE)"
 exit $LASTEXITCODE
