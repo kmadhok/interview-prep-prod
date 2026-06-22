@@ -9,6 +9,11 @@ $logDir = Split-Path $log
 if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Force $logDir | Out-Null }
 Set-Location $repo
 
+# Decode the claude subprocess's stdout as UTF-8. PS 5.1 otherwise reads native-exe
+# output through the OEM codepage, turning UTF-8 em-dashes etc. into mojibake (Γûö)
+# in the captured log. Cosmetic only, but the log exists to be read.
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+
 # Echo to console AND append UTF-8 (no BOM) — Tee-Object writes UTF-16 on PS 5.1,
 # which garbles the log and trips this repo's BOM-sensitive readers.
 function Log($m) {
