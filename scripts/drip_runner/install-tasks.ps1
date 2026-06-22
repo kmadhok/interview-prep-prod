@@ -29,12 +29,13 @@ Register-ScheduledTask -TaskName "LinkedInDaemon" -Action $dAction -Trigger $dTr
 Write-Host "Registered LinkedInDaemon (at logon)."
 
 # --- 2. Drip-runner: weekday cadence ---
-# CADENCE: every day at 05:00 local (Central). One role per run; runs are ~15-60 min
-# and never overlap (MultipleInstances IgnoreNew). The trigger time is local, so the
-# box's Central time zone makes this 5 AM CST/CDT.
+# CADENCE: every day at 05:00 local (Central). Each run drains ALL un-acted saved jobs
+# (newest-first) up to a cap of 6 roles; runs are ~20-30 min per role and never overlap
+# (MultipleInstances IgnoreNew). 3h limit covers the 6-role cap. The trigger time is
+# local, so the box's Central time zone makes this 5 AM CST/CDT.
 $runner     = Join-Path $repo "scripts\drip_runner\run.ps1"
 $rAction    = New-ScheduledTaskAction -Execute $ps -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$runner`"" -WorkingDirectory $repo
 $rTrigger   = New-ScheduledTaskTrigger -Daily -At 5am
-$rSettings  = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) -MultipleInstances IgnoreNew
+$rSettings  = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 3) -MultipleInstances IgnoreNew
 Register-ScheduledTask -TaskName "DripRunner" -Action $rAction -Trigger $rTrigger -Settings $rSettings -Principal $principal -Force | Out-Null
 Write-Host "Registered DripRunner (daily 05:00, ENABLED)."

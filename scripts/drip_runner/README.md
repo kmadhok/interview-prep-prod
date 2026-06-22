@@ -1,8 +1,9 @@
 # Application Drip-Runner — Ops
 
 Two ingestion modes, one pipeline. Both run `jd-to-ready` end-to-end and stage Gmail
-drafts only (never send). One role per run bounds runtime (a LinkedIn sequence is
-35-60 min); there is no draft-backlog cap.
+drafts only (never send). Each run drains ALL un-acted saved jobs newest-first, up to
+a safety cap of 6 roles per run (commits per-role so a timeout never loses work); the
+3h task limit bounds the session. There is no draft-backlog cap.
 
 ## Mode: saved (default, primary)
 Ingests your **LinkedIn saved-jobs list** — save a job on LinkedIn = consent to
@@ -12,9 +13,11 @@ process it. No email step.
 - **Run manually:** `powershell -ExecutionPolicy Bypass -File scripts\drip_runner\run.ps1`
 - **What it does:** `get_saved_jobs` (pages 1-5, newest first) -> for each id skip if
   already filed (Pipeline.md), already attempted (`saved_seen.json` ledger), or a role
-  folder exists -> pick the first survivor -> `get_job_details` -> `jd-to-ready` ->
-  Pipeline row + ledger `done` -> commit `drip-runner:` + push. Failures -> ledger
-  `error` + a `[DRIP-RUNNER] failures` Gmail draft. One role per run.
+  folder exists -> build a newest-first worklist of survivors (cap 6) -> for each:
+  `get_job_details` -> `jd-to-ready` -> Pipeline row + ledger `done` -> commit
+  `drip-runner:` + push (per role). Failures -> ledger `error` + a `[DRIP-RUNNER]
+  failures` Gmail draft, then continue to the next id. Survivors past 6 defer to the
+  next daily run.
 - **Re-attempt a parked job:** remove its id from `scripts/drip_runner/saved_seen.json`.
 - **Requires:** the daemon running the `feature/522-get-saved-jobs` branch (stride-10
   fix) so `get_saved_jobs` is served. `install-tasks.ps1` starts it from the repo dir.
