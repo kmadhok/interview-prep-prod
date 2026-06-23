@@ -65,6 +65,11 @@
       "status": "done",
       "ts": "2026-06-21"
     },
+    "4429727366": {
+      "note": "step1 get_job_details: JD body empty (responses managed off LinkedIn, no description text returned)",
+      "status": "error",
+      "ts": "2026-06-23"
+    },
     "4430984248": {
       "note": "Venture Up - Founding Engineer",
       "status": "done",
