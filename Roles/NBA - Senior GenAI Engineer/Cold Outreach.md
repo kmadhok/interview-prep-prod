@@ -1,8 +1,14 @@
 # Cold Outreach — NBA, Senior GenAI Engineer
 
-_Drafted by write-outreach (drip/pipeline mode) 2026-06-21. Two intro emails, no follow-ups. **Drafts only — nothing sent.** Both saved as Gmail drafts._
+_Drafted by write-outreach (drip/pipeline mode) 2026-06-21._
 
-**STAGED in Gmail 2026-06-21** — drafts `r7775505846219276813` (Christine Chung) + `r-7421414327503237419` (Sydney Sarachek). Not sent.
+**Christine Chung (cchung@nba.com):** SENT 2026-06-23 AM (draft r7775505846219276813 gone from Gmail — confirmed sent). OOO auto-reply received — backup: Greg Smith (gsmith@nba.com).
+
+**Greg Smith (gsmith@nba.com — backup):** SENT by Kanu 2026-06-23 ~4:17 PM UTC. **REPLIED 2026-06-23 ~4:27 PM UTC:** "Thank you for your interest in the NBA Senior GenAI Engineer role... A member of our recruiting team will review your information and be in touch if your profile is identified as a strong match." — warm acknowledgment, not yet a recruiter outreach.
+
+⚠ **Stale draft r8290635929995931121** ("Hi Christine" salutation addressed to gsmith@nba.com) still in Gmail — superseded by Kanu's manual send to Greg. Delete when convenient.
+
+**Sydney Sarachek (ssarachek@nba.com):** Draft `r-7421414327503237419` STAGED 2026-06-22 — still PENDING in Gmail (subject: "Your NBA Enterprise AI org — interested in the GenAI Engineer role"). Send when backlog clears (≥4 draft rule applies). Note: given Greg already acknowledged, Sarachek outreach is still high-value (she's the HM/Senior Director, AI) — wait 4 business days from Greg's reply before sending.
 
 **Role:** Senior GenAI Engineer · National Basketball Association (NBA), Enterprise Generative AI team · New York, NY (on-site, ~1 remote day/wk) · $180K–$220K base + bonus · LinkedIn 4420569994.
 **Archetype:** platform / ML engineering (internal enterprise AI — IT automation, ticketing, knowledge discovery). **Lead theme:** agents / end-to-end.
