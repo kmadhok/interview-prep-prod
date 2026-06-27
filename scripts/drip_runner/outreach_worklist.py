@@ -27,7 +27,7 @@ def row_is_staged(row: str) -> bool:
     return bool(_STAGED.search(row or ""))
 
 
-def _active_section(pipeline_text: str) -> list[str]:
+def active_section(pipeline_text: str) -> list[str]:
     """Lines under the `## Active` heading, up to the next `## ` heading.
 
     Worklist state is only meaningful in Active. Considering rows are
@@ -50,7 +50,7 @@ def _active_section(pipeline_text: str) -> list[str]:
 
 def applied_not_staged(pipeline_text: str) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
-    for line in _active_section(pipeline_text):
+    for line in active_section(pipeline_text):
         if not row_is_applied(line) or row_is_staged(line):
             continue
         m = _ROW.search(line)
