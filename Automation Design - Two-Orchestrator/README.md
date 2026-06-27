@@ -11,4 +11,4 @@ These are kept separate from the older `Automation Architecture - *` docs at the
 3. **`Automation Architecture - Diagrams.md`** — Mermaid diagrams (current routine, current monolith, both new skills, target).
 4. **`Spec - Orchestrator 1 (jd-to-ready prep).md`** — save-side skill (intake → resume → PDF, stops at the apply gate).
 5. **`Spec - Orchestrator 2 (stage-outreach).md`** — apply-side skill (find recruiter → verify email → Gmail draft).
-6. **`Spec - Applied Detector.md`** — the load-bearing seam: how `applied` is detected (Kanu's mark + Gmail ack), the secretary cadence, and the fail-loud nudge.
+6. **`Spec - Applied Detector.md`** — the load-bearing seam: how `applied` is detected (Kanu's mark + Gmail ack), the secretary cadence, and the fail-loud nudge. Read last — it owns the seam the two orchestrator specs depend on but neither defines.
