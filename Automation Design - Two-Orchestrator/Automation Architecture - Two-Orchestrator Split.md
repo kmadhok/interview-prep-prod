@@ -1,6 +1,6 @@
 # Automation Architecture — Two-Orchestrator Split (apply-gated outreach)
 
-_Drafted 2026-06-26, revised to the simple approach. Design for splitting the monolithic `jd-to-ready` run into two apply-gated skills so contact research + Gmail drafts only happen for jobs Kanu actually applies to. Diagrams: `Automation Architecture - Diagrams.md`. Specs: `Spec - Orchestrator 1 (jd-to-ready prep).md`, `Spec - Orchestrator 2 (stage-outreach).md`. Status: design agreed, not yet built._
+_Drafted 2026-06-26, revised to the simple approach. Design for splitting the monolithic `jd-to-ready` run into two apply-gated skills so contact research + Gmail drafts only happen for jobs Kanu actually applies to. Diagrams: `Automation Architecture - Diagrams.md`. Specs: `Spec - Orchestrator 1 (jd-to-ready prep).md`, `Spec - Orchestrator 2 (stage-outreach).md`. Status: PARTIALLY BUILT 2026-06-27 — trace run-types, worklist readers, and both SKILL.md files shipped & tested (see docs/superpowers/plans/2026-06-27-two-orchestrator-split.md); cloud-routine drafting change + PC cron wiring still pending._
 
 ## The decision
 

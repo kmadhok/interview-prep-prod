@@ -1,9 +1,32 @@
 # Application Drip-Runner — Ops
 
-Two ingestion modes, one pipeline. Both run `jd-to-ready` end-to-end and stage Gmail
-drafts only (never send). Each run drains ALL un-acted saved jobs newest-first, up to
-a safety cap of 6 roles per run (commits per-role so a timeout never loses work); the
-3h task limit bounds the session. There is no draft-backlog cap.
+Two ingestion modes, one pipeline. Each run drains ALL un-acted saved jobs newest-first,
+up to a safety cap of 6 roles per run (commits per-role so a timeout never loses work);
+the 3h task limit bounds the session.
+
+## Two-skill model (apply-gated)
+
+`jd-to-ready` now does **PREP only**: intake → classify → resume → PDF, writes
+`.classification.json` into the role folder, and stops at the apply gate (steps
+1/2/3/3.5/6/7). No Gmail drafts, no LinkedIn contact research.
+
+The apply-side work (find recruiter → enrich → verify email → Gmail draft) moved to a
+new `stage-outreach` skill that fires on roles marked **Applied** with no `STAGED` marker.
+
+Two deterministic readers drive the apply-side poll (no LLM):
+
+- **`outreach_worklist.py`** — lists `Pipeline.md` `## Active` rows that are Applied &
+  not STAGED (the Pass B worklist).
+  Run: `py -3 scripts/drip_runner/outreach_worklist.py --pipeline Pipeline.md`
+
+- **`prepped_not_applied.py`** — fail-loud nudge: prepped roles not yet applied or
+  closed, past a staleness threshold. Surfaces as a visible report line so silent gaps
+  don't go unnoticed.
+  Run: `py -3 scripts/drip_runner/prepped_not_applied.py --roles-dir Roles --pipeline Pipeline.md`
+
+> **Status:** PC Pass A/Pass B cron wiring and the cloud-routine drafting change are
+> NOT yet wired — see `Automation Design - Two-Orchestrator/`. The skills + readers exist
+> and are tested; the schedulers that call them are pending a live-test session.
 
 ## Mode: saved (default, primary)
 Ingests your **LinkedIn saved-jobs list** — save a job on LinkedIn = consent to
@@ -14,10 +37,11 @@ process it. No email step.
 - **What it does:** `get_saved_jobs` (pages 1-5, newest first) -> for each id skip if
   already filed (Pipeline.md), already attempted (`saved_seen.json` ledger), or a role
   folder exists -> build a newest-first worklist of survivors (cap 6) -> for each:
-  `get_job_details` -> `jd-to-ready` -> Pipeline row + ledger `done` -> commit
-  `drip-runner:` + push (per role). Failures -> ledger `error` + a `[DRIP-RUNNER]
-  failures` Gmail draft, then continue to the next id. Survivors past 6 defer to the
-  next daily run.
+  `get_job_details` -> `jd-to-ready` (**PREP-only**: intake → classify → resume → PDF,
+  no outreach drafted) -> Pipeline row + ledger `done` -> commit `drip-runner:` + push
+  (per role). Failures -> ledger `error` + a `[DRIP-RUNNER] failures` Gmail draft, then
+  continue to the next id. Survivors past 6 defer to the next daily run. Outreach drafts
+  are staged later via `stage-outreach` after Kanu applies.
 - **Re-attempt a parked job:** remove its id from `scripts/drip_runner/saved_seen.json`.
 - **Requires:** the daemon running the `feature/522-get-saved-jobs` branch (stride-10
   fix) so `get_saved_jobs` is served. `install-tasks.ps1` starts it from the repo dir.
@@ -45,3 +69,7 @@ Ingests the Gmail `drip-queue` label. Use for postings that aren't LinkedIn-nati
 
 ## Tests
 `py -3 -m pytest scripts/drip_runner -q`
+
+Covers: `test_dedupe.py`, `test_job_parser.py`, `test_saved_jobs_ledger.py`,
+`test_outreach_worklist.py` (Pass B worklist reader), `test_prepped_not_applied.py`
+(fail-loud nudge reader).
