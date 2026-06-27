@@ -399,10 +399,12 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     assert len(lines_a) == 1, f"Expected exactly 1 summary line after jd-to-ready run; got {len(lines_a)}"
 
     summary_a = json.loads(lines_a[0])
-    # NOTE: run_type is NOT written to the global summary (only to the per-role trace's
-    # run_start event — this is the real finding: the summary omits run_type).
-    # The proxy here is required_steps: jd-to-ready's required set is
-    # ["1","2","3","3.5","6","7"] — distinct from stage-outreach's ["4","4b","4c","5","6","7"].
+    # run_type is written to the global summary — the explicit discriminator of which
+    # skill produced the run. required_steps is the structural backstop: jd-to-ready's
+    # set ["1","2","3","3.5","6","7"] is distinct from stage-outreach's.
+    assert summary_a["run_type"] == "jd-to-ready", (
+        f"summary must carry run_type='jd-to-ready'; got {summary_a.get('run_type')!r}"
+    )
     assert summary_a["required_steps"] == JD_PREP_STEPS, (
         f"required_steps must be jd-to-ready's set {JD_PREP_STEPS}; got {summary_a.get('required_steps')}"
     )
@@ -460,7 +462,10 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     )
 
     summary_b = json.loads(lines_b[1])
-    # Again: run_type not in global summary; use required_steps as discriminator.
+    # The second summary is the stage-outreach run — run_type discriminates it cleanly.
+    assert summary_b["run_type"] == "stage-outreach", (
+        f"second summary must carry run_type='stage-outreach'; got {summary_b.get('run_type')!r}"
+    )
     assert summary_b["required_steps"] == STAGE_STEPS, (
         f"required_steps must be stage-outreach's set {STAGE_STEPS}; got {summary_b.get('required_steps')}"
     )

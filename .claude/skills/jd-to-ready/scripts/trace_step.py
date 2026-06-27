@@ -511,6 +511,7 @@ def cmd_finish(args: argparse.Namespace) -> int:
     summary = {
         "timestamp": now_iso(),
         "run_id": state["run_id"],
+        "run_type": state.get("run_type"),
         "company": state.get("company"),
         "role": state.get("role"),
         "role_folder": state.get("role_folder"),
@@ -566,6 +567,7 @@ def cmd_abort(args: argparse.Namespace) -> int:
     summary = {
         "timestamp": now_iso(),
         "run_id": state["run_id"],
+        "run_type": state.get("run_type"),
         "company": state.get("company"),
         "role": state.get("role"),
         "role_folder": state.get("role_folder"),
