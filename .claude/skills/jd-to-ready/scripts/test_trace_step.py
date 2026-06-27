@@ -261,5 +261,22 @@ class TraceStepTests(unittest.TestCase):
         self.run_cmd("set-role-folder", "--role-folder", str(self.root / "sandbox" / "Acme"), "--test-run")
 
 
+class RunTypeMapTests(unittest.TestCase):
+    def setUp(self) -> None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("trace_step", SCRIPT)
+        self.mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.mod)
+
+    def test_run_type_required_steps(self) -> None:
+        self.assertEqual(self.mod.required_steps_for("jd-to-ready"), ["1", "2", "3", "3.5", "6", "7"])
+        self.assertEqual(self.mod.required_steps_for("stage-outreach"), ["4", "4b", "4c", "5", "6", "7"])
+
+    def test_unknown_run_type_falls_back_to_full(self) -> None:
+        # None / unknown → the legacy full list, so old callers keep working
+        self.assertEqual(self.mod.required_steps_for(None), self.mod.REQUIRED_STEPS)
+        self.assertEqual(self.mod.required_steps_for("bogus"), self.mod.REQUIRED_STEPS)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -21,6 +21,20 @@ from typing import Any
 
 TRACE_NAME = ".jd-to-ready-trace.jsonl"
 REQUIRED_STEPS = ["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"]
+
+# Per-run-type required-steps. REQUIRED_STEPS above stays the legacy "full"
+# list so any caller that does not pass a run-type keeps the old contract.
+RUN_TYPES = {
+    "jd-to-ready": ["1", "2", "3", "3.5", "6", "7"],
+    "stage-outreach": ["4", "4b", "4c", "5", "6", "7"],
+}
+
+
+def required_steps_for(run_type: str | None) -> list[str]:
+    """Required steps for a run-type, defaulting to the legacy full list."""
+    return list(RUN_TYPES.get(run_type, REQUIRED_STEPS))
+
+
 ALLOWED_FAILURE_PATTERNS = {
     "",
     None,
