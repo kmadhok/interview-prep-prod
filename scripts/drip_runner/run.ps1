@@ -1,7 +1,8 @@
 # Application Drip-Runner entrypoint. Run by Task Scheduler.
-#   -Mode saved (default): ingest from the LinkedIn saved-jobs list.
+#   -Mode saved (default): Pass A — prep resumes from the LinkedIn saved-jobs list.
 #   -Mode email          : ingest from the Gmail drip-queue (ATS / any-URL escape hatch).
-param([ValidateSet('saved','email')][string]$Mode = 'saved')
+#   -Mode outreach       : Pass B — stage recruiter outreach for roles marked Applied.
+param([ValidateSet('saved','email','outreach')][string]$Mode = 'saved')
 $ErrorActionPreference = "Stop"
 $repo = "G:\projects\interview-prep"
 $log  = Join-Path $env:USERPROFILE ".claude\logs\drip-runner.log"
@@ -26,7 +27,11 @@ Log "run start (mode=$Mode)"
 git pull --rebase
 if (-not $?) { Log "git pull failed; aborting run (no claude invocation)"; exit 1 }
 
-$promptFile = if ($Mode -eq 'email') { 'runner-prompt.md' } else { 'runner-prompt-saved.md' }
+$promptFile = switch ($Mode) {
+  'email'    { 'runner-prompt.md' }
+  'outreach' { 'runner-prompt-outreach.md' }
+  default    { 'runner-prompt-saved.md' }
+}
 $prompt = Get-Content -Raw (Join-Path $repo "scripts\drip_runner\$promptFile")
 Log "invoking claude -p (prompt=$promptFile)"
 # Pipe the prompt via stdin, NOT as a -p argument: PowerShell 5.1's native-arg
