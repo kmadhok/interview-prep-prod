@@ -6,7 +6,7 @@ Fixtures are real-shaped rows from Pipeline.md. Tests encode the key gotchas:
   - Already-STAGED rows must be excluded from the worklist
   - Closed/On hold rows must NEVER appear (section-scope bug regression)
 """
-from outreach_worklist import row_is_applied, row_is_staged, applied_not_staged
+from outreach_worklist import row_is_applied, row_is_staged, row_has_error, applied_not_staged
 
 # Real-shaped rows from Pipeline.md
 APPLIED_ACTIVE = "| **Harrison Street — AVP, AI Engineer, Innovation** | **Applied** — submitted via Harrison Street careers | next | date | contacts | [[folder]] |"
@@ -15,6 +15,8 @@ APPLIED_VIA    = "| **Greylock Partners — Applied AI Engineer, Investment Team
 # ^ NOTE this role's TITLE contains the word "Applied" — exercises that company/role parsing still works and applied-detection isn't fooled either way (it IS applied, correctly).
 CONSIDERING    = "| **Tailscale — Software Engineer, Strategic Projects** | Considering — JD reviewed, not yet applied · **STAGED in Gmail 2026-06-26** | next | date | contacts | [[folder]] |"
 APPLIED_STAGED = "| **Acme — Agent Builder** | **Applied** — submitted · STAGED in Gmail 2026-06-27 | next | date | contacts | [[folder]] |"
+# Applied row that Pass B already failed on and parked with an error note — must NOT be re-attempted.
+APPLIED_ERROR  = "| **Initech — ML Engineer** | **Applied** — submitted · Outreach error 2026-06-27: LinkedIn daemon down | next | date | contacts | [[folder]] |"
 HEADER         = "| Role | Stage | Next action | Date | Contacts | Folder |"
 # A Closed/On hold row whose Date cell carries "Applied <date>" — this is the defect trigger.
 CLOSED_REJECTED = "| **Deloitte — FDE, Agentic AI (req 350685)** | **Rejected** (form email) | Applied 2026-05-21 → rejected 2026-05-25 | notes |"
@@ -65,6 +67,20 @@ def test_applied_not_staged_parses_company_and_role():
     rows = applied_not_staged(PIPELINE)
     assert ("Harrison Street", "AVP, AI Engineer, Innovation") in rows
     assert ("Greylock Partners", "Applied AI Engineer, Investment Team") in rows  # role contains "Applied" — parsing still correct
+
+
+def test_row_has_error():
+    assert row_has_error(APPLIED_ERROR)
+    assert not row_has_error(APPLIED_ACTIVE)
+    assert not row_has_error("")
+
+
+def test_applied_not_staged_excludes_errored_rows():
+    """Park-on-error: a row carrying 'Outreach error' is excluded so a failed
+    role is not re-scraped on LinkedIn every run (no auto-retry; design D)."""
+    pipeline = "\n".join(["## Active", APPLIED_ACTIVE, APPLIED_ERROR])
+    companies = [c for c, r in applied_not_staged(pipeline)]
+    assert companies == ["Harrison Street"]   # Initech parked by its error note
 
 
 def test_empty_pipeline():

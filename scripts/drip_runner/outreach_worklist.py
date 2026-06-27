@@ -1,4 +1,4 @@
-"""Pass B worklist: Pipeline rows marked Applied with no STAGED marker.
+"""Pass B worklist: Pipeline rows marked Applied with no STAGED or error marker.
 
 Pure functions + a thin CLI, same shape as dedupe.py. No LLM, no network.
 The apply-side poll (stage-outreach) runs on exactly the rows this returns.
@@ -16,6 +16,7 @@ _ROW = re.compile(r"\*\*\s*(?P<company>.+?)\s+—\s+(?P<role>.+?)\s*\*\*")
 _APPLIED = re.compile(r"\bApplied\b", re.IGNORECASE)
 _NOT_YET = re.compile(r"not yet applied", re.IGNORECASE)
 _STAGED = re.compile(r"STAGED in Gmail", re.IGNORECASE)
+_ERROR = re.compile(r"Outreach error", re.IGNORECASE)
 
 
 def row_is_applied(row: str) -> bool:
@@ -25,6 +26,16 @@ def row_is_applied(row: str) -> bool:
 
 def row_is_staged(row: str) -> bool:
     return bool(_STAGED.search(row or ""))
+
+
+def row_has_error(row: str) -> bool:
+    """A row Pass B already failed on and parked with an 'Outreach error' note.
+
+    No auto-retry (design D): a parked row is excluded from the worklist until
+    Kanu removes the note. Without this, an hourly Pass B would re-scrape a
+    failing role on LinkedIn every run — the exact account-flag surface to avoid.
+    """
+    return bool(_ERROR.search(row or ""))
 
 
 def active_section(pipeline_text: str) -> list[str]:
@@ -51,7 +62,7 @@ def active_section(pipeline_text: str) -> list[str]:
 def applied_not_staged(pipeline_text: str) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
     for line in active_section(pipeline_text):
-        if not row_is_applied(line) or row_is_staged(line):
+        if not row_is_applied(line) or row_is_staged(line) or row_has_error(line):
             continue
         m = _ROW.search(line)
         if m:
