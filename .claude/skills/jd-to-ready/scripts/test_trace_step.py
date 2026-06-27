@@ -306,6 +306,27 @@ class RunTypeMapTests(unittest.TestCase):
         finished = run("finish-run", "--status", "ok")
         self.assertEqual(finished.returncode, 0, finished.stderr)
 
+    def test_set_role_folder_binds_existing_folder_without_creating(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        env = os.environ.copy()
+        env["JD_TO_READY_LOG_DIR"] = str(root / "logs")
+        existing = root / "Roles" / "Acme - Agent Builder"
+        existing.mkdir(parents=True)
+        marker = existing / "Kanu Madhok Resume - Acme Agent Builder.md"
+        marker.write_text("prepped", encoding="utf-8")
+
+        def run(*args):
+            return subprocess.run([sys.executable, str(SCRIPT), *args],
+                                  env=env, capture_output=True, text=True)
+
+        self.assertEqual(run("start-run", "--run-type", "stage-outreach").returncode, 0)
+        res = run("set-role-folder", "--role-folder", str(existing))
+        self.assertEqual(res.returncode, 0, res.stderr)
+        # binding must not clobber what Skill 1 wrote
+        self.assertEqual(marker.read_text(encoding="utf-8"), "prepped")
+
 
 if __name__ == "__main__":
     unittest.main()
