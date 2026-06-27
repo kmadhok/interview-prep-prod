@@ -119,7 +119,7 @@ enrich-contacts(
 **Run the `verify-emails` deterministic script** (it owns all email-resolution logic — parsing the ledger, calling EmailFinder.dev's `/find-email/person` endpoint, caching paid results, and inferring-and-flagging on a miss). It runs **after** 4b so it verifies the *final*, post-enrichment top-3 recruiters. Do not reimplement it here; EmailFinder.dev owns verification.
 
 ```bash
-python3 "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/.claude/skills/verify-emails/scripts/verify_emails.py" \
+python3 ~/.claude/skills/verify-emails/scripts/verify_emails.py \
   --ledger "<role folder>/.contacts-ledger.md" \
   --emails-md-default \
   --max-credits 5 \
