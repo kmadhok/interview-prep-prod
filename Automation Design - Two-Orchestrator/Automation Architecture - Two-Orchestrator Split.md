@@ -62,14 +62,22 @@ After you apply and mark the row Applied, the next hourly pass scrapes the recru
 
 ## Build list
 
-1. **`jd-to-ready` SKILL.md** — remove steps 4/4b/4c/5; add the `.classification.json` write; trim required-steps to `{1,2,3,3.5,6,7}`.
-2. **`stage-outreach` SKILL.md** (new) — steps 4/4b/4c/5/6/7, reading folder + `.classification.json`; required-steps `{4,4b,4c,5,6,7}`; binds trace to an existing folder.
-3. **`write-outreach`** — no change.
-4. **`trace_step.py`** — two run-types (`jd-to-ready` / `stage-outreach`) with different required-steps lists; allow `set-role-folder` against an existing folder.
-5. **PC cron Pass A** — saved-jobs sweep → Skill 1 (extend the existing drip runner, minus outreach).
-6. **PC cron Pass B** — hourly `Pipeline.md` poll (Applied & not STAGED) → Skill 2. A tiny deterministic worklist reader (no LLM) over Pipeline.md; pytest-covered like `dedupe.py`.
-7. **Cloud routine** — drop step-3 drafting; keep sweep/reconcile/send-detect/archive.
-8. **Docs** — update `Automation Architecture - Drip Runner.md` + the Drip Runner README to this two-skill model.
+_Build status as of 2026-06-27 (see `docs/superpowers/plans/2026-06-27-two-orchestrator-split.md`). ✅ = shipped & tested on branch `worktree-two-orchestrator-split`; ⏳ = deferred to a live-test session._
+
+1. ✅ **`jd-to-ready` SKILL.md** — removed steps 4/4b/4c/5; added the `.classification.json` write; required-steps trimmed to `{1,2,3,3.5,6,7}`.
+2. ✅ **`stage-outreach` SKILL.md** (new) — steps 4/4b/4c/5/6/7, reading folder + `.classification.json`; required-steps `{4,4b,4c,5,6,7}`; binds trace to an existing folder.
+3. ✅ **`write-outreach`** — no change (its `create_draft` now fires inside Skill 2).
+4. ✅ **`trace_step.py`** — run-types `jd-to-ready` / `stage-outreach` (plus `full` for the legacy engine tests) with different required-steps lists; `set-role-folder` binds an existing folder. pytest-covered.
+   - Also ✅ **the two deterministic readers** (build-list item 6's core): `scripts/drip_runner/outreach_worklist.py` (Pass B worklist: Active rows Applied & not STAGED) and `scripts/drip_runner/prepped_not_applied.py` (fail-loud nudge). Both pytest-covered + live-smoke-validated; share one `active_section`/`row_is_applied` predicate (no drift).
+5. ⏳ **PC cron Pass A** — saved-jobs sweep → Skill 1 (extend the existing drip runner, minus outreach). PowerShell; not yet wired.
+6. ⏳ **PC cron Pass B** — hourly `Pipeline.md` poll → Skill 2, driven by `outreach_worklist.py` (the reader itself is ✅ done; only the scheduler that calls it is ⏳).
+7. ⏳ **Cloud routine** — drop step-3 drafting; keep sweep/reconcile/send-detect/archive; add the ack ruleset + monotonic guard + prepped-not-applied nudge (per `Spec - Applied Detector.md`).
+8. ✅ **Docs** — `Automation Architecture - Drip Runner.md` + the Drip Runner README updated to the two-skill model (with honest partial-build status).
+
+### ⚠ Two integration findings for the deferred wiring (from the final whole-branch review)
+
+- **Stale save-time STAGED marker (blocks apply-side staging).** The existing `scripts/drip_runner/runner-prompt-saved.md` writes `STAGED in Gmail <date>` on a **Considering / not-yet-applied** row at *save* time (the old model). Under the split that is wrong: if such a role is later marked **Applied**, it carries a stale STAGED marker → `outreach_worklist.applied_not_staged` returns `[]` for it → **outreach silently never stages.** Harmless today (the worklist section-scopes to `## Active`, ignoring Considering-row markers), but **when Pass A / item 5 is wired, remove the save-time STAGED-on-Considering write** or the apply-side poll will be silently suppressed. The `STAGED` marker must be written only by Skill 2, only on apply.
+- **Cosmetic regex divergence.** `outreach_worklist._ROW` matches the em-dash `—` only; `prepped_not_applied._ROW_LEADER` accepts `[—–-]`. `Pipeline.md` uses em-dashes consistently so both are correct on real data; align the separator alphabet eventually (not blocking).
 
 ## Risks / open questions
 
