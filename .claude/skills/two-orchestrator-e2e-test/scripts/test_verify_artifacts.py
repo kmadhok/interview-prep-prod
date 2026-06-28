@@ -148,3 +148,21 @@ def test_verify_emails_issue1_empty_with_contacts_fails():
     res = va.check_verify_emails(clone)
     assert res["status"] == "fail"
     assert any("issue1" in c["name"] for c in res["checks"])
+
+
+def test_write_outreach_pass():
+    clone = _clone_with({"Cold Outreach.md": "## Recruiter email\nHi Brad,"})
+    draft = {"id": "r123", "toRecipients": ["brad.mallmann@snowflake.com"], "subject": "Re: ..."}
+    assert va.check_write_outreach(clone, draft, "brad.mallmann@snowflake.com")["status"] == "pass"
+
+
+def test_write_outreach_recipient_mismatch_fails():
+    clone = _clone_with({"Cold Outreach.md": "x"})
+    draft = {"id": "r123", "toRecipients": ["someone.else@snowflake.com"]}
+    res = va.check_write_outreach(clone, draft, "brad.mallmann@snowflake.com")
+    assert res["status"] == "fail"
+
+
+def test_write_outreach_no_draft_fails():
+    clone = _clone_with({"Cold Outreach.md": "x"})
+    assert va.check_write_outreach(clone, None, "")["status"] == "fail"

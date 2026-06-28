@@ -170,3 +170,17 @@ def check_verify_emails(clone: Path) -> dict:
             "find-contacts→verify-emails format mismatch (Issue 1)",
         ))
     return skill_result(checks)
+
+
+def check_write_outreach(clone: Path, draft: dict | None, expected_recipient: str) -> dict:
+    f = clone / "Cold Outreach.md"
+    checks = [check("cold-outreach-present", f.exists(), str(f))]
+    if not draft:
+        checks.append(check("gmail-draft-present", False, "no draft provided"))
+        return skill_result(checks)
+    recips = [str(r).lower() for r in draft.get("toRecipients", [])]
+    checks.append(check("gmail-draft-present", bool(draft.get("id")), draft.get("id", "")))
+    if expected_recipient:
+        checks.append(check("draft-recipient-matches", expected_recipient.lower() in recips, f"to={recips}"))
+    checks.append(check("draft-unsent", not draft.get("sent", False), "drafts listing = unsent"))
+    return skill_result(checks)
