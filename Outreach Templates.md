@@ -48,11 +48,13 @@ Under 70 chars. Prefix with the recruiter's first name only when there's real pe
 
 ### Body — 5-beat structure (~100 words, 50–125 hard range)
 
-1. **Trigger line.** "I just applied for [exact role title] in your [practice/team]" (if applied), or "Found your post on [source]" / "Saw [Company]'s [specific thing]" (if cold).
-2. **One accomplishment with a number.** From canonical achievements — the autonomous Jira agent (400+ tickets, 30–60 min → under 10), the autonomous data analyst, the hybrid orchestrator. Hyperlink the live demo when natural.
-3. **Urgency / social proof (only if real, sourced from `Pipeline.md` at draft time).** Name real, CURRENTLY-LIVE competing processes from `Pipeline.md` by company + role + stage, phrased as the "...however [Company]'s [specific] is the closer match" pivot in the template below. **Freshness rule:** a process qualifies ONLY if its date is today-or-in-the-future relative to the draft date. DROP any item dated before today, and DROP anything flagged in `Pipeline.md` as STALE / PASSED / CLOSED / REJECTED. Never carry a "TODAY <past-date>" line forward. If zero live processes remain after filtering, OMIT beat 3 entirely. Never hardcode a date and never fabricate a process (`Pipeline.md` itself flags stale-date drafts as a failure).
-4. **Why-this-company (one line).** Tie to a specific JD detail — a practice, a stack item, a customer segment. Avoid generic flattery.
-5. **Specific ask.** "I'd like to start the interview process. Are you the right person, or can you point me to the recruiter who owns this req? Resume attached."
+**Shape it like the gold email: three tight paragraphs.** P1 = beat 1 alone (one line). P2 = beats 2+3+4 fused into one flowing block that LANDS on the relevance pivot. P3 = beat 5 (the ask). Don't bolt the beats on as separate sentences-by-numbers; they should read as one person talking.
+
+1. **Trigger line.** "I just applied for [exact role title] in your [practice/team]" (if applied), or "Found your post on [source]" / "Saw [Company]'s [specific thing]" (if cold). One sentence, its own paragraph.
+2. **One accomplishment with a number.** From canonical achievements — the autonomous Jira agent (400+ tickets, 30–60 min → under 10), the autonomous data analyst, the hybrid orchestrator. ONE accomplishment, not a resume dump. Pick the one closest to this role's lead theme. Hyperlink the live demo when natural.
+3. **Urgency / social proof (only if real, sourced from `Pipeline.md` at draft time).** Name real, CURRENTLY-LIVE competing processes from `Pipeline.md` by company + role + a concrete timeline ("interview Friday"), woven into the SAME sentence as the relevance pivot (beat 4), never as a standalone brag. **Freshness rule:** a process qualifies ONLY if its date is today-or-in-the-future relative to the draft date. DROP any item dated before today, and DROP anything flagged in `Pipeline.md` as STALE / PASSED / CLOSED / REJECTED. Never carry a "TODAY <past-date>" line forward. If zero live processes remain after filtering, OMIT beat 3 entirely. Never hardcode a date and never fabricate a process (`Pipeline.md` itself flags stale-date drafts as a failure).
+4. **Relevance pivot — the load-bearing beat (always present, both modes).** This is the single trait that makes the gold email gold: end paragraph two on a line that ties THIS role to *what Kanu actually does*, phrased as a "[Company]'s [specific JD detail] is the closer match for what I do" pivot. It must be specific to the req (a named practice, stack item, platform, or customer segment from the JD), not generic flattery, and it must read as relevance, not interest. **When beat 3 is live**, fuse it: "...however [Company]'s [JD detail] is the closer match for what I do." **When beat 3 is omitted**, the pivot still closes paragraph two on its own: "[Company]'s [JD detail] is the closest match I've seen to the work I'm already doing." Either way, paragraph two ends on relevance to the target.
+5. **Specific ask.** "I'd like to start the interview process. Are you the right person, or can you point me to the recruiter who owns this req? Resume attached." One ask, its own paragraph.
 
 ### Template
 
@@ -62,9 +64,16 @@ Under 70 chars. Prefix with the recruiter's first name only when there's real pe
 >
 > I just applied for the [exact role title] role in your [practice/team].
 >
-> At Walmart Data Ventures my autonomous Jira-resolution agent closed 400+ data requests and cut turnaround from 30–60 minutes to under 10 for each ticket. [Optional beat 3: I'm in active processes at [Company A] for [Role] (interview [day]) and at [Company B] for [Role], however [Company]'s [specific JD detail] is the closer match for what I do.]
+> At Walmart Data Ventures my autonomous Jira-resolution agent closed 400+ data requests and cut turnaround from 30–60 minutes to under 10 for each ticket. [Beat 3, ONLY if a real live process exists: I'm in active processes at [Company A] for [Role] (interview [day]) and at [Company B] for [Role], however] [Company]'s [specific JD detail] is the closer match for what I do.
 >
 > I'd like to start the interview process. Are you the right person, or can you point me to the recruiter who owns this req? Resume attached.
+
+**Two ways paragraph two ends (pick by beat-3 mode):**
+
+- **Beat 3 LIVE** — fuse urgency + pivot into one sentence: *"…cut turnaround from 30–60 minutes to under 10 for each ticket. I'm in active processes at [Company A] for [Role] (interview [day]) and at [Company B] for [Role], however [Company]'s [JD detail] is the closer match for what I do."*
+- **Beat 3 OMITTED** (no live process) — drop the urgency clause but KEEP the relevance pivot so paragraph two still closes on the target: *"…cut turnaround from 30–60 minutes to under 10 for each ticket. [Company]'s [JD detail] is the closest match I've seen to the work I'm already doing."*
+
+Never leave paragraph two ending on the accomplishment alone — it must land on why THIS role fits what Kanu does.
 >
 > Best,
 >

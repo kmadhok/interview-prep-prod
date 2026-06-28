@@ -58,7 +58,7 @@ Draft targeted, voice-locked cold outreach. This is the one *executor* for outre
    - If **nothing survives** the filter, **omit beat 3 entirely** — do not stretch a stale process to fill it.
    - **Never fabricate or hardcode** a competing process; beat 3 is only ever populated from real, live Pipeline.md rows (or a real `urgency` input).
 
-4. **Fill the beats from canonical facts only.** Numbers come from the canonical "verified proof points" (same discipline as `tailor-resume`). Beat 3 (urgency) appears ONLY if a real, freshness-passing process exists (per step 3) — never invent competing processes.
+4. **Fill the beats from canonical facts only.** Numbers come from the canonical "verified proof points" (same discipline as `tailor-resume`). Beat 3 (urgency) appears ONLY if a real, freshness-passing process exists (per step 3) — never invent competing processes. **Beat 4 (the relevance pivot) is mandatory in BOTH modes** — it's the gold email's load-bearing trait. Build the body as three paragraphs (P1 = trigger, P2 = one accomplishment + optional live urgency + the "closer match for what I do" pivot, P3 = the ask), and make paragraph two ALWAYS end on relevance to the target role (tie to a named JD detail), never on the accomplishment alone. When beat 3 is omitted, keep the pivot; when it's live, fuse urgency and pivot into one sentence.
 
 5. **Choose the channel** per `channel_confidence`: High/Medium inferred email → email; Low / no email → LinkedIn InMail (drop the "Resume attached." line).
 
@@ -82,6 +82,8 @@ Check every draft against `Outreach Templates.md` before returning it. This is a
 - [ ] **Section match** — the right template section is used (recruiter → 1; HM/peer-IC → 4) and its beats/voice are followed.
 - [ ] **Subject** — < 70 chars, leads with the credential (recruiter) or something specific to *them* (HM/peer-IC).
 - [ ] **5-beat body** — beats 1, 2, 4, 5 present; beat 3 (urgency) present ONLY if a real, freshness-passing live process exists (Process step 3), omitted otherwise.
+- [ ] **Three-paragraph shape** — P1 trigger / P2 accomplishment+urgency(if live)+pivot / P3 ask. Reads as one person talking, not numbered beats bolted together.
+- [ ] **Relevance pivot present (load-bearing)** — paragraph two ENDS on a "[Company]'s [specific JD detail] is the closer match for what I do" line tied to a named JD detail, in BOTH live and omit modes. Never ends paragraph two on the accomplishment alone; never generic flattery.
 - [ ] **Length** — intro 50–125 words (target ~100). Count the words.
 - [ ] **Body em-dash gate** — zero em dashes (` — `, U+2014) in the email BODY; subject lines may use the template's prescribed dash form.
 - [ ] **No banned phrases** — none of the banned openers ("I hope this email finds you well", "Just wanted to reach out", "I came across your profile", etc.) or hype words ("leverage", "spearhead", "synergy", "drove", "passionate", "rockstar", "ninja").
