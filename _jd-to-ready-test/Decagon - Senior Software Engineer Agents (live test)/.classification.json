@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "Design and build AI agents that outperform human agents in managing complex customer interactions and driving customer retention"},
+    {"tag": "evaluation", "evidence": "Experiment with and run evaluations on the latest text and voice models"},
+    {"tag": "experimentation", "evidence": "Experiment with and run evaluations on the latest text and voice models, then integrate them at scale"},
+    {"tag": "end-to-end", "evidence": "complete ownership and autonomy in building and shipping best-in-class AI agents, from initial implementation through continuous iteration"},
+    {"tag": "platform", "evidence": "Identify cross-customer trends that guide the evolution of Decagon's agent building platform"},
+    {"tag": "engineering-rigor", "evidence": "comfort digging into system failures within deep technology stacks using any tool necessary"}
+  ],
+  "archetype": "agent-builder",
+  "archetype_rationale": "Day-to-day is designing, shipping, and iterating production AI agents ('complete ownership... building and shipping best-in-class AI agents') plus evaluating and integrating text/voice models, which is core agent engineering rather than primarily client-embedded delivery.",
+  "notes": "Strong customer-facing element ('work directly with leaders across industries', deploy to enterprise customers) gives this a secondary FDE flavor, but the deep-stack debugging + 5yr SWE + Python/TS async requirements make it a heavier production-engineering role than typical FDE. On-site NYC only.",
+  "classified_ts": "2026-06-27"
+}
