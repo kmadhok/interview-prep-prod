@@ -60,13 +60,13 @@ If not `200` → STOP the apply side; mark steps 4–7 `blocked` in the report; 
 4. **find-contacts** → `<clone>/.contacts-ledger.md` (real LinkedIn, read-only).
 5. **enrich-contacts** → updates the ledger with hooks (real LinkedIn, read-only).
 6. **verify-emails** → `<clone>/Verified Emails.md` (real EmailFinder; degrade to inferred if unavailable).
-7. **write-outreach** → `<clone>/Cold Outreach.md` + a Gmail draft via `create_draft` to the resolved recruiter. **NEVER send.** Capture the draft id + recipient.
+7. **write-outreach** (drip mode) → `<clone>/Cold Outreach.md` + **two** Gmail drafts via `create_draft` — one to the resolved recruiter, one to the HM/peer-IC lead (the same-company double-send guard may collapse them to one). **NEVER send.** Capture each draft id + recipient.
 
 ## Step 8 — Verify + report (main loop)
-1. Confirm the draft: `mcp__claude_ai_Gmail__list_drafts` with `query: "to:<recipient>"`; save the matched draft object to `<clone>/_draft.json`.
+1. Confirm the drafts: `mcp__claude_ai_Gmail__list_drafts` for each recipient (`query: "to:<recruiter>"` and `query: "to:<lead>"`); save the matched draft objects as a JSON **array** to `<clone>/_draft.json` (`[ {recruiter draft}, {lead draft} ]`). If the guard suppressed one, save the single draft — the verifier accepts one or two.
 2. Run the verifier:
 ```
-python3 "~/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py" --clone "<clone>" --company "<Company>" --worklist-out "<clone>/_worklist.txt" --pages <n> --title-leak <0|1> --draft-json "<clone>/_draft.json" --expected-recipient "<recipient>"
+python3 "~/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py" --clone "<clone>" --company "<Company>" --worklist-out "<clone>/_worklist.txt" --pages <n> --title-leak <0|1> --draft-json "<clone>/_draft.json" --expected-recipient "<recruiter>" --expected-lead-recipient "<lead>"
 ```
 3. Write `<clone>/TEST REPORT.md` from the verifier JSON + each sub-agent's report + the PDF/gate/draft results. Use the same sections as `_jd-to-ready-test/Two-Orchestrator Split E2E - Snowflake FDE 2026-06-28/TEST REPORT.md`: summary table, per-skill detail, findings (your narrative on top of the verifier's deterministic pass/fail), environment notes, cleanup record (the Gmail draft id + a one-line "delete in Gmail Drafts if unwanted").
 

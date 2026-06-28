@@ -168,6 +168,79 @@ def test_write_outreach_no_draft_fails():
     assert va.check_write_outreach(clone, None, "")["status"] == "fail"
 
 
+def test_write_outreach_two_drafts_pass():
+    clone = _clone_with({"Cold Outreach.md": "two intros"})
+    drafts = [
+        {"id": "r1", "toRecipients": ["brad.mallmann@snowflake.com"]},
+        {"id": "h1", "toRecipients": ["dana.hm@snowflake.com"]},
+    ]
+    res = va.check_write_outreach(clone, drafts, "brad.mallmann@snowflake.com",
+                                  "dana.hm@snowflake.com")
+    assert res["status"] == "pass", res
+
+
+def test_write_outreach_any_draft_sent_fails():
+    clone = _clone_with({"Cold Outreach.md": "x"})
+    drafts = [
+        {"id": "r1", "toRecipients": ["brad.mallmann@snowflake.com"]},
+        {"id": "h1", "toRecipients": ["dana.hm@snowflake.com"], "sent": True},
+    ]
+    res = va.check_write_outreach(clone, drafts, "brad.mallmann@snowflake.com",
+                                  "dana.hm@snowflake.com")
+    assert res["status"] == "fail"
+    assert any(c["name"] == "all-drafts-unsent" and not c["ok"] for c in res["checks"])
+
+
+def test_write_outreach_lead_recipient_missing_fails():
+    clone = _clone_with({"Cold Outreach.md": "x"})
+    drafts = [{"id": "r1", "toRecipients": ["brad.mallmann@snowflake.com"]}]
+    res = va.check_write_outreach(clone, drafts, "brad.mallmann@snowflake.com",
+                                  "dana.hm@snowflake.com")
+    assert res["status"] == "fail"
+
+
+def test_write_outreach_same_company_guard_one_draft_warns():
+    # Same-company double-send guard: recruiter and lead resolve to one address,
+    # so write-outreach drafts once. The expected lead == recruiter, so the lead
+    # match still passes; only both-drafts-present warns (gap-with-note, not fail).
+    clone = _clone_with({"Cold Outreach.md": "x"})
+    drafts = [{"id": "r1", "toRecipients": ["brad.mallmann@snowflake.com"]}]
+    res = va.check_write_outreach(clone, drafts, "brad.mallmann@snowflake.com",
+                                  "brad.mallmann@snowflake.com")
+    assert res["status"] == "warn", res
+    assert any(c["name"] == "both-drafts-present" and not c["ok"] for c in res["checks"])
+
+
+def test_run_all_two_drafts_list_pass():
+    files = {
+        "Job Description.md": "# Role\n" + "x" * 80,
+        ".classification.json": _GOOD_CLASS,
+        "Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK,
+        "Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        ".contacts-ledger.md": _LEDGER,
+        "Verified Emails.md": _VERIFIED_OK,
+        "Cold Outreach.md": "two intros",
+    }
+    clone = _clone_with(files)
+    worklist = clone / "_worklist.txt"
+    worklist.write_text("Snowflake\tForward Deployed Analytics Engineer\n", encoding="utf-8")
+    draft = clone / "_draft.json"
+    draft.write_text(json.dumps([
+        {"id": "r1", "toRecipients": ["brad.mallmann@snowflake.com"]},
+        {"id": "h1", "toRecipients": ["dana.hm@snowflake.com"]},
+    ]), encoding="utf-8")
+    args = va.build_parser().parse_args([
+        "--clone", str(clone), "--company", "Snowflake",
+        "--worklist-out", str(worklist), "--pages", "1", "--title-leak", "0",
+        "--draft-json", str(draft),
+        "--expected-recipient", "brad.mallmann@snowflake.com",
+        "--expected-lead-recipient", "dana.hm@snowflake.com",
+    ])
+    report = va.run_all(args)
+    assert report["summary"]["overall"] == "pass", json.dumps(report, indent=2)
+    assert report["skills"]["write-outreach"]["status"] == "pass"
+
+
 def test_run_all_full_fixture_overall_pass():
     files = {
         "Job Description.md": "# Role\n" + "x" * 80,

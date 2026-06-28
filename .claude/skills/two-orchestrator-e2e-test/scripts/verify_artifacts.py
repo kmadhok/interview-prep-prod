@@ -178,29 +178,62 @@ def check_verify_emails(clone: Path) -> dict:
     return skill_result(checks)
 
 
-def check_write_outreach(clone: Path, draft: dict | None, expected_recipient: str) -> dict:
+def _draft_recipients(draft: dict) -> list[str]:
+    return [str(r).lower() for r in (draft or {}).get("toRecipients", [])]
+
+
+def _load_drafts(path_str: str) -> list[dict]:
+    """Parse --draft-json, which may hold a single draft object or a list of them."""
+    if not path_str:
+        return []
+    try:
+        data = json.loads(_read(Path(path_str)))
+    except ValueError:
+        return []
+    if isinstance(data, dict):
+        return [data]
+    if isinstance(data, list):
+        return [d for d in data if isinstance(d, dict)]
+    return []
+
+
+def check_write_outreach(clone: Path, drafts, expected_recipient: str,
+                         expected_lead_recipient: str = "") -> dict:
+    """write-outreach drip mode produces TWO Gmail drafts (recruiter #1 + the
+    HM/peer-IC lead). `drafts` accepts a single draft dict (back-compat) or a
+    list of draft dicts; every draft must be unsent."""
     f = clone / "Cold Outreach.md"
     checks = [check("cold-outreach-present", f.exists(), str(f))]
-    if not draft:
+    if isinstance(drafts, dict):
+        drafts = [drafts]
+    drafts = [d for d in (drafts or []) if isinstance(d, dict)]
+    if not drafts:
         checks.append(check("gmail-draft-present", False, "no draft provided"))
         return skill_result(checks)
-    recips = [str(r).lower() for r in draft.get("toRecipients", [])]
-    checks.append(check("gmail-draft-present", bool(draft.get("id")), draft.get("id", "")))
+    with_id = [d for d in drafts if d.get("id")]
+    checks.append(check("gmail-draft-present", bool(with_id), f"{len(with_id)} draft(s) with id"))
+    all_recips = [r for d in drafts for r in _draft_recipients(d)]
     if expected_recipient:
-        checks.append(check("draft-recipient-matches", expected_recipient.lower() in recips, f"to={recips}"))
-    checks.append(check("draft-unsent", not draft.get("sent", False), "drafts listing = unsent"))
+        checks.append(check("recruiter-draft-recipient-matches",
+                            expected_recipient.lower() in all_recips, f"to={all_recips}"))
+    if expected_lead_recipient:
+        checks.append(check("lead-draft-recipient-matches",
+                            expected_lead_recipient.lower() in all_recips, f"to={all_recips}"))
+        # drip should draft both; <2 is a gap-with-note (the same-company guard or
+        # a missing HM can legitimately yield one), not a hard failure.
+        checks.append(check("both-drafts-present", len(with_id) >= 2,
+                            f"{len(with_id)} draft(s) with id; recruiter + HM/peer expected",
+                            severity="warn"))
+    checks.append(check("all-drafts-unsent",
+                        all(not d.get("sent", False) for d in drafts),
+                        f"{len(drafts)} draft(s)"))
     return skill_result(checks)
 
 
 def run_all(args) -> dict:
     clone = Path(args.clone)
     worklist_text = _read(Path(args.worklist_out)) if args.worklist_out else ""
-    draft = None
-    if args.draft_json:
-        try:
-            draft = json.loads(_read(Path(args.draft_json)))
-        except ValueError:
-            draft = None
+    drafts = _load_drafts(args.draft_json)
     skills = {
         "interview-prep-intake": check_intake(clone),
         "classify": check_classify(clone),
@@ -210,7 +243,9 @@ def run_all(args) -> dict:
         "find-contacts": check_find_contacts(clone),
         "enrich-contacts": check_enrich_contacts(clone),
         "verify-emails": check_verify_emails(clone),
-        "write-outreach": check_write_outreach(clone, draft, args.expected_recipient or ""),
+        "write-outreach": check_write_outreach(
+            clone, drafts, args.expected_recipient or "",
+            getattr(args, "expected_lead_recipient", "") or ""),
     }
     if getattr(args, "blocked_apply", False):
         note = "apply side not run (LinkedIn daemon down at preflight)"
@@ -241,7 +276,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--pages", type=int, default=None)
     p.add_argument("--title-leak", type=int, default=None)
     p.add_argument("--draft-json", default="")
-    p.add_argument("--expected-recipient", default="")
+    p.add_argument("--expected-recipient", default="",
+                   help="recruiter #1 draft recipient email")
+    p.add_argument("--expected-lead-recipient", default="",
+                   help="HM/peer-IC lead draft recipient email (drip mode drafts two)")
     p.add_argument("--blocked-apply", action="store_true",
                    help="LinkedIn was down at preflight; mark apply-side skills blocked and exclude from fail/warn rollup")
     return p
