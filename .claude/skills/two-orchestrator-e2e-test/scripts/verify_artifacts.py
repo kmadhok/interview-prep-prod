@@ -70,3 +70,22 @@ def check_classify(clone: Path) -> dict:
         check("evidence-present", not no_ev, f"{len(no_ev)} theme(s) missing evidence"),
         check("classified-ts-present", bool(str(data.get("classified_ts", "")).strip())),
     ])
+
+
+def find_resume(clone: Path) -> Path | None:
+    matches = sorted(clone.glob("Kanu Madhok Resume - *.md"))
+    return matches[0] if matches else None
+
+
+def check_tailor_resume(clone: Path) -> dict:
+    r = find_resume(clone)
+    if r is None:
+        return skill_result([check("resume-md-present", False, "glob: Kanu Madhok Resume - *.md")])
+    text = _read(r)
+    leaks = re.findall(r"\[VERIFY|\[NUMBER\?", text)
+    return skill_result([
+        check("resume-md-present", True, r.name),
+        check("resume-nontrivial", len(text.strip()) > 400, f"{len(text)} chars"),
+        check("no-verify-leak", not leaks, f"{len(leaks)} leak(s)"),
+        check("contact-header-present", "madhok.kanu@gmail.com" in text),
+    ])

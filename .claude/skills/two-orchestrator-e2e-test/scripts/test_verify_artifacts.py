@@ -60,3 +60,24 @@ def test_classify_off_vocab_theme_fails():
 
 def test_classify_missing_file_fails():
     assert va.check_classify(_clone_with({}))["status"] == "fail"
+
+
+_RESUME_OK = ("# Kanu Madhok\n\nmadhok.kanu@gmail.com\n\n" +
+              "## EXPERIENCE\n- Built a registry-governed semantic layer over 67 tables.\n" * 6)
+
+
+def test_tailor_resume_pass():
+    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK})
+    assert va.check_tailor_resume(clone)["status"] == "pass"
+
+
+def test_tailor_resume_verify_leak_fails():
+    leaked = _RESUME_OK + "\n- Drove [VERIFY: 95% accuracy] across the org.\n"
+    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.md": leaked})
+    res = va.check_tailor_resume(clone)
+    assert res["status"] == "fail"
+    assert any(c["name"] == "no-verify-leak" and not c["ok"] for c in res["checks"])
+
+
+def test_tailor_resume_missing_fails():
+    assert va.check_tailor_resume(_clone_with({}))["status"] == "fail"
