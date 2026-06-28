@@ -139,3 +139,34 @@ def check_enrich_contacts(clone: Path) -> dict:
         return skill_result([check("ledger-present", False, str(f))])
     return skill_result([check("ledger-has-hooks", "hook" in _read(f).lower(),
                                "expected a hooks section from enrich-contacts")])
+
+
+def _verified_email_rows(text: str) -> int:
+    rows = 0
+    for line in (text or "").splitlines():
+        if not line.strip().startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if any("@" in c and "." in c for c in cells):
+            rows += 1
+    return rows
+
+
+def check_verify_emails(clone: Path) -> dict:
+    f = clone / "Verified Emails.md"
+    if not f.exists():
+        return skill_result([check("verified-emails-present", False, str(f))])
+    rows = _verified_email_rows(_read(f))
+    ledger = clone / ".contacts-ledger.md"
+    ledger_contacts = _ledger_contact_rows(_read(ledger)) if ledger.exists() else 0
+    checks = [
+        check("verified-emails-present", True),
+        check("verified-rows-present", rows >= 1, f"{rows} verified row(s)"),
+    ]
+    if ledger_contacts >= 1 and rows == 0:
+        checks.append(check(
+            "issue1-ledger-parsed", False,
+            f"ledger has {ledger_contacts} contacts but Verified Emails.md is empty — "
+            "find-contacts→verify-emails format mismatch (Issue 1)",
+        ))
+    return skill_result(checks)

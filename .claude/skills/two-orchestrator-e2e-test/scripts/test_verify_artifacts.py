@@ -126,3 +126,25 @@ def test_enrich_requires_hooks_section():
     assert va.check_enrich_contacts(clone)["status"] == "pass"
     no_hooks = _clone_with({".contacts-ledger.md": "| Rank | Name |\n| 1 | X |"})
     assert va.check_enrich_contacts(no_hooks)["status"] == "fail"
+
+
+_VERIFIED_OK = "\n".join([
+    "# Verified Emails",
+    "| Name | Email | Confidence |",
+    "|---|---|---|",
+    "| Brad Mallmann | brad.mallmann@snowflake.com | High |",
+])
+
+
+def test_verify_emails_pass():
+    clone = _clone_with({".contacts-ledger.md": _LEDGER, "Verified Emails.md": _VERIFIED_OK})
+    assert va.check_verify_emails(clone)["status"] == "pass"
+
+
+def test_verify_emails_issue1_empty_with_contacts_fails():
+    # ledger HAS contacts but verification produced zero rows -> the Issue 1 regression
+    empty = "# Verified Emails\n\n_no rows_\n"
+    clone = _clone_with({".contacts-ledger.md": _LEDGER, "Verified Emails.md": empty})
+    res = va.check_verify_emails(clone)
+    assert res["status"] == "fail"
+    assert any("issue1" in c["name"] for c in res["checks"])
