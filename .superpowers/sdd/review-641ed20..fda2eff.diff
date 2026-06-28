@@ -1,0 +1,94 @@
+# Review package: 641ed20..fda2eff
+
+## Commits
+fda2eff feat(e2e-test): verify-emails check — loud fail on empty-with-contacts (Issue 1)
+
+## Files changed
+ .../scripts/test_verify_artifacts.py               | 22 +++++++++++++++
+ .../scripts/verify_artifacts.py                    | 31 ++++++++++++++++++++++
+ 2 files changed, 53 insertions(+)
+
+## Diff
+diff --git a/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py b/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
+index 30acafe..955d942 100644
+--- a/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
++++ b/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
+@@ -119,10 +119,32 @@ def test_find_contacts_counts_rows():
+ 
+ def test_find_contacts_missing_fails():
+     assert va.check_find_contacts(_clone_with({}))["status"] == "fail"
+ 
+ 
+ def test_enrich_requires_hooks_section():
+     clone = _clone_with({".contacts-ledger.md": _LEDGER})
+     assert va.check_enrich_contacts(clone)["status"] == "pass"
+     no_hooks = _clone_with({".contacts-ledger.md": "| Rank | Name |\n| 1 | X |"})
+     assert va.check_enrich_contacts(no_hooks)["status"] == "fail"
++
++
++_VERIFIED_OK = "\n".join([
++    "# Verified Emails",
++    "| Name | Email | Confidence |",
++    "|---|---|---|",
++    "| Brad Mallmann | brad.mallmann@snowflake.com | High |",
++])
++
++
++def test_verify_emails_pass():
++    clone = _clone_with({".contacts-ledger.md": _LEDGER, "Verified Emails.md": _VERIFIED_OK})
++    assert va.check_verify_emails(clone)["status"] == "pass"
++
++
++def test_verify_emails_issue1_empty_with_contacts_fails():
++    # ledger HAS contacts but verification produced zero rows -> the Issue 1 regression
++    empty = "# Verified Emails\n\n_no rows_\n"
++    clone = _clone_with({".contacts-ledger.md": _LEDGER, "Verified Emails.md": empty})
++    res = va.check_verify_emails(clone)
++    assert res["status"] == "fail"
++    assert any("issue1" in c["name"] for c in res["checks"])
+diff --git a/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py b/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
+index b92c51f..c3065f7 100644
+--- a/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
++++ b/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
+@@ -132,10 +132,41 @@ def check_find_contacts(clone: Path) -> dict:
+         check("ledger-has-contacts", n >= 1, f"{n} contact row(s)"),
+     ])
+ 
+ 
+ def check_enrich_contacts(clone: Path) -> dict:
+     f = clone / ".contacts-ledger.md"
+     if not f.exists():
+         return skill_result([check("ledger-present", False, str(f))])
+     return skill_result([check("ledger-has-hooks", "hook" in _read(f).lower(),
+                                "expected a hooks section from enrich-contacts")])
++
++
++def _verified_email_rows(text: str) -> int:
++    rows = 0
++    for line in (text or "").splitlines():
++        if not line.strip().startswith("|"):
++            continue
++        cells = [c.strip() for c in line.strip().strip("|").split("|")]
++        if any("@" in c and "." in c for c in cells):
++            rows += 1
++    return rows
++
++
++def check_verify_emails(clone: Path) -> dict:
++    f = clone / "Verified Emails.md"
++    if not f.exists():
++        return skill_result([check("verified-emails-present", False, str(f))])
++    rows = _verified_email_rows(_read(f))
++    ledger = clone / ".contacts-ledger.md"
++    ledger_contacts = _ledger_contact_rows(_read(ledger)) if ledger.exists() else 0
++    checks = [
++        check("verified-emails-present", True),
++        check("verified-rows-present", rows >= 1, f"{rows} verified row(s)"),
++    ]
++    if ledger_contacts >= 1 and rows == 0:
++        checks.append(check(
++            "issue1-ledger-parsed", False,
++            f"ledger has {ledger_contacts} contacts but Verified Emails.md is empty — "
++            "find-contacts→verify-emails format mismatch (Issue 1)",
++        ))
++    return skill_result(checks)

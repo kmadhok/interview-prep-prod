@@ -1,0 +1,81 @@
+# Review package: a86e60b..e540d9e
+
+## Commits
+e540d9e feat(e2e-test): tailor-resume check (no [VERIFY] leak, contact header)
+
+## Files changed
+ .../scripts/test_verify_artifacts.py                | 21 +++++++++++++++++++++
+ .../scripts/verify_artifacts.py                     | 19 +++++++++++++++++++
+ 2 files changed, 40 insertions(+)
+
+## Diff
+diff --git a/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py b/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
+index 4484692..37809e4 100644
+--- a/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
++++ b/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
+@@ -53,10 +53,31 @@ def test_classify_off_vocab_theme_fails():
+     bad = json.loads(_GOOD_CLASS)
+     bad["themes"][0]["tag"] = "made-up-tag"
+     clone = _clone_with({".classification.json": json.dumps(bad)})
+     res = va.check_classify(clone)
+     assert res["status"] == "fail"
+     assert any(c["name"] == "themes-in-vocab" and not c["ok"] for c in res["checks"])
+ 
+ 
+ def test_classify_missing_file_fails():
+     assert va.check_classify(_clone_with({}))["status"] == "fail"
++
++
++_RESUME_OK = ("# Kanu Madhok\n\nmadhok.kanu@gmail.com\n\n" +
++              "## EXPERIENCE\n- Built a registry-governed semantic layer over 67 tables.\n" * 6)
++
++
++def test_tailor_resume_pass():
++    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK})
++    assert va.check_tailor_resume(clone)["status"] == "pass"
++
++
++def test_tailor_resume_verify_leak_fails():
++    leaked = _RESUME_OK + "\n- Drove [VERIFY: 95% accuracy] across the org.\n"
++    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.md": leaked})
++    res = va.check_tailor_resume(clone)
++    assert res["status"] == "fail"
++    assert any(c["name"] == "no-verify-leak" and not c["ok"] for c in res["checks"])
++
++
++def test_tailor_resume_missing_fails():
++    assert va.check_tailor_resume(_clone_with({}))["status"] == "fail"
+diff --git a/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py b/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
+index 1e51da8..7297674 100644
+--- a/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
++++ b/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
+@@ -63,10 +63,29 @@ def check_classify(clone: Path) -> dict:
+     off = [t for t in tags if t not in THEME_VOCAB]
+     no_ev = [t for t in themes if isinstance(t, dict) and not str(t.get("evidence", "")).strip()]
+     return skill_result([
+         check("classification-parses", True),
+         check("theme-count-4-6", 4 <= len(tags) <= 6, f"{len(tags)} themes"),
+         check("themes-in-vocab", not off, f"off-vocab: {off}"),
+         check("archetype-in-vocab", data.get("archetype") in ARCHETYPE_VOCAB, str(data.get("archetype"))),
+         check("evidence-present", not no_ev, f"{len(no_ev)} theme(s) missing evidence"),
+         check("classified-ts-present", bool(str(data.get("classified_ts", "")).strip())),
+     ])
++
++
++def find_resume(clone: Path) -> Path | None:
++    matches = sorted(clone.glob("Kanu Madhok Resume - *.md"))
++    return matches[0] if matches else None
++
++
++def check_tailor_resume(clone: Path) -> dict:
++    r = find_resume(clone)
++    if r is None:
++        return skill_result([check("resume-md-present", False, "glob: Kanu Madhok Resume - *.md")])
++    text = _read(r)
++    leaks = re.findall(r"\[VERIFY|\[NUMBER\?", text)
++    return skill_result([
++        check("resume-md-present", True, r.name),
++        check("resume-nontrivial", len(text.strip()) > 400, f"{len(text)} chars"),
++        check("no-verify-leak", not leaks, f"{len(leaks)} leak(s)"),
++        check("contact-header-present", "madhok.kanu@gmail.com" in text),
++    ])
