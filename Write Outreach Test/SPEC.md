@@ -82,15 +82,17 @@ A model's run score = mean of its 3 emails' judge totals, with **any disqualifie
 
 ## 6. Worktree / model matrix (execution wired later)
 
-Spec-only for now. The intended shape, to be implemented in a later pass (`RUNNER.md` will hold the mechanics):
+Worktrees are **created and isolation-proven**; CLI invocations are **verified**. Full mechanics in `RUNNER.md`.
 
-| Worktree | Provider | Model | CLI |
-|----------|----------|-------|-----|
-| `wt-claude` | Anthropic | claude-opus-4-8 | claude |
-| `wt-codex` | OpenAI | (latest Codex/GPT) | codex |
-| `wt-gemini` | Google | (latest Gemini) | gemini |
+| Worktree (in `.claude/worktrees/`) | Branch | Provider | Model | CLI |
+|-----------------------------------|--------|----------|-------|-----|
+| `wo-claude` | `wo-test/claude` | Anthropic | claude-opus-4-8 | claude |
+| `wo-codex` | `wo-test/codex` | OpenAI | (latest Codex) | codex |
+| `wo-gemini` | `wo-test/gemini` | Google | (latest Gemini) | gemini |
 
-Each worktree is an isolated checkout so parallel skill edits don't collide. Each runs the **same task prompt** (`fixtures/TASK_PROMPT.md`) and writes to `runs/<model>/`. The judge runs once, centrally, over all `runs/*/`.
+The skill is **vendored in-repo** at `.claude/skills/write-outreach/` (git-tracked), so each worktree gets its own isolated copy of it for free — no separate `skill-under-test/` copy needed. Proven: an edit in `wo-claude` is invisible to `wo-codex` and `main`. Each worktree runs the **same task prompt** (`fixtures/TASK_PROMPT.md`) and writes emails to the shared `runs/<model>/` (outputs are collected centrally; only the *skill edits* need isolation). The judge runs once, centrally, over all `runs/*/`.
+
+> Run-time guard (from `RUNNER.md`): a model session may also see the GLOBAL skill at `~/.claude/skills/write-outreach/`. Each model must edit and be judged on the **in-worktree** copy only — never the global one — or edits leak across worktrees.
 
 ---
 

@@ -17,9 +17,11 @@ merge candidate.
 - [x] 3 recruiter fixtures wired from real roles (Cohere / Distyl / Sierra), each with a verified-email recruiter.
 - [x] **Gold email is IN** (`fixtures/gold-email.md` — Google Cloud / FDE I) and `RUBRIC.md` is tuned to its two load-bearing traits: relevance-match + urgency-via-social-proof.
 - [x] Beat-3 split wired: `cohere-fde` seeded LIVE (tests the urgency move), `distyl`/`sierra` OMIT (test clean live-sourcing).
-- [ ] Runner wired (worktree + per-CLI execution) — `RUNNER.md` is still a stub.
-- [ ] Judge model chosen (recommend one NOT in the contestant matrix).
-- [ ] Decide global-skill vs repo-local `skill-under-test/` copy so worktrees actually isolate (see `RUNNER.md`).
+- [x] Skill isolation solved — `write-outreach` is vendored in-repo (`.claude/skills/`), so worktrees isolate it for free. No `skill-under-test/` copy needed.
+- [x] Three worktrees created + isolation proven: `.claude/worktrees/wo-{claude,codex,gemini}` on branches `wo-test/{claude,codex,gemini}`.
+- [x] `RUNNER.md` written with **verified** CLI invocations (claude/codex/gemini all installed) + a full judge-model section.
+- [ ] Pick exact latest `--model` id per provider, and the judge model (see `RUNNER.md` → "Judge model").
+- [ ] Run it (each model → 3 emails), then gates + judge.
 
 ## What the harness is really testing
 Whether a model can edit `write-outreach` so its emails reproduce the gold email's two moves — tight

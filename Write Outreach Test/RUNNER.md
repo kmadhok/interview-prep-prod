@@ -1,49 +1,155 @@
-# Runner — worktree + model execution (STUB, wired in a later pass)
+# Runner — worktree + model execution
 
-Spec-only for now. This file holds the *intended* mechanics so the SPEC stays clean. Nothing here
-is implemented yet. When wiring it: prefer the smallest thing that runs all three models on the
-same prompt and drops outputs into `runs/<model>/`.
+How the three contestant models run, each in an isolated git worktree, on the same task prompt. CLI
+flags below are **verified against the installed CLIs** (`claude`, `codex`, `gemini` at
+`/opt/homebrew/bin/`). The worktrees already exist — this file is the operating manual, not a stub.
 
 ---
 
-## Shape
+## Why this works without a separate skill copy
 
-One git worktree per contestant model, all off the same base commit, each running
-`fixtures/TASK_PROMPT.md` verbatim:
+The skill is **vendored in-repo** at `.claude/skills/write-outreach/SKILL.md` (identical to the global
+`~/.claude/skills/` copy, and git-tracked). Because it's tracked, **a git worktree isolates it for
+free** — each worktree gets its own checkout of the skill, edits stay on that worktree's branch, and
+they never collide. (Proven: an edit in `wo-claude` is invisible to `wo-codex` and `main`.) No
+`skill-under-test/` copy is needed.
 
-| Worktree dir | Provider | Model | CLI invocation (placeholder) |
-|--------------|----------|-------|------------------------------|
-| `../wo-wt-claude` | Anthropic | claude-opus-4-8 | `claude -p "$(cat fixtures/TASK_PROMPT.md)"` |
-| `../wo-wt-codex` | OpenAI | latest Codex/GPT | `codex exec "$(cat fixtures/TASK_PROMPT.md)"` |
-| `../wo-wt-gemini` | Google | latest Gemini | `gemini -p "$(cat fixtures/TASK_PROMPT.md)"` |
+> One caveat to respect at run time: the model's Claude/Codex/Gemini session may *also* read the
+> GLOBAL skill at `~/.claude/skills/write-outreach/`. For a clean experiment each model must edit and
+> be evaluated on the **in-worktree** copy (`.claude/skills/write-outreach/`), not the global one. The
+> task prompt already points at the in-repo path; the judge diffs the worktree branch, not the global
+> skill. Don't let a model "improve" the global copy — that would leak across worktrees.
 
-(Exact flags depend on each CLI's current interface — confirm before running.)
+## The worktrees (already created)
 
-## Why worktrees
-Each model EDITS the shared `write-outreach` skill. Parallel edits to the same files would collide.
-Worktrees give each model an isolated checkout so the skill diffs don't stomp each other, and the
-judge can diff each worktree's skill independently.
+```
+.claude/worktrees/wo-claude   →  branch wo-test/claude   (Anthropic, claude CLI)
+.claude/worktrees/wo-codex    →  branch wo-test/codex    (OpenAI,    codex CLI)
+.claude/worktrees/wo-gemini   →  branch wo-test/gemini   (Google,    gemini CLI)
+```
+All three branch off the harness commit, so each starts from the identical spec + fixtures + skill.
 
-> Caveat: the skill lives at `~/.claude/skills/write-outreach/`, OUTSIDE this git repo. Decide
-> before running whether models edit the global skill (then a worktree doesn't isolate it) or a
-> repo-local copy of the skill. **Recommended:** copy the skill into the repo for the experiment
-> (e.g. `Write Outreach Test/skill-under-test/`) so worktrees actually isolate the edits, then
-> promote the winner back to `~/.claude/skills/` by hand. Update TASK_PROMPT paths to match.
+Recreate if ever needed:
+```bash
+git worktree add -b wo-test/<m> .claude/worktrees/wo-<m> HEAD   # m ∈ {claude,codex,gemini}
+```
+Tear down after the experiment:
+```bash
+git worktree remove .claude/worktrees/wo-<m> && git branch -D wo-test/<m>
+```
 
-## Flow
-1. Snapshot base commit. For each model: create worktree, copy skill-under-test in.
-2. Run the model with `TASK_PROMPT.md`. It edits the skill copy + writes 3 emails to `runs/<model>/`.
-3. Reproducibility gate (ACCEPTANCE Stage 0): re-run each edited skill on one held-out fixture.
-4. Central judge pass (ACCEPTANCE Stage 1 gates → Stage 2 LLM judge) over all `runs/*/`.
-5. Emit a ranked scoreboard; winner's skill diff is the merge candidate.
+---
 
-## Judge model
-Pick a strong model **not** in the contestant matrix to avoid self-preference bias (e.g. if
-contestants are Opus/Codex/Gemini, judge with a different one, or run a 2-judge average). Lock the
-judge prompt from `RUBRIC.md` so re-runs agree within ±0.3.
+## Verified CLI invocations
+
+Each runs the SAME prompt — `Write Outreach Test/fixtures/TASK_PROMPT.md` — from inside its own
+worktree, so the model's cwd-relative paths resolve to the isolated skill copy. Non-interactive,
+auto-approved (the model must be free to edit files + write outputs), confined to the worktree.
+
+**Claude (Anthropic):**
+```bash
+cd .claude/worktrees/wo-claude
+claude -p "$(cat '../../../Write Outreach Test/fixtures/TASK_PROMPT.md')" \
+       --model claude-opus-4-8 \
+       --permission-mode acceptEdits
+```
+
+**Codex (OpenAI):**
+```bash
+cd .claude/worktrees/wo-codex
+codex exec "$(cat '../../../Write Outreach Test/fixtures/TASK_PROMPT.md')" \
+      --model <latest-codex-model> \
+      --cd . \
+      --dangerously-bypass-approvals-and-sandbox   # worktree IS the sandbox boundary here
+```
+
+**Gemini (Google):**
+```bash
+cd .claude/worktrees/wo-gemini
+gemini "$(cat '../../../Write Outreach Test/fixtures/TASK_PROMPT.md')" \
+       --model <latest-gemini-model> \
+       --approval-mode yolo
+```
+
+Notes:
+- Confirm the exact latest model id per provider at run time (`--model` is verified to exist on all
+  three; the id strings move).
+- All three auto-approve flags are acceptable **because the worktree is the blast radius** — the
+  model can only touch that checkout. Still: review diffs before merging anything.
+- `TASK_PROMPT.md` lives at repo root under `Write Outreach Test/`, so from inside a worktree it's
+  three levels up (`../../../`). Adjust if you relocate.
+
+---
+
+## End-to-end flow
+
+1. **Pre-flight.** Working tree clean on `main`; the three worktrees exist on the harness commit;
+   `fixtures/gold-email.md` is the real email (it is); `RUBRIC.md` is tuned (it is).
+2. **Run each model** with its invocation above. Each: reads the gold email + fixtures + its
+   in-worktree skill, edits the skill, commits to its branch, generates 3 emails to
+   `runs/<model>/<role-slug>.md`, writes `runs/<model>/NOTES.md`.
+   - `runs/` is at repo root, shared. Each model writes to its own `runs/<model>/` subdir — no
+     collision. (The emails are *outputs*, intentionally collected centrally; only the *skill edits*
+     need worktree isolation.)
+3. **Reproducibility gate** (ACCEPTANCE Stage 0): from each worktree, re-run that model's edited
+   skill on ONE held-out fixture; confirm the regenerated email matches (±10 words, same beats/hook).
+   Empty skill diff or non-reproducible → disqualify that run.
+4. **Hard gates** (ACCEPTANCE Stage 1, G1–G9): mechanical checks per email. Any fail → email scores 0.
+5. **Judge pass** (ACCEPTANCE Stage 2): the judge model scores every gate-passing email against the
+   gold email on the `RUBRIC.md` dimensions. Run centrally from `main`, not from a worktree.
+6. **Scoreboard.** Per-model mean over the 3 fixtures (disqualified = 0). Winner per the tie-break
+   ladder in ACCEPTANCE. The winning branch's skill diff is the merge candidate.
+7. **Promote + clean up.** Merge the winner's `.claude/skills/write-outreach/SKILL.md` into `main`,
+   copy it back to the global `~/.claude/skills/write-outreach/`, then remove the worktrees + branches.
+
+---
+
+## Judge model — how to choose, and why it matters
+
+The judge is the measuring instrument. If it's biased, the whole benchmark is biased — so its choice
+is a first-class decision, not an afterthought.
+
+### The core risk: self-preference bias
+LLM judges measurably prefer text written by themselves or by a sibling from the same family — same
+training distribution, same stylistic priors. If you let a contestant model also be the judge, that
+family wins on style affinity, not on actually matching the gold email. With Claude / Codex / Gemini
+all competing, **the judge must sit outside all three families** wherever possible.
+
+### Recommended setup (in priority order)
+1. **A neutral strong model not in the contest.** Since Claude/OpenAI/Google are all contestants, a
+   truly outside judge is hard. Next best: pick the strongest model from a family whose *contestant
+   entry is the weakest*, OR use a model variant the contestants don't share. The point is to avoid
+   the judge being a same-family sibling of a contestant it's scoring.
+2. **Two-judge average (preferred for a real run).** Use two different-family judges (e.g. an
+   Anthropic judge + a Google judge), average their weighted totals per email. Cross-family averaging
+   cancels most single-family self-preference. If the two judges disagree by > 1.0 weighted on any
+   email, flag it for a human read rather than trusting the mean.
+3. **Blind the judge to model identity.** The judge prompt must NOT reveal which model wrote a
+   candidate (strip the `model=` label, or pass a random alias). Identity leakage reactivates the very
+   bias you're controlling for. Score emails in shuffled order.
+
+### Make the instrument reliable, not just unbiased
+- **Lock the judge prompt** (the template in `RUBRIC.md`). Same prompt every run, or scores aren't
+  comparable across runs.
+- **Pin temperature low** (0–0.3) so two judge runs on the same email agree within ±0.3 weighted —
+  that's the reproducibility bar in ACCEPTANCE's definition-of-done.
+- **Anchor with the gold email itself.** Score the gold email as a control each run; it should land
+  ~4.7. If it drifts, the judge or the anchors moved — recalibrate before trusting the scoreboard.
+- **Require quoted evidence.** Every dimension score must cite a candidate line (RUBRIC enforces
+  this). A judge that can't quote the line that earned a 5 is guessing.
+- **Fabrication is the human's job too.** The judge is a backstop for G2 (no fabrication), but the
+  hard gate runs first mechanically — don't rely on the judge to catch invented numbers.
+
+### Concrete default
+For the first run: **single neutral judge, blinded, temp 0.2, gold-email control each pass.** Upgrade
+to the **two-judge cross-family average** before treating any scoreboard as decisive. Whichever you
+pick, the judge family should not be the same family as the *front-runner* contestant — re-check after
+you see the standings, and re-judge with a different family if the winner judged its own sibling.
+
+---
 
 ## To decide before first run
-- [ ] Global skill vs repo-local `skill-under-test/` copy (recommend the copy — see caveat above).
-- [ ] Exact CLI flags per provider.
-- [ ] Judge model + whether to average two judges.
-- [ ] Whether worktrees run in parallel (faster) or serially (simpler to debug).
+- [ ] Exact latest `--model` id per provider.
+- [ ] Judge model (single neutral vs two-judge average) + confirm it's not a contestant's sibling.
+- [ ] Parallel (faster) vs serial (easier to debug) worktree execution.
+- [ ] Who runs the mechanical G1–G9 checks — a small script vs by-hand for the first pass.
