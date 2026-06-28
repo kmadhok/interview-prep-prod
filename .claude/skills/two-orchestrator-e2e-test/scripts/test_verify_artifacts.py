@@ -81,3 +81,18 @@ def test_tailor_resume_verify_leak_fails():
 
 def test_tailor_resume_missing_fails():
     assert va.check_tailor_resume(_clone_with({}))["status"] == "fail"
+
+
+def test_pdf_clean_and_overflow():
+    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4"})
+    assert va.check_pdf(clone, pages=1, title_leak=0)["status"] == "pass"
+    # 2 pages = warn (pass-with-gap), not fail
+    assert va.check_pdf(clone, pages=2, title_leak=0)["status"] == "warn"
+    # title leak = hard fail
+    assert va.check_pdf(clone, pages=1, title_leak=1)["status"] == "fail"
+
+
+def test_gate_surfaces_role():
+    out = "Snowflake\tForward Deployed Analytics Engineer\nMeta\tBusiness Engineer\n"
+    assert va.check_gate(out, "Snowflake")["status"] == "pass"
+    assert va.check_gate(out, "Datadog")["status"] == "fail"

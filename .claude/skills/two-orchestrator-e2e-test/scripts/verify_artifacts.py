@@ -89,3 +89,17 @@ def check_tailor_resume(clone: Path) -> dict:
         check("no-verify-leak", not leaks, f"{len(leaks)} leak(s)"),
         check("contact-header-present", "madhok.kanu@gmail.com" in text),
     ])
+
+
+def check_pdf(clone: Path, pages, title_leak) -> dict:
+    checks = [check("resume-pdf-present", bool(list(clone.glob("Kanu Madhok Resume - *.pdf"))), "glob: *.pdf")]
+    if pages is not None:
+        checks.append(check("pdf-one-page", pages == 1, f"PAGES={pages}", severity="warn"))
+    if title_leak is not None:
+        checks.append(check("pdf-no-title-leak", title_leak == 0, f"TITLE_LEAK={title_leak}"))
+    return skill_result(checks)
+
+
+def check_gate(worklist_text: str, company: str) -> dict:
+    ok = bool(company) and company.lower() in (worklist_text or "").lower()
+    return skill_result([check("worklist-surfaces-role", ok, f"company={company!r}")])
