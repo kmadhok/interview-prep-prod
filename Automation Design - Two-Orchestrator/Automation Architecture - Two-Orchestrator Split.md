@@ -69,8 +69,8 @@ _Build status as of 2026-06-27 (see `docs/superpowers/plans/2026-06-27-two-orche
 3. ✅ **`write-outreach`** — no change (its `create_draft` now fires inside Skill 2).
 4. ✅ **`trace_step.py`** — run-types `jd-to-ready` / `stage-outreach` (plus `full` for the legacy engine tests) with different required-steps lists; `set-role-folder` binds an existing folder. pytest-covered.
    - Also ✅ **the two deterministic readers** (build-list item 6's core): `scripts/drip_runner/outreach_worklist.py` (Pass B worklist: Active rows Applied & not STAGED) and `scripts/drip_runner/prepped_not_applied.py` (fail-loud nudge). Both pytest-covered + live-smoke-validated; share one `active_section`/`row_is_applied` predicate (no drift).
-5. ⏳ **PC cron Pass A** — saved-jobs sweep → Skill 1 (extend the existing drip runner, minus outreach). PowerShell; not yet wired.
-6. ⏳ **PC cron Pass B** — hourly `Pipeline.md` poll → Skill 2, driven by `outreach_worklist.py` (the reader itself is ✅ done; only the scheduler that calls it is ⏳).
+5. ✅ **PC cron Pass A** — saved-jobs sweep → Skill 1 (prep-only); `run.ps1 -Mode saved` recut to stop at the apply gate, save-time `STAGED` marker removed (tripwire fixed). Shipped `42caa16`.
+6. ✅ **PC cron Pass B** — hourly `Pipeline.md` poll → Skill 2, driven by `outreach_worklist.py`; `run.ps1 -Mode outreach` + `runner-prompt-outreach.md`, registered as the hourly `DripRunnerOutreach` task in `install-tasks.ps1`. Shipped `42caa16`.
 7. ⏳ **Cloud routine** — drop step-3 drafting; keep sweep/reconcile/send-detect/archive; add the ack ruleset + monotonic guard + prepped-not-applied nudge (per `Spec - Applied Detector.md`).
 8. ✅ **Docs** — `Automation Architecture - Drip Runner.md` + the Drip Runner README updated to the two-skill model (with honest partial-build status).
 
