@@ -28,3 +28,35 @@ def test_intake_pass_and_fail():
 
     empty = _clone_with({})  # no Job Description.md
     assert va.check_intake(empty)["status"] == "fail"
+
+
+_GOOD_CLASS = json.dumps({
+    "themes": [
+        {"tag": "NL→SQL", "evidence": "expose tables to natural language"},
+        {"tag": "agents", "evidence": "data agents need to reason"},
+        {"tag": "end-to-end", "evidence": "source ingestion to semantic layer"},
+        {"tag": "business-translation", "evidence": "translate business requirements"},
+    ],
+    "archetype": "FDE / client-facing",
+    "archetype_rationale": "embeds with customers",
+    "notes": "",
+    "classified_ts": "2026-06-28",
+})
+
+
+def test_classify_pass():
+    clone = _clone_with({".classification.json": _GOOD_CLASS})
+    assert va.check_classify(clone)["status"] == "pass"
+
+
+def test_classify_off_vocab_theme_fails():
+    bad = json.loads(_GOOD_CLASS)
+    bad["themes"][0]["tag"] = "made-up-tag"
+    clone = _clone_with({".classification.json": json.dumps(bad)})
+    res = va.check_classify(clone)
+    assert res["status"] == "fail"
+    assert any(c["name"] == "themes-in-vocab" and not c["ok"] for c in res["checks"])
+
+
+def test_classify_missing_file_fails():
+    assert va.check_classify(_clone_with({}))["status"] == "fail"

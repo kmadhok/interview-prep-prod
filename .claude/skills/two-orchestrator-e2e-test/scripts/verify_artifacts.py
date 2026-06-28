@@ -48,3 +48,25 @@ def check_intake(clone: Path) -> dict:
         check("job-description-present", jd.exists(), str(jd)),
         check("job-description-nonempty", len(text.strip()) > 50, f"{len(text)} chars"),
     ])
+
+
+def check_classify(clone: Path) -> dict:
+    f = clone / ".classification.json"
+    if not f.exists():
+        return skill_result([check("classification-present", False, str(f))])
+    try:
+        data = json.loads(_read(f))
+    except ValueError as exc:
+        return skill_result([check("classification-parses", False, str(exc))])
+    themes = data.get("themes", []) if isinstance(data.get("themes"), list) else []
+    tags = [t.get("tag") for t in themes if isinstance(t, dict)]
+    off = [t for t in tags if t not in THEME_VOCAB]
+    no_ev = [t for t in themes if isinstance(t, dict) and not str(t.get("evidence", "")).strip()]
+    return skill_result([
+        check("classification-parses", True),
+        check("theme-count-4-6", 4 <= len(tags) <= 6, f"{len(tags)} themes"),
+        check("themes-in-vocab", not off, f"off-vocab: {off}"),
+        check("archetype-in-vocab", data.get("archetype") in ARCHETYPE_VOCAB, str(data.get("archetype"))),
+        check("evidence-present", not no_ev, f"{len(no_ev)} theme(s) missing evidence"),
+        check("classified-ts-present", bool(str(data.get("classified_ts", "")).strip())),
+    ])
