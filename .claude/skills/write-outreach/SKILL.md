@@ -23,7 +23,7 @@ Draft targeted, voice-locked cold outreach. This is the one *executor* for outre
 | `company` | yes | Target company. |
 | `archetype` | no | From jd-to-ready step 2; helps pick the lead achievement. |
 | `lead_theme` | no | The JD's top theme; selects which canonical achievement anchors beat 2. |
-| `urgency` | no | Competing-processes list, or the literal `none`. Drives beat 3. Default when not passed: **derive from `Pipeline.md` (live only)** via the freshness filter in Process step 3 — read live processes, never fabricate. If none survive the filter, omit beat 3. |
+| `urgency` | no | Competing-processes list, or the literal `none`. Drives beat 3. If a caller or benchmark fixture passes an explicit live-process list, use only that list and do not supplement it. Default when not passed: **derive from `Pipeline.md` (live only)** via the freshness filter in Process step 3 — read live processes, never fabricate. If none survive the filter, omit beat 3. |
 | `hooks` | no | Per-recruiter activity hooks from `enrich-contacts` — `{recruiter, hook_text, source, date, url}`. When present for a contact, it's a **real scraped post/repost** and takes top precedence as the beat-1 trigger (see hook-finding step). |
 | `channel_confidence` | per contact | Email confidence from find-contacts; drives email-vs-InMail choice. |
 | `mode` | yes | `single` (one message for one contact) or `drip` (pipeline: one intro email per top pick — 2 total, no follow-ups). Default `single`. Name `drip` kept for caller compatibility; it no longer emits a sequence. |
@@ -52,10 +52,13 @@ Draft targeted, voice-locked cold outreach. This is the one *executor* for outre
 
    If you can't find a real, specific hook, **ask Kanu for one detail** before drafting — never fabricate one. Record `{source:"outreach", kind:"no-hook", ...}` in `gaps[]` if you had to ask.
 
-3. **Source beat-3 urgency LIVE from `Pipeline.md` (freshness-filtered).** Before drafting, if `urgency` wasn't passed (or to validate what was), read `Pipeline.md` and extract currently-live competing processes, applying this **freshness filter**:
-   - Keep ONLY processes dated **today or in the future** (today = the current date).
-   - Drop anything dated **before today**, and drop anything flagged `STALE`, `PASSED`, `CLOSED`, or `REJECTED`.
-   - If **nothing survives** the filter, **omit beat 3 entirely** — do not stretch a stale process to fill it.
+3. **Source beat-3 urgency without fabrication.** Branch on the `urgency` input:
+   - If `urgency` is an **explicit live-process list** from the caller or benchmark fixture, use that list exactly as the canonical beat-3 input. Do not add extra companies, roles, dates, interview stages, or timelines.
+   - If `urgency` is the literal **`none`**, omit beat 3 entirely.
+   - If `urgency` is **absent**, read `Pipeline.md` and extract currently-live competing processes, applying this **freshness filter**:
+     - Keep ONLY processes dated **today or in the future** (today = the current date).
+     - Drop anything dated **before today**, and drop anything flagged `STALE`, `PASSED`, `CLOSED`, or `REJECTED`.
+     - If **nothing survives** the filter, **omit beat 3 entirely** — do not stretch a stale process to fill it.
    - **Never fabricate or hardcode** a competing process; beat 3 is only ever populated from real, live Pipeline.md rows (or a real `urgency` input).
 
 4. **Fill the beats from canonical facts only.** Numbers come from the canonical "verified proof points" (same discipline as `tailor-resume`). Beat 3 (urgency) appears ONLY if a real, freshness-passing process exists (per step 3) — never invent competing processes. **Beat 4 (the relevance pivot) is mandatory in BOTH modes** — it's the gold email's load-bearing trait. Build the body as three paragraphs (P1 = trigger, P2 = one accomplishment + optional live urgency + the "closer match for what I do" pivot, P3 = the ask), and make paragraph two ALWAYS end on relevance to the target role (tie to a named JD detail), never on the accomplishment alone. When beat 3 is omitted, keep the pivot; when it's live, fuse urgency and pivot into one sentence.
@@ -80,7 +83,7 @@ Draft targeted, voice-locked cold outreach. This is the one *executor* for outre
 Check every draft against `Outreach Templates.md` before returning it. This is a gate, not a suggestion — if any item fails, rewrite and re-check first.
 
 - [ ] **Section match** — the right template section is used (recruiter → 1; HM/peer-IC → 4) and its beats/voice are followed.
-- [ ] **Subject** — < 70 chars, leads with the credential (recruiter) or something specific to *them* (HM/peer-IC).
+- [ ] **Subject** — < 70 chars, leads with the credential (recruiter) or something specific to *them* (HM/peer-IC). **Subject compression:** start with `Ex-Walmart Agent Builder`; if the full role title pushes the subject to 70+ chars, compress the role phrase in the subject (`FDE`, `Agent Strategist`, `AI Engineer`) while keeping the exact role title in paragraph 1.
 - [ ] **5-beat body** — beats 1, 2, 4, 5 present; beat 3 (urgency) present ONLY if a real, freshness-passing live process exists (Process step 3), omitted otherwise.
 - [ ] **Three-paragraph shape** — P1 trigger / P2 accomplishment+urgency(if live)+pivot / P3 ask. Reads as one person talking, not numbered beats bolted together.
 - [ ] **Relevance pivot present (load-bearing)** — paragraph two ENDS on a "[Company]'s [specific JD detail] is the closer match for what I do" line tied to a named JD detail, in BOTH live and omit modes. Never ends paragraph two on the accomplishment alone; never generic flattery.
