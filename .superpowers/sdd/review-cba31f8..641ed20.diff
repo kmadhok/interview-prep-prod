@@ -1,0 +1,107 @@
+# Review package: cba31f8c..641ed20
+
+## Commits
+641ed20 feat(e2e-test): find-contacts (>=1 row) + enrich-contacts (hooks) checks
+
+## Files changed
+ .../scripts/test_verify_artifacts.py               | 30 ++++++++++++++++++
+ .../scripts/verify_artifacts.py                    | 36 ++++++++++++++++++++++
+ 2 files changed, 66 insertions(+)
+
+## Diff
+diff --git a/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py b/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
+index 1c50799..30acafe 100644
+--- a/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
++++ b/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
+@@ -89,10 +89,40 @@ def test_pdf_clean_and_overflow():
+     # 2 pages = warn (pass-with-gap), not fail
+     assert va.check_pdf(clone, pages=2, title_leak=0)["status"] == "warn"
+     # title leak = hard fail
+     assert va.check_pdf(clone, pages=1, title_leak=1)["status"] == "fail"
+ 
+ 
+ def test_gate_surfaces_role():
+     out = "Snowflake\tForward Deployed Analytics Engineer\nMeta\tBusiness Engineer\n"
+     assert va.check_gate(out, "Snowflake")["status"] == "pass"
+     assert va.check_gate(out, "Datadog")["status"] == "fail"
++
++
++_LEDGER = "\n".join([
++    "# Contacts Ledger",
++    "## Recruiters (ranked)",
++    "| Rank | Name | Practice | Email (inferred) |",
++    "|------|------|----------|------------------|",
++    "| 1 | Brad Mallmann | GTM | brad.mallmann@snowflake.com |",
++    "| 2 | Diane Nguyen | Cortex | diane.nguyen@snowflake.com |",
++    "## hooks[]",
++    "- Brad: posted about data-foundation governance.",
++])
++
++
++def test_find_contacts_counts_rows():
++    clone = _clone_with({".contacts-ledger.md": _LEDGER})
++    res = va.check_find_contacts(clone)
++    assert res["status"] == "pass"
++    assert va._ledger_contact_rows(_LEDGER) == 2
++
++
++def test_find_contacts_missing_fails():
++    assert va.check_find_contacts(_clone_with({}))["status"] == "fail"
++
++
++def test_enrich_requires_hooks_section():
++    clone = _clone_with({".contacts-ledger.md": _LEDGER})
++    assert va.check_enrich_contacts(clone)["status"] == "pass"
++    no_hooks = _clone_with({".contacts-ledger.md": "| Rank | Name |\n| 1 | X |"})
++    assert va.check_enrich_contacts(no_hooks)["status"] == "fail"
+diff --git a/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py b/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
+index 9d13c04..b92c51f 100644
+--- a/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
++++ b/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
+@@ -96,10 +96,46 @@ def check_pdf(clone: Path, pages, title_leak) -> dict:
+     if pages is not None:
+         checks.append(check("pdf-one-page", pages == 1, f"PAGES={pages}", severity="warn"))
+     if title_leak is not None:
+         checks.append(check("pdf-no-title-leak", title_leak == 0, f"TITLE_LEAK={title_leak}"))
+     return skill_result(checks)
+ 
+ 
+ def check_gate(worklist_text: str, company: str) -> dict:
+     ok = bool(company) and company.lower() in (worklist_text or "").lower()
+     return skill_result([check("worklist-surfaces-role", ok, f"company={company!r}")])
++
++
++def _ledger_contact_rows(text: str) -> int:
++    rows = 0
++    for line in (text or "").splitlines():
++        if not line.strip().startswith("|"):
++            continue
++        cells = [c.strip() for c in line.strip().strip("|").split("|")]
++        if len(cells) < 3:
++            continue
++        if all(re.fullmatch(r":?-{2,}:?", (c or "-")) for c in cells):  # divider
++            continue
++        lowered = {c.lower() for c in cells}
++        if "name" in lowered and "rank" in lowered:  # header row
++            continue
++        rows += 1
++    return rows
++
++
++def check_find_contacts(clone: Path) -> dict:
++    f = clone / ".contacts-ledger.md"
++    if not f.exists():
++        return skill_result([check("ledger-present", False, str(f))])
++    n = _ledger_contact_rows(_read(f))
++    return skill_result([
++        check("ledger-present", True),
++        check("ledger-has-contacts", n >= 1, f"{n} contact row(s)"),
++    ])
++
++
++def check_enrich_contacts(clone: Path) -> dict:
++    f = clone / ".contacts-ledger.md"
++    if not f.exists():
++        return skill_result([check("ledger-present", False, str(f))])
++    return skill_result([check("ledger-has-hooks", "hook" in _read(f).lower(),
++                               "expected a hooks section from enrich-contacts")])

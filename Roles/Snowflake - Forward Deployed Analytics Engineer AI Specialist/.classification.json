@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "NL→SQL", "evidence": "Build semantic data models that expose customer tables to natural language queries via Cortex Analyst."},
+    {"tag": "agents", "evidence": "construct the semantic layer between raw data and AI agents... the metrics, dimensions, and relationships that AI agents need to reason correctly"},
+    {"tag": "end-to-end", "evidence": "owns the full data stack from source ingestion to semantic layer"},
+    {"tag": "business-translation", "evidence": "you are the translation layer... output makes sense to a business leader who has never opened a terminal"},
+    {"tag": "platform", "evidence": "build the data foundations that power Snowflake's AI platform"},
+    {"tag": "engineering-rigor", "evidence": "design rigorous data models, build and instrument pipelines... develop automated testing procedures for Snowflake data models"}
+  ],
+  "archetype": "FDE / client-facing",
+  "archetype_rationale": "The role is literally 'forward-deployed; onsite at customer sites,' embedding directly with customer data/analytics/business teams to build foundations and acting as 'the translation layer.' Day-to-day it ships data/semantic engineering inside client engagements, which is the defining FDE / client-facing pattern over a pure backend data-engineering role.",
+  "notes": "Hard gate: 5+ years in analytics/data engineering with a customer-facing or cross-functional slice — evidence the customer-facing portion. Stated baseline (not nice-to-have): daily use of an AI coding assistant as primary dev tool — lead with Claude-Code/agent-builder projects. Onsite/relocation to Menlo Park is real. Responses managed off LinkedIn — apply via Snowflake channel. Considered but dropped: ML-pipeline (work is data pipelines, not ML training); cross-functional (subsumed by business-translation + FDE archetype).",
+  "classified_ts": "2026-06-28"
+}

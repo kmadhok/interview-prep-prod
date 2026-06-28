@@ -50,7 +50,10 @@ Write-Host "Registered DripRunner (daily 05:00, ENABLED)."
 # LinkedIn only). Same interactive principal as DripRunner (needs the daemon,
 # the claude login, and the MCP servers in the logged-on session).
 $oAction   = New-ScheduledTaskAction -Execute $ps -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$runner`" -Mode outreach" -WorkingDirectory $repo
-$oTrigger  = New-ScheduledTaskTrigger -Once -At (Get-Date).Date -RepetitionInterval (New-TimeSpan -Hours 1) -RepetitionDuration ([TimeSpan]::MaxValue)
+# Omit -RepetitionDuration → repeats indefinitely. Do NOT pass [TimeSpan]::MaxValue:
+# it serializes to P99999999DT23H59M59S, which Task Scheduler rejects as out-of-range,
+# so the whole Register-ScheduledTask throws and the hourly task is never created.
+$oTrigger  = New-ScheduledTaskTrigger -Once -At (Get-Date).Date -RepetitionInterval (New-TimeSpan -Hours 1)
 $oSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 3) -MultipleInstances IgnoreNew
 Register-ScheduledTask -TaskName "DripRunnerOutreach" -Action $oAction -Trigger $oTrigger -Settings $oSettings -Principal $principal -Force | Out-Null
 Write-Host "Registered DripRunnerOutreach (hourly, ENABLED)."

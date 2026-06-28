@@ -1,0 +1,70 @@
+# Review package: e540d9e..cba31f8c
+
+## Commits
+cba31f8 feat(e2e-test): PDF (overflow=warn, leak=fail) + apply-gate checks
+
+## Files changed
+ .../scripts/test_verify_artifacts.py                      | 15 +++++++++++++++
+ .../two-orchestrator-e2e-test/scripts/verify_artifacts.py | 14 ++++++++++++++
+ 2 files changed, 29 insertions(+)
+
+## Diff
+diff --git a/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py b/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
+index 37809e4..1c50799 100644
+--- a/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
++++ b/.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py
+@@ -74,10 +74,25 @@ def test_tailor_resume_pass():
+ def test_tailor_resume_verify_leak_fails():
+     leaked = _RESUME_OK + "\n- Drove [VERIFY: 95% accuracy] across the org.\n"
+     clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.md": leaked})
+     res = va.check_tailor_resume(clone)
+     assert res["status"] == "fail"
+     assert any(c["name"] == "no-verify-leak" and not c["ok"] for c in res["checks"])
+ 
+ 
+ def test_tailor_resume_missing_fails():
+     assert va.check_tailor_resume(_clone_with({}))["status"] == "fail"
++
++
++def test_pdf_clean_and_overflow():
++    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4"})
++    assert va.check_pdf(clone, pages=1, title_leak=0)["status"] == "pass"
++    # 2 pages = warn (pass-with-gap), not fail
++    assert va.check_pdf(clone, pages=2, title_leak=0)["status"] == "warn"
++    # title leak = hard fail
++    assert va.check_pdf(clone, pages=1, title_leak=1)["status"] == "fail"
++
++
++def test_gate_surfaces_role():
++    out = "Snowflake\tForward Deployed Analytics Engineer\nMeta\tBusiness Engineer\n"
++    assert va.check_gate(out, "Snowflake")["status"] == "pass"
++    assert va.check_gate(out, "Datadog")["status"] == "fail"
+diff --git a/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py b/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
+index 7297674..9d13c04 100644
+--- a/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
++++ b/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py
+@@ -82,10 +82,24 @@ def check_tailor_resume(clone: Path) -> dict:
+     if r is None:
+         return skill_result([check("resume-md-present", False, "glob: Kanu Madhok Resume - *.md")])
+     text = _read(r)
+     leaks = re.findall(r"\[VERIFY|\[NUMBER\?", text)
+     return skill_result([
+         check("resume-md-present", True, r.name),
+         check("resume-nontrivial", len(text.strip()) > 400, f"{len(text)} chars"),
+         check("no-verify-leak", not leaks, f"{len(leaks)} leak(s)"),
+         check("contact-header-present", "madhok.kanu@gmail.com" in text),
+     ])
++
++
++def check_pdf(clone: Path, pages, title_leak) -> dict:
++    checks = [check("resume-pdf-present", bool(list(clone.glob("Kanu Madhok Resume - *.pdf"))), "glob: *.pdf")]
++    if pages is not None:
++        checks.append(check("pdf-one-page", pages == 1, f"PAGES={pages}", severity="warn"))
++    if title_leak is not None:
++        checks.append(check("pdf-no-title-leak", title_leak == 0, f"TITLE_LEAK={title_leak}"))
++    return skill_result(checks)
++
++
++def check_gate(worklist_text: str, company: str) -> dict:
++    ok = bool(company) and company.lower() in (worklist_text or "").lower()
++    return skill_result([check("worklist-surfaces-role", ok, f"company={company!r}")])
