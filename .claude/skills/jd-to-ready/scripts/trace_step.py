@@ -21,6 +21,21 @@ from typing import Any
 
 TRACE_NAME = ".jd-to-ready-trace.jsonl"
 REQUIRED_STEPS = ["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"]
+
+# Per-run-type required-steps. REQUIRED_STEPS above stays the legacy "full"
+# list so any caller that does not pass a run-type keeps the old contract.
+RUN_TYPES = {
+    "full": list(REQUIRED_STEPS),
+    "jd-to-ready": ["1", "2", "3", "3.5", "6", "7"],
+    "stage-outreach": ["4", "4b", "4c", "5", "6", "7"],
+}
+
+
+def required_steps_for(run_type: str | None) -> list[str]:
+    """Required steps for a run-type, defaulting to the legacy full list."""
+    return list(RUN_TYPES.get(run_type, REQUIRED_STEPS))
+
+
 ALLOWED_FAILURE_PATTERNS = {
     "",
     None,
@@ -78,6 +93,7 @@ def load_state() -> dict[str, Any] | None:
         state = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return None
+    state.setdefault("run_type", None)
     state.setdefault("required_steps", REQUIRED_STEPS)
     state.setdefault("closed_steps", [])
     state.setdefault("current_step", None)
@@ -255,7 +271,7 @@ def closed_steps_from_state_and_events(state: dict[str, Any], events: list[dict[
     for step, flags in step_status(events).items():
         if flags.get("end"):
             closed.add(str(step))
-    order = {step: index for index, step in enumerate(REQUIRED_STEPS)}
+    order = {step: index for index, step in enumerate(state.get("required_steps", REQUIRED_STEPS))}
     return sorted(closed, key=lambda item: order.get(item, 999))
 
 
@@ -270,14 +286,17 @@ def cmd_start(args: argparse.Namespace) -> int:
         error = validate_role_folder(role_folder, is_test_run)
         if error:
             return fail(error)
+    run_type = args.run_type
+    required = required_steps_for(run_type)
     state = {
         "run_id": run_id,
+        "run_type": run_type,
         "company": args.company,
         "role": args.role,
         "role_folder": role_folder,
         "started_at": now_iso(),
         "fallback_trace": str(global_run_dir() / f"{run_id}.jsonl"),
-        "required_steps": REQUIRED_STEPS,
+        "required_steps": required,
         "closed_steps": [],
         "current_step": None,
         "next_seq": 1,
@@ -290,7 +309,8 @@ def cmd_start(args: argparse.Namespace) -> int:
             "event": "run_start",
             "company": args.company,
             "role": args.role,
-            "required_steps": REQUIRED_STEPS,
+            "required_steps": required,
+            "run_type": run_type,
             "source": "jd-to-ready",
             "is_test_run": is_test_run,
         },
@@ -491,6 +511,7 @@ def cmd_finish(args: argparse.Namespace) -> int:
     summary = {
         "timestamp": now_iso(),
         "run_id": state["run_id"],
+        "run_type": state.get("run_type"),
         "company": state.get("company"),
         "role": state.get("role"),
         "role_folder": state.get("role_folder"),
@@ -546,6 +567,7 @@ def cmd_abort(args: argparse.Namespace) -> int:
     summary = {
         "timestamp": now_iso(),
         "run_id": state["run_id"],
+        "run_type": state.get("run_type"),
         "company": state.get("company"),
         "role": state.get("role"),
         "role_folder": state.get("role_folder"),
@@ -577,6 +599,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--role")
     p.add_argument("--role-folder")
     p.add_argument("--test-run", action="store_true")
+    p.add_argument("--run-type", default="jd-to-ready")
     p.set_defaults(func=cmd_start)
 
     p = sub.add_parser("set-role-folder")

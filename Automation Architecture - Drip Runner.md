@@ -12,6 +12,25 @@ A scheduled automation that runs the **real `jd-to-ready` machinery** — intake
 - **LinkedIn access requires the daemon** (`linkedin-scraper-mcp`, a logged-in browser on `127.0.0.1:8765`). It cannot run in Anthropic's cloud — so any full-pipeline runner must be a machine Kanu controls.
 - **The skills are the source of truth for behavior**, not summaries baked into prompts. The runner must load the actual skill files so refinements propagate without redeployment.
 
+## Two-orchestrator split (apply-gated outreach)
+
+`jd-to-ready` is now **PREP only** (intake → classify → resume → PDF, writes
+`.classification.json`, stops at the apply gate). All LinkedIn contact research and
+Gmail drafting moved to a new `stage-outreach` skill that fires on roles marked Applied
+with no `STAGED` marker — so LinkedIn budget is spent only on jobs Kanu actually applies
+to. The cloud routine becomes a pure Gmail secretary (no drafting). Two deterministic
+worklist readers (`outreach_worklist.py`, `prepped_not_applied.py`) drive the apply-side
+poll without an LLM.
+
+Full design + specs: `Automation Design - Two-Orchestrator/` (read `README.md` there
+first). Implementation plan: `docs/superpowers/plans/2026-06-27-two-orchestrator-split.md`.
+
+**Build status:** trace run-types, `outreach_worklist.py`, `prepped_not_applied.py`, and
+both recut/new SKILL.md files are shipped and tested. **Pending:** PC Pass A/Pass B cron
+wiring and the cloud-routine drafting change — deferred to a live-test session.
+
+---
+
 ## Current state (as of 2026-06-10)
 
 | Component | Status | Notes |

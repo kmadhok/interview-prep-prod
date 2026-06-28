@@ -39,3 +39,18 @@ $rTrigger   = New-ScheduledTaskTrigger -Daily -At 5am
 $rSettings  = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 3) -MultipleInstances IgnoreNew
 Register-ScheduledTask -TaskName "DripRunner" -Action $rAction -Trigger $rTrigger -Settings $rSettings -Principal $principal -Force | Out-Null
 Write-Host "Registered DripRunner (daily 05:00, ENABLED)."
+
+# --- 3. Drip-runner Pass B (outreach): hourly ---
+# Pass B polls Pipeline.md for roles marked Applied with no STAGED/error marker
+# (via outreach_worklist.py) and stages recruiter outreach for each via the
+# stage-outreach skill. Hourly per Kanu's decision; there is NO per-role cap, so
+# the worklist drains fully — the 3h ExecutionTimeLimit is the only bound and
+# per-role commits make a killed run resume next hour. IgnoreNew prevents an
+# hourly trigger from overlapping a long-running outreach session (sequential
+# LinkedIn only). Same interactive principal as DripRunner (needs the daemon,
+# the claude login, and the MCP servers in the logged-on session).
+$oAction   = New-ScheduledTaskAction -Execute $ps -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$runner`" -Mode outreach" -WorkingDirectory $repo
+$oTrigger  = New-ScheduledTaskTrigger -Once -At (Get-Date).Date -RepetitionInterval (New-TimeSpan -Hours 1) -RepetitionDuration ([TimeSpan]::MaxValue)
+$oSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 3) -MultipleInstances IgnoreNew
+Register-ScheduledTask -TaskName "DripRunnerOutreach" -Action $oAction -Trigger $oTrigger -Settings $oSettings -Principal $principal -Force | Out-Null
+Write-Host "Registered DripRunnerOutreach (hourly, ENABLED)."

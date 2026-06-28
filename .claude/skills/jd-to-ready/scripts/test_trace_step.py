@@ -57,7 +57,7 @@ class TraceStepTests(unittest.TestCase):
         return result
 
     def start_and_bind(self) -> None:
-        self.run_cmd("start-run", "--company", "Acme", "--role", "Agent Builder")
+        self.run_cmd("start-run", "--run-type", "full", "--company", "Acme", "--role", "Agent Builder")
         self.run_cmd(
             "set-role-folder",
             "--role-folder",
@@ -247,7 +247,7 @@ class TraceStepTests(unittest.TestCase):
         self.assertIn("required", result.stderr)
 
     def test_invalid_role_folder_rejected_for_production(self) -> None:
-        self.run_cmd("start-run", "--company", "Acme", "--role", "Agent Builder")
+        self.run_cmd("start-run", "--run-type", "full", "--company", "Acme", "--role", "Agent Builder")
         result = self.run_cmd(
             "set-role-folder",
             "--role-folder",
@@ -257,8 +257,75 @@ class TraceStepTests(unittest.TestCase):
         self.assertIn("directly under Roles", result.stderr)
 
     def test_non_roles_folder_allowed_for_test_run(self) -> None:
-        self.run_cmd("start-run", "--company", "Acme", "--role", "Agent Builder", "--test-run")
+        self.run_cmd("start-run", "--run-type", "full", "--company", "Acme", "--role", "Agent Builder", "--test-run")
         self.run_cmd("set-role-folder", "--role-folder", str(self.root / "sandbox" / "Acme"), "--test-run")
+
+
+class RunTypeMapTests(unittest.TestCase):
+    def setUp(self) -> None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("trace_step", SCRIPT)
+        self.mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.mod)
+
+    def test_run_type_required_steps(self) -> None:
+        self.assertEqual(self.mod.required_steps_for("jd-to-ready"), ["1", "2", "3", "3.5", "6", "7"])
+        self.assertEqual(self.mod.required_steps_for("stage-outreach"), ["4", "4b", "4c", "5", "6", "7"])
+
+    def test_unknown_run_type_falls_back_to_full(self) -> None:
+        # None / unknown → the legacy full list, so old callers keep working
+        self.assertEqual(self.mod.required_steps_for(None), self.mod.REQUIRED_STEPS)
+        self.assertEqual(self.mod.required_steps_for("bogus"), self.mod.REQUIRED_STEPS)
+
+    def test_stage_outreach_run_finishes_with_apply_steps_only(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        log_dir = root / "logs"
+        role_folder = root / "Roles" / "Acme - Agent Builder"
+        role_folder.mkdir(parents=True)
+        env = os.environ.copy()
+        env["JD_TO_READY_LOG_DIR"] = str(log_dir)
+
+        def run(*args):
+            return subprocess.run(
+                [sys.executable, str(SCRIPT), *args],
+                env=env, capture_output=True, text=True,
+            )
+
+        self.assertEqual(run("start-run", "--run-type", "stage-outreach",
+                             "--company", "Acme", "--role", "Agent Builder").returncode, 0)
+        self.assertEqual(run("set-role-folder", "--role-folder", str(role_folder),
+                             "--company", "Acme", "--role", "Agent Builder").returncode, 0)
+        for step in ["4", "4b", "4c", "5", "6", "7"]:
+            self.assertEqual(run("begin", "--step", step, "--primitive", "p",
+                                 "--prediction", "x").returncode, 0, f"begin {step}")
+            self.assertEqual(run("end", "--step", step, "--primitive", "p",
+                                 "--status", "ok", "--prediction-met", "true",
+                                 "--tokens", TOKENS).returncode, 0, f"end {step}")
+        finished = run("finish-run", "--status", "ok")
+        self.assertEqual(finished.returncode, 0, finished.stderr)
+
+    def test_set_role_folder_binds_existing_folder_without_creating(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        env = os.environ.copy()
+        env["JD_TO_READY_LOG_DIR"] = str(root / "logs")
+        existing = root / "Roles" / "Acme - Agent Builder"
+        existing.mkdir(parents=True)
+        marker = existing / "Kanu Madhok Resume - Acme Agent Builder.md"
+        marker.write_text("prepped", encoding="utf-8")
+
+        def run(*args):
+            return subprocess.run([sys.executable, str(SCRIPT), *args],
+                                  env=env, capture_output=True, text=True)
+
+        self.assertEqual(run("start-run", "--run-type", "stage-outreach").returncode, 0)
+        res = run("set-role-folder", "--role-folder", str(existing))
+        self.assertEqual(res.returncode, 0, res.stderr)
+        # binding must not clobber what Skill 1 wrote
+        self.assertEqual(marker.read_text(encoding="utf-8"), "prepped")
 
 
 if __name__ == "__main__":
