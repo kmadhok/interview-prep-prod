@@ -1,6 +1,6 @@
 ---
 name: stage-outreach
-description: Use this skill when a role Kanu has already APPLIED to needs its recruiter outreach staged — find the recruiter on LinkedIn, verify their email, draft the cold outreach, and drop a Gmail draft addressed to them (never sent). Fires from the PC's hourly Pass B poll on Pipeline rows marked Applied with no STAGED marker, or manually for an immediate draft. Reads the role folder + `.classification.json` that jd-to-ready already wrote. Do NOT trigger to file a JD (interview-prep-intake) or prep a resume (jd-to-ready) — this is strictly the post-apply, LinkedIn-bound, Gmail-drafting half.
+description: Use this skill when a role Kanu has already APPLIED to needs its recruiter outreach staged — find the recruiter on LinkedIn, verify their email, draft the cold outreach, and drop Gmail drafts (recruiter + hiring manager) addressed to them (never sent). Fires from the PC's hourly Pass B poll on Pipeline rows marked Applied with no STAGED marker, or manually for an immediate draft. Reads the role folder + `.classification.json` that jd-to-ready already wrote. Do NOT trigger to file a JD (interview-prep-intake) or prep a resume (jd-to-ready) — this is strictly the post-apply, LinkedIn-bound, Gmail-drafting half.
 ---
 
 # Stage Outreach (apply-side: find recruiter → verify email → Gmail draft)
@@ -156,14 +156,14 @@ write-outreach(
 
 **Wire the output forward:** `write-outreach` writes `<role folder>/Cold Outreach.md` (two contact tables + two intro emails (one per top pick) + a Notes block incl. the same-company double-send guard). Capture its returned `gaps[]` (`{source: "outreach", ...}`) and merge into the step-6 report and step-7 log.
 
-`write-outreach` is unchanged — its existing `create_draft` fires here, at apply time, so the template's beat-1 "I just applied for…" is literally true. The Gmail draft is addressed To: the verified #1 recruiter email; never sent.
+`write-outreach` (drip mode) fires its `create_draft` here, at apply time, so the template's beat-1 "I just applied for…" is literally true. Drip mode creates **two** Gmail drafts — one To: the verified #1 recruiter, one To: the `recommended_lead` (HM/peer-IC) — both per `Outreach Templates.md`, both subject to the same-company double-send guard; never sent.
 
 ### Step 6 — Report back
 
 Wrap this step in begin/end. Produce a short apply-side report in chat covering:
 
 - Paths: `<role folder>/.contacts-ledger.md`, `<role folder>/Verified Emails.md`, `<role folder>/Cold Outreach.md`
-- Gmail draft recipient: name + email (To: field of the created draft)
+- Gmail draft recipients: name + email for each draft created — recruiter #1 and the HM/peer-IC lead (the To: field of each); note if the same-company guard suppressed one
 - Merged `gaps[]` from steps 4, 4b, 4c, and 5 — list each gap's `source`, `kind`, and `detail`
 - Any hard-gate flag carried forward from jd-to-ready: check the Pipeline row's Stage/Next-action text and `<role folder>/Job Description.md` for an unconfirmed hard gate (citizenship/clearance/seniority) that jd-to-ready flagged; if present and unconfirmed, do not stage — leave the row un-STAGED and note it here.
 
@@ -181,7 +181,7 @@ python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py finish-run --status "
 
 ## Outputs
 
-Folder gains `.contacts-ledger.md`, `Verified Emails.md`, `Cold Outreach.md`, and a Gmail draft addressed to the #1 recruiter (in Drafts, never sent). On success, write `STAGED in Gmail <YYYY-MM-DD>` to the folder AND the Pipeline row — that marker is the terminal state the poll keys off, so a role carrying it is never re-staged. (Kanu reviews the draft, attaches the resume — `create_draft` can't attach files — and hits Send.)
+Folder gains `.contacts-ledger.md`, `Verified Emails.md`, `Cold Outreach.md`, and **two Gmail drafts** — one to the #1 recruiter, one to the HM/peer-IC lead (in Drafts, never sent; the same-company double-send guard suppresses a duplicate when both resolve to the same address). On success, write `STAGED in Gmail <YYYY-MM-DD>` to the folder AND the Pipeline row — that marker is the terminal state the poll keys off, so a role carrying it is never re-staged. (Kanu reviews each draft, attaches the resume — `create_draft` can't attach files — and hits Send.)
 
 ## State (file markers — no ledger)
 
