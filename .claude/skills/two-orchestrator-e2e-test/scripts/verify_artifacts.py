@@ -36,6 +36,10 @@ def skill_result(checks: list[dict], notes: str = "") -> dict:
     return {"status": rollup(checks), "checks": checks, "notes": notes}
 
 
+def blocked_result(note: str = "") -> dict:
+    return {"status": "blocked", "checks": [], "notes": note}
+
+
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig", errors="ignore") if path.exists() else ""
 
@@ -105,6 +109,8 @@ def check_gate(worklist_text: str, company: str) -> dict:
     return skill_result([check("worklist-surfaces-role", ok, f"company={company!r}")])
 
 
+# NOTE: the header-skip below is keyed to find-contacts' current "| Rank | Name | ... |"
+# column wording; if those column names change, the header row is counted as a contact.
 def _ledger_contact_rows(text: str) -> int:
     rows = 0
     for line in (text or "").splitlines():
@@ -189,7 +195,12 @@ def check_write_outreach(clone: Path, draft: dict | None, expected_recipient: st
 def run_all(args) -> dict:
     clone = Path(args.clone)
     worklist_text = _read(Path(args.worklist_out)) if args.worklist_out else ""
-    draft = json.loads(_read(Path(args.draft_json))) if args.draft_json else None
+    draft = None
+    if args.draft_json:
+        try:
+            draft = json.loads(_read(Path(args.draft_json)))
+        except ValueError:
+            draft = None
     skills = {
         "interview-prep-intake": check_intake(clone),
         "classify": check_classify(clone),
@@ -201,11 +212,23 @@ def run_all(args) -> dict:
         "verify-emails": check_verify_emails(clone),
         "write-outreach": check_write_outreach(clone, draft, args.expected_recipient or ""),
     }
+    if getattr(args, "blocked_apply", False):
+        note = "apply side not run (LinkedIn daemon down at preflight)"
+        for name in ("find-contacts", "enrich-contacts", "verify-emails", "write-outreach"):
+            skills[name] = blocked_result(note)
     statuses = [s["status"] for s in skills.values()]
-    overall = "fail" if "fail" in statuses else ("warn" if "warn" in statuses else "pass")
+    if "fail" in statuses:
+        overall = "fail"
+    elif "warn" in statuses:
+        overall = "warn"
+    elif "blocked" in statuses:
+        overall = "blocked"
+    else:
+        overall = "pass"
     summary = {
         "pass": statuses.count("pass"), "warn": statuses.count("warn"),
-        "fail": statuses.count("fail"), "overall": overall,
+        "fail": statuses.count("fail"), "blocked": statuses.count("blocked"),
+        "overall": overall,
     }
     return {"skills": skills, "summary": summary}
 
@@ -219,6 +242,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--title-leak", type=int, default=None)
     p.add_argument("--draft-json", default="")
     p.add_argument("--expected-recipient", default="")
+    p.add_argument("--blocked-apply", action="store_true",
+                   help="LinkedIn was down at preflight; mark apply-side skills blocked and exclude from fail/warn rollup")
     return p
 
 

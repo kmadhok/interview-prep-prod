@@ -212,3 +212,34 @@ def test_run_all_flags_issue1_overall_fail():
     report = va.run_all(args)
     assert report["summary"]["overall"] == "fail"
     assert report["skills"]["verify-emails"]["status"] == "fail"
+
+
+def test_run_all_blocked_apply_marks_apply_skills_blocked():
+    files = {
+        "Job Description.md": "# Role\n" + "x" * 80,
+        ".classification.json": _GOOD_CLASS,
+        "Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK,
+        "Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4",
+    }
+    clone = _clone_with(files)
+    worklist = clone / "_worklist.txt"
+    worklist.write_text("Snowflake\tForward Deployed Analytics Engineer\n", encoding="utf-8")
+    args = va.build_parser().parse_args([
+        "--clone", str(clone), "--company", "Snowflake",
+        "--worklist-out", str(worklist), "--pages", "1", "--title-leak", "0",
+        "--blocked-apply",
+    ])
+    report = va.run_all(args)
+    for name in ("find-contacts", "enrich-contacts", "verify-emails", "write-outreach"):
+        assert report["skills"][name]["status"] == "blocked", name
+    assert report["summary"]["overall"] != "fail"
+    assert report["summary"]["overall"] == "blocked"
+
+
+def test_run_all_empty_draft_json_degrades_without_crash():
+    clone = _clone_with({"Cold Outreach.md": "Hi Brad,"})
+    empty = clone / "_draft.json"
+    empty.write_text("", encoding="utf-8")  # empty file -> json.loads("") would raise
+    args = va.build_parser().parse_args(["--clone", str(clone), "--draft-json", str(empty)])
+    report = va.run_all(args)  # must not raise
+    assert report["skills"]["write-outreach"]["status"] == "fail"

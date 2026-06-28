@@ -54,7 +54,7 @@ Invoke `linkedin-mcp-operations`. Handshake:
 ```
 curl -s -o /dev/null -w '%{http_code}\n' -m 6 -X POST http://127.0.0.1:8765/mcp -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"diag","version":"0.1"}}}'
 ```
-If not `200` → STOP the apply side; mark steps 4–7 `blocked` in the report; jump to Step 8.
+If not `200` → STOP the apply side; mark steps 4–7 `blocked` in the report; jump to Step 8. When you reach Step 8 after a blocked apply side, pass `--blocked-apply` to verify_artifacts.py so the four apply-side skills are marked blocked, not failed.
 
 ## Steps 4–7 — Apply sub-agents (sequential — one LinkedIn stream at a time, never parallel)
 4. **find-contacts** → `<clone>/.contacts-ledger.md` (real LinkedIn, read-only).
@@ -66,7 +66,7 @@ If not `200` → STOP the apply side; mark steps 4–7 `blocked` in the report; 
 1. Confirm the draft: `mcp__claude_ai_Gmail__list_drafts` with `query: "to:<recipient>"`; save the matched draft object to `<clone>/_draft.json`.
 2. Run the verifier:
 ```
-python3 "<repo root>/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py" --clone "<clone>" --company "<Company>" --worklist-out "<clone>/_worklist.txt" --pages <n> --title-leak <0|1> --draft-json "<clone>/_draft.json" --expected-recipient "<recipient>"
+python3 "~/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py" --clone "<clone>" --company "<Company>" --worklist-out "<clone>/_worklist.txt" --pages <n> --title-leak <0|1> --draft-json "<clone>/_draft.json" --expected-recipient "<recipient>"
 ```
 3. Write `<clone>/TEST REPORT.md` from the verifier JSON + each sub-agent's report + the PDF/gate/draft results. Use the same sections as `_jd-to-ready-test/Two-Orchestrator Split E2E - Snowflake FDE 2026-06-28/TEST REPORT.md`: summary table, per-skill detail, findings (your narrative on top of the verifier's deterministic pass/fail), environment notes, cleanup record (the Gmail draft id + a one-line "delete in Gmail Drafts if unwanted").
 
