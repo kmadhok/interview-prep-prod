@@ -148,8 +148,15 @@ you see the standings, and re-judge with a different family if the winner judged
 
 ---
 
+## Locked model lineup (strongest per provider, verified to run)
+| Provider | Model id | How chosen |
+|----------|----------|------------|
+| Anthropic (claude) | `claude-opus-4-8` | strongest Opus; smoke-tested OK |
+| OpenAI (codex) | `gpt-5.5` | codex CLI default = its strongest; smoke-tested OK |
+| Google (gemini) | `gemini-2.5-pro` | `-m gemini-2.5-pro` accepted (default `gemini-1.5-flash` is too weak; `gemini-3-pro` returns 404 on this account) |
+
 ## To decide before first run
-- [ ] Exact latest `--model` id per provider.
+- [x] Exact latest `--model` id per provider (locked above).
 - [ ] Judge model (single neutral vs two-judge average) + confirm it's not a contestant's sibling.
 - [ ] Parallel (faster) vs serial (easier to debug) worktree execution.
 - [ ] Who runs the mechanical G1–G9 checks — a small script vs by-hand for the first pass.
