@@ -166,3 +166,49 @@ def test_write_outreach_recipient_mismatch_fails():
 def test_write_outreach_no_draft_fails():
     clone = _clone_with({"Cold Outreach.md": "x"})
     assert va.check_write_outreach(clone, None, "")["status"] == "fail"
+
+
+def test_run_all_full_fixture_overall_pass():
+    files = {
+        "Job Description.md": "# Role\n" + "x" * 80,
+        ".classification.json": _GOOD_CLASS,
+        "Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK,
+        "Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        ".contacts-ledger.md": _LEDGER,
+        "Verified Emails.md": _VERIFIED_OK,
+        "Cold Outreach.md": "Hi Brad,",
+    }
+    clone = _clone_with(files)
+    worklist = clone / "_worklist.txt"
+    worklist.write_text("Snowflake\tForward Deployed Analytics Engineer\n", encoding="utf-8")
+    draft = clone / "_draft.json"
+    draft.write_text(json.dumps({"id": "r1", "toRecipients": ["brad.mallmann@snowflake.com"]}), encoding="utf-8")
+
+    args = va.build_parser().parse_args([
+        "--clone", str(clone), "--company", "Snowflake",
+        "--worklist-out", str(worklist), "--pages", "1", "--title-leak", "0",
+        "--draft-json", str(draft), "--expected-recipient", "brad.mallmann@snowflake.com",
+    ])
+    report = va.run_all(args)
+    assert report["summary"]["overall"] == "pass", json.dumps(report, indent=2)
+    assert set(report["skills"]) >= {
+        "interview-prep-intake", "classify", "tailor-resume", "pdf", "apply-gate",
+        "find-contacts", "enrich-contacts", "verify-emails", "write-outreach",
+    }
+
+
+def test_run_all_flags_issue1_overall_fail():
+    files = dict({
+        "Job Description.md": "# Role\n" + "x" * 80,
+        ".classification.json": _GOOD_CLASS,
+        "Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK,
+        "Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        ".contacts-ledger.md": _LEDGER,
+        "Verified Emails.md": "# Verified Emails\n_no rows_\n",  # <- Issue 1
+        "Cold Outreach.md": "Hi Brad,",
+    })
+    clone = _clone_with(files)
+    args = va.build_parser().parse_args(["--clone", str(clone), "--company", "Snowflake"])
+    report = va.run_all(args)
+    assert report["summary"]["overall"] == "fail"
+    assert report["skills"]["verify-emails"]["status"] == "fail"

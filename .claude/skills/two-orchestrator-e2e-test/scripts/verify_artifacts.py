@@ -184,3 +184,50 @@ def check_write_outreach(clone: Path, draft: dict | None, expected_recipient: st
         checks.append(check("draft-recipient-matches", expected_recipient.lower() in recips, f"to={recips}"))
     checks.append(check("draft-unsent", not draft.get("sent", False), "drafts listing = unsent"))
     return skill_result(checks)
+
+
+def run_all(args) -> dict:
+    clone = Path(args.clone)
+    worklist_text = _read(Path(args.worklist_out)) if args.worklist_out else ""
+    draft = json.loads(_read(Path(args.draft_json))) if args.draft_json else None
+    skills = {
+        "interview-prep-intake": check_intake(clone),
+        "classify": check_classify(clone),
+        "tailor-resume": check_tailor_resume(clone),
+        "pdf": check_pdf(clone, args.pages, args.title_leak),
+        "apply-gate": check_gate(worklist_text, args.company),
+        "find-contacts": check_find_contacts(clone),
+        "enrich-contacts": check_enrich_contacts(clone),
+        "verify-emails": check_verify_emails(clone),
+        "write-outreach": check_write_outreach(clone, draft, args.expected_recipient or ""),
+    }
+    statuses = [s["status"] for s in skills.values()]
+    overall = "fail" if "fail" in statuses else ("warn" if "warn" in statuses else "pass")
+    summary = {
+        "pass": statuses.count("pass"), "warn": statuses.count("warn"),
+        "fail": statuses.count("fail"), "overall": overall,
+    }
+    return {"skills": skills, "summary": summary}
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(description="Two-orchestrator E2E artifact verifier")
+    p.add_argument("--clone", required=True)
+    p.add_argument("--company", default="")
+    p.add_argument("--worklist-out", default="")
+    p.add_argument("--pages", type=int, default=None)
+    p.add_argument("--title-leak", type=int, default=None)
+    p.add_argument("--draft-json", default="")
+    p.add_argument("--expected-recipient", default="")
+    return p
+
+
+def main(argv=None) -> int:
+    args = build_parser().parse_args(argv)
+    report = run_all(args)
+    print(json.dumps(report, indent=2, ensure_ascii=False))
+    return 1 if report["summary"]["overall"] == "fail" else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
