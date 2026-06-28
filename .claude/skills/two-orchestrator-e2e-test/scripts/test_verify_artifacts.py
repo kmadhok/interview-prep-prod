@@ -96,3 +96,33 @@ def test_gate_surfaces_role():
     out = "Snowflake\tForward Deployed Analytics Engineer\nMeta\tBusiness Engineer\n"
     assert va.check_gate(out, "Snowflake")["status"] == "pass"
     assert va.check_gate(out, "Datadog")["status"] == "fail"
+
+
+_LEDGER = "\n".join([
+    "# Contacts Ledger",
+    "## Recruiters (ranked)",
+    "| Rank | Name | Practice | Email (inferred) |",
+    "|------|------|----------|------------------|",
+    "| 1 | Brad Mallmann | GTM | brad.mallmann@snowflake.com |",
+    "| 2 | Diane Nguyen | Cortex | diane.nguyen@snowflake.com |",
+    "## hooks[]",
+    "- Brad: posted about data-foundation governance.",
+])
+
+
+def test_find_contacts_counts_rows():
+    clone = _clone_with({".contacts-ledger.md": _LEDGER})
+    res = va.check_find_contacts(clone)
+    assert res["status"] == "pass"
+    assert va._ledger_contact_rows(_LEDGER) == 2
+
+
+def test_find_contacts_missing_fails():
+    assert va.check_find_contacts(_clone_with({}))["status"] == "fail"
+
+
+def test_enrich_requires_hooks_section():
+    clone = _clone_with({".contacts-ledger.md": _LEDGER})
+    assert va.check_enrich_contacts(clone)["status"] == "pass"
+    no_hooks = _clone_with({".contacts-ledger.md": "| Rank | Name |\n| 1 | X |"})
+    assert va.check_enrich_contacts(no_hooks)["status"] == "fail"

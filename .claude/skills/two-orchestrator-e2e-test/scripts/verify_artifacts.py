@@ -103,3 +103,39 @@ def check_pdf(clone: Path, pages, title_leak) -> dict:
 def check_gate(worklist_text: str, company: str) -> dict:
     ok = bool(company) and company.lower() in (worklist_text or "").lower()
     return skill_result([check("worklist-surfaces-role", ok, f"company={company!r}")])
+
+
+def _ledger_contact_rows(text: str) -> int:
+    rows = 0
+    for line in (text or "").splitlines():
+        if not line.strip().startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) < 3:
+            continue
+        if all(re.fullmatch(r":?-{2,}:?", (c or "-")) for c in cells):  # divider
+            continue
+        lowered = {c.lower() for c in cells}
+        if "name" in lowered and "rank" in lowered:  # header row
+            continue
+        rows += 1
+    return rows
+
+
+def check_find_contacts(clone: Path) -> dict:
+    f = clone / ".contacts-ledger.md"
+    if not f.exists():
+        return skill_result([check("ledger-present", False, str(f))])
+    n = _ledger_contact_rows(_read(f))
+    return skill_result([
+        check("ledger-present", True),
+        check("ledger-has-contacts", n >= 1, f"{n} contact row(s)"),
+    ])
+
+
+def check_enrich_contacts(clone: Path) -> dict:
+    f = clone / ".contacts-ledger.md"
+    if not f.exists():
+        return skill_result([check("ledger-present", False, str(f))])
+    return skill_result([check("ledger-has-hooks", "hook" in _read(f).lower(),
+                               "expected a hooks section from enrich-contacts")])
