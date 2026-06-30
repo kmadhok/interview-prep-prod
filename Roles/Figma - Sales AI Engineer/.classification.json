@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "Familiarity with agentic patterns and experience instrumenting/monitoring AI workflows in production."},
+    {"tag": "LLM-orchestration", "evidence": "Hands-on experience building LLM-powered workflows (OpenAI, Anthropic, or similar)"},
+    {"tag": "end-to-end", "evidence": "move quickly from prototype to production, measure adoption and impact"},
+    {"tag": "evaluation", "evidence": "constrain outputs, build quality checks and monitoring so workflows can be trusted in production"},
+    {"tag": "cross-functional", "evidence": "Partner with SalesOps, Enablement, GTM Systems on requirements, rollout, governance, production deployment."},
+    {"tag": "business-translation", "evidence": "translate ambiguous needs into shippable solutions, care deeply whether what you build is adopted"}
+  ],
+  "archetype": "agent-builder",
+  "archetype_rationale": "The role is a hands-on builder who ships LLM-powered workflows, agents, and connectors from prototype to production, applying agentic patterns with quality checks and monitoring. The day-to-day is building and operationalizing AI workflows, not embedding with external clients or producing dashboards.",
+  "notes": "Strong GTM/Salesforce integration flavor (APIs, automation platforms, CRM hygiene) leans toward RPA, but the 'agents/connectors/quality checks' framing makes agent-builder the dominant archetype. SQL is mentioned but only as supporting comfort, not a dashboards/analytics core.",
+  "classified_ts": "2026-06-30"
+}
