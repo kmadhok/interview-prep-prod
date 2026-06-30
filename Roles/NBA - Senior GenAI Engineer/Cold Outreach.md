@@ -2,6 +2,8 @@
 
 _Drafted by write-outreach (drip/pipeline mode) 2026-06-21._
 
+**STAGED in Gmail 2026-06-29** (drip-runner Pass B) — outreach already handled: recruiter Greg Smith emailed + REPLIED 2026-06-23; HM Sydney Sarachek draft (r-7421414327503237419) confirmed live in Gmail. No NEW draft created this run (same-company double-send guard). Terminal — Kanu reviews/sends the existing Sydney draft when the backlog clears.
+
 **Christine Chung (cchung@nba.com):** SENT 2026-06-23 AM (draft r7775505846219276813 gone from Gmail — confirmed sent). OOO auto-reply received — backup: Greg Smith (gsmith@nba.com).
 
 **Greg Smith (gsmith@nba.com — backup):** SENT by Kanu 2026-06-23 ~4:17 PM UTC. **REPLIED 2026-06-23 ~4:27 PM UTC:** "Thank you for your interest in the NBA Senior GenAI Engineer role... A member of our recruiting team will review your information and be in touch if your profile is identified as a strong match." — warm acknowledgment, not yet a recruiter outreach.

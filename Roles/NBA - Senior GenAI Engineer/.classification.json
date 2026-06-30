@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "LLM-orchestration", "evidence": "drive forward the use of large language models (LLMs) and foundational models (FMs)"},
+    {"tag": "ML-pipeline", "evidence": "Fine-tune LLMs and foundational models to enterprise-specific data, optimizing for performance, latency"},
+    {"tag": "platform", "evidence": "Define, build, and maintain scalable MLOps and LLMOps infrastructure for efficient model deployment, monitoring, and lifecycle management"},
+    {"tag": "agents", "evidence": "Develop automated AI-driven tools for internal support, IT ticketing systems, and operational efficiency"},
+    {"tag": "end-to-end", "evidence": "Lead the creation of proof-of-concepts and transition them into production-grade AI features with cross-functional adoption plans"},
+    {"tag": "evaluation", "evidence": "optimizing for performance, latency, and relevance ... monitoring"}
+  ],
+  "archetype": "platform / ML engineering",
+  "archetype_rationale": "Heavy MLOps/LLMOps infrastructure ownership, fine-tuning LLMs/FMs to enterprise data, and enterprise system integration (ServiceNow/GitHub/Tableau) — internal platform/ML engineering rather than customer-facing FDE. Agentic IT-automation tooling is present but secondary to the infra build.",
+  "notes": "Internal title Senior Manager; 3+ yrs applied AI/ML. NYC on-site (1 remote day/wk) geo gate. Listed skill gaps: fine-tuning (HF/PyTorch/TF), containers (Docker/K8s), MLflow/W&B/SageMaker. Classified inline (main-thread).",
+  "classified_ts": "2026-06-29"
+}
