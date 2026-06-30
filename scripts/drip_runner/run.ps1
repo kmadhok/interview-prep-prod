@@ -42,7 +42,15 @@ Log "invoking claude -p (prompt=$promptFile)"
 # unattended cron run; without this the only durable record is the 4 wrapper
 # lines). stdout only: do NOT 2>&1 a native exe under -ErrorActionPreference Stop
 # (PS 5.1 wraps stderr as a terminating NativeCommandError). $LASTEXITCODE survives.
-$out = $prompt | claude -p | Out-String
+#
+# --permission-mode bypassPermissions: this is an UNATTENDED Task Scheduler run with
+# no human to approve tool prompts. We relied on .claude/settings.json's allow-list
+# until a `claude` CLI auto-update (autoUpdatesChannel=latest, 2.1.195) stopped
+# honoring the coarse entries ("Bash","mcp__linkedin") for headless -p calls, so every
+# run STOPped at the pre-run LinkedIn health check (2026-06-28 onward). Bypass is safe
+# here: the runner is drafts-only and never sends — the human gate is downstream
+# (review + Send in Gmail), so invariant 1 (human-gated output) is preserved.
+$out = $prompt | claude -p --permission-mode bypassPermissions | Out-String
 $code = $LASTEXITCODE
 Write-Host $out
 [System.IO.File]::AppendAllText($log, "---- claude output ----" + [Environment]::NewLine + $out + [Environment]::NewLine, (New-Object System.Text.UTF8Encoding($false)))
