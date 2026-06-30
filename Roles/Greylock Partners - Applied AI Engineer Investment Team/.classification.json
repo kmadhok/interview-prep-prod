@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "Build and deploy agent-based workflows that automate research, sourcing, and due diligence."},
+    {"tag": "RAG", "evidence": "Design production systems integrating LLMs, retrieval pipelines, and structured data into tools the investors rely on daily."},
+    {"tag": "LLM-orchestration", "evidence": "Shipped AI agents or multi-step LLM workflows in production (not demos)."},
+    {"tag": "end-to-end", "evidence": "The role emphasizes end-to-end ownership without traditional PM structure"},
+    {"tag": "evaluation", "evidence": "Make product decisions on automation scope and on whether a model is good enough."},
+    {"tag": "leverage", "evidence": "fast feedback loops, a broad problem surface area, and significant ownership leverage"}
+  ],
+  "archetype": "agent-builder",
+  "archetype_rationale": "Day-to-day the role is building and deploying agent-based workflows and multi-step LLM systems in production for investors; the JD explicitly requires having 'Shipped AI agents or multi-step LLM workflows in production' and centers on agentic automation of research, sourcing, and due diligence.",
+  "notes": "",
+  "classified_ts": "2026-06-30"
+}
