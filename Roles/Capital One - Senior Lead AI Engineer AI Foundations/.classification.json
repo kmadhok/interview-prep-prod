@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "LLM-orchestration", "evidence": "foundation model training, large language model inference, similarity search, and governance frameworks"},
+    {"tag": "RAG", "evidence": "large language model inference, similarity search... VectorDBs, Nemo Guardrails"},
+    {"tag": "platform", "evidence": "optimize and scale AI systems... technical vision and long-term roadmap of foundational AI systems"},
+    {"tag": "ML-pipeline", "evidence": "Design, develop, test, deploy AI software components, including foundation model training, LLM inference"},
+    {"tag": "engineering-rigor", "evidence": "Invent and implement state-of-the-art optimization techniques for large-scale LLMs (scalability, latency, throughput, cost-efficiency)"},
+    {"tag": "cross-functional", "evidence": "Partner with cross-functional teams to deliver AI-powered products that enhance operational efficiency and customer engagement"}
+  ],
+  "archetype": "platform / ML engineering",
+  "archetype_rationale": "Day-to-day is designing, training, and scaling foundation-model/LLM infrastructure (AWS Ultraclusters, PyTorch, VectorDBs, guardrails, observability) and optimizing latency/throughput/cost — core ML-platform engineering, not client-facing or consulting work.",
+  "notes": "",
+  "classified_ts": "2026-06-29"
+}
