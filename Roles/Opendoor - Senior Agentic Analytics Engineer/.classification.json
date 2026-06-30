@@ -1,0 +1,13 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "Design and deploy AI agents that monitor business performance and surface actionable insights without being asked"},
+    {"tag": "NL→SQL", "evidence": "Develop natural language interfaces that let business leaders query data conversationally"},
+    {"tag": "business-translation", "evidence": "Build semantic layers that translate business concepts into data structures optimized for LLM reasoning"},
+    {"tag": "end-to-end", "evidence": "Own the Analytics-to-Action Pipeline ... Design data models that support automated analysis, pattern detection, and AI agent interactions"},
+    {"tag": "ML-pipeline", "evidence": "Architect systems that shift analytics from 'answering questions' to 'anticipating needs'"}
+  ],
+  "archetype": "agent-builder",
+  "archetype_rationale": "Founding IC on an Agentic Analytics team designing and deploying AI agents (proactive insight agents, NL-to-SQL interfaces, LLM-optimized semantic layers) in an 'AI-first' data org — building production agents, not maintaining dashboards. Near-exact match to Kanu's NL-to-SQL Copilot + semantic-layer work.",
+  "notes": "Strongest archetype match in pipeline. Location not listed in JD (row notes Seattle/Miami/Toronto) — geo gate to confirm at recruiter screen. Classified inline (main-thread).",
+  "classified_ts": "2026-06-29"
+}
