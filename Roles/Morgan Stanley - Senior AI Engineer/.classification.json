@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "scalable solutions for risk data processing and agentic workflows supporting 'talk to data' interfaces"},
+    {"tag": "NL→SQL", "evidence": "Python-based AI applications using natural language interfaces, LLMs, data analytics"},
+    {"tag": "business-translation", "evidence": "empowering business teams to onboard their own datasets and leverage advanced tooling"},
+    {"tag": "platform", "evidence": "Architect and manage RESTful services for large-scale enterprise solutions"},
+    {"tag": "end-to-end", "evidence": "Build and own Python-based AI applications ... Production systems ownership (reliability, incident management)"},
+    {"tag": "engineering-rigor", "evidence": "Concurrency and performance optimization (multiprocessing, multithreading, async I/O) ... testing"}
+  ],
+  "archetype": "agent-builder",
+  "archetype_rationale": "Builds and owns AI applications and agentic 'talk-to-data' workflows for Market Risk business teams — near-exact match to Kanu's NL-to-SQL + agentic platform work. Enterprise platform flavor (RESTful services), but the distinctive ask is agentic/NL data access, so agent-builder over platform/ML.",
+  "notes": "Director-level / 5+ yrs; NYC on-site geo gate. Classified inline (main-thread) — JD unambiguous on talk-to-data agentic build.",
+  "classified_ts": "2026-06-29"
+}
