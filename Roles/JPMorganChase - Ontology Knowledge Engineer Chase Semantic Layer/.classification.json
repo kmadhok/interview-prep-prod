@@ -1,0 +1,13 @@
+{
+  "themes": [
+    {"tag": "platform", "evidence": "Contribute to a foundational capability that underpins enterprise AI, analytics, and data governance."},
+    {"tag": "business-translation", "evidence": "Translate complex business/data requirements into formal semantic representations ... accessible to non-technical stakeholders."},
+    {"tag": "engineering-rigor", "evidence": "formal knowledge representation (class hierarchies, property definitions, logical constraints)"},
+    {"tag": "cross-functional", "evidence": "Engage with data architects, domain SMEs, AI engineers, ML engineers to align ontology/mapping design"},
+    {"tag": "evaluation", "evidence": "downstream Reasoning/Semantic Validation ... frameworks (syntactic/semantic correctness)"}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day work is authoring logical data model ontologies and KG mapping assets connecting relational DBs, REST APIs, and streaming sources into an enterprise knowledge graph — core data-modeling/data-engineering, not agent or client delivery work.",
+  "notes": "Niche semantic-web / ontology engineering role (RDF/OWL/SKOS, SPARQL, virtual KG). Kanu has no direct ontology/knowledge-graph authoring experience; closest adjacent assets are his semantic layer work (customer-voice-semantic-layer) and NL-to-SQL/data-modeling — the resume tailoring should lean on those rather than implying production ontology authoring. Comp $114K-$170K is below his target floor and the role is on-site Jersey City.",
+  "classified_ts": "2026-06-30"
+}
