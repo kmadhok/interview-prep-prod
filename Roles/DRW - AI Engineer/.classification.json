@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "ML-pipeline", "evidence": "Create and maintain feature pipelines, feature stores, and model stores."},
+    {"tag": "end-to-end", "evidence": "Drive end-to-end development of AI infrastructure and AI-driven applications — from proof-of-concept to production deployment and ongoing maintenance."},
+    {"tag": "platform", "evidence": "Build critical infrastructure and tooling that leverages AI/ML to enhance productivity, efficiency."},
+    {"tag": "evaluation", "evidence": "Implement automated systems for continuous training, validation, and monitoring of models, minimizing downtime and ensuring reliability."},
+    {"tag": "RAG", "evidence": "Experience with LLMs including RAG and fine-tuning techniques."},
+    {"tag": "cross-functional", "evidence": "Collaborate with technologists, traders, quantitative researchers, and data scientists to identify high-impact opportunities."}
+  ],
+  "archetype": "platform / ML engineering",
+  "archetype_rationale": "Day-to-day is building AI/ML infrastructure: feature pipelines, feature/model stores, MLOps/AIOps tooling, continuous training/validation/monitoring, and GPU/CPU optimization — production ML engineering, not client-facing delivery or analytics.",
+  "notes": "Quant trading firm context; heavy MLOps/AIOps + compute-infra emphasis (TensorRT/ONNX, GPU optimization) signals model-serving/infra depth beyond generic ML. LLM/RAG is listed but secondary to the infrastructure mandate.",
+  "classified_ts": "2026-06-30"
+}
