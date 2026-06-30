@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "Experience working with LLMs, agentic AI, and/or related AI/ML technologies."},
+    {"tag": "LLM-orchestration", "evidence": "AI skill development (prompt / context engineering, agent orchestration)."},
+    {"tag": "end-to-end", "evidence": "Design and build end-to-end systems, go-to-market (GTM) automation, and launch strategies."},
+    {"tag": "business-translation", "evidence": "Understand business challenges to define and drive strategies to help businesses grow at scale."},
+    {"tag": "platform", "evidence": "Experience designing and building scalable software platforms and zero-to-one product development."},
+    {"tag": "cross-functional", "evidence": "collaborating with product teams and cross-functional partners."}
+  ],
+  "archetype": "FDE / client-facing",
+  "archetype_rationale": "The JD explicitly states the role is 'similar to a Forward-Deployed Engineer,' solving real-world business challenges with AI while building productive relationships with industry partners and resolving complex technical/business needs independently.",
+  "notes": "",
+  "classified_ts": "2026-06-30"
+}
