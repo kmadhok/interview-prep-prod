@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "platform", "evidence": "building the foundational infrastructure for deploying AI"},
+    {"tag": "ML-pipeline", "evidence": "5+ years working on production-grade data processing systems"},
+    {"tag": "end-to-end", "evidence": "Run implementations end-to-end and see initiatives through to real outcomes"},
+    {"tag": "cross-functional", "evidence": "Partner across research, marketing, sales, and finance to help define how Cohere grows"},
+    {"tag": "NL→SQL", "evidence": "Strong command of Python and SQL"},
+    {"tag": "engineering-rigor", "evidence": "distributed data processing frameworks (Apache Beam, Spark, or Flink) and large-scale data system design"}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day is building production-grade data processing systems with Spark/Beam/Flink, transforming unstructured data into performant datasets, and running a modern analytics stack (BigQuery, Airflow, dbt) on the Analytics & Data Insights team.",
+  "notes": "NL→SQL is a weak/literal match — JD only says 'Strong command of Python and SQL', not natural-language-to-SQL; downstream may prefer to drop it. Heavy distributed-systems emphasis (Beam/Spark/Flink, Kubernetes, Java/Golang) has no dedicated theme tag and is folded under engineering-rigor.",
+  "classified_ts": "2026-06-29"
+}
