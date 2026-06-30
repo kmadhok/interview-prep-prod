@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "the 'Agent Engineer' and the primary driver for customers' AI initiatives ... production-grade agentic workflows"},
+    {"tag": "MCP", "evidence": "agentic workflows (e.g., multi-agent systems, model context protocol (MCP) servers)"},
+    {"tag": "LLM-orchestration", "evidence": "implementing multi-agent systems using frameworks like ReAct and self-reflection"},
+    {"tag": "evaluation", "evidence": "Build high-performance evaluation (Eval) pipelines and observability frameworks to optimize agentic workloads"},
+    {"tag": "RAG", "evidence": "optimizing retrieval-augmented generation (RAG) chunking to prevent hallucinations"},
+    {"tag": "end-to-end", "evidence": "owning the engineering lifecycle, including the transition from initial concepts to ... scalable, secure AI systems"}
+  ],
+  "archetype": "FDE / client-facing",
+  "archetype_rationale": "Explicitly a Forward Deployed Engineer in Applied AI who is 'the primary driver for customers' AI initiatives,' establishing customer user journeys at customer sites with up to 50% travel — customer-embedded delivery, not internal platform engineering.",
+  "notes": "Soft geo gate: Cambridge MA on-site preferred; Chicago not on the multi-city list. Off-LinkedIn responses (managed via Google careers). Level I is entry-IC; Kanu overshoots the floor. Classified inline (main-thread) — JD is unambiguous FDE.",
+  "classified_ts": "2026-06-29"
+}
