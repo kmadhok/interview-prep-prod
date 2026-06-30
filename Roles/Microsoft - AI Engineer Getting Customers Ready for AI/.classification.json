@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "machine learning models, LLM-based applications, RAG systems, and agentic workflows that solve customer and business challenges"},
+    {"tag": "RAG", "evidence": "LLM-based applications, RAG systems, and agentic workflows"},
+    {"tag": "ML-pipeline", "evidence": "Develop and operate scalable data pipelines, ETL processes, training datasets, and AI infrastructure"},
+    {"tag": "end-to-end", "evidence": "work across the AI lifecycle—from model development and data pipelines to production deployment, monitoring, and continuous improvement"},
+    {"tag": "engineering-rigor", "evidence": "Deploy, monitor, and optimize AI systems using MLOps practices... Write maintainable, well-tested code; documentation, operational rigor, governance"},
+    {"tag": "platform", "evidence": "Build and integrate AI capabilities into applications, services, APIs, and platforms to deliver end-to-end customer experiences"}
+  ],
+  "archetype": "platform / ML engineering",
+  "archetype_rationale": "Day-to-day is building and operating AI systems across the full lifecycle—data pipelines, model development, MLOps deployment/monitoring, and integrating AI into platforms/APIs—rather than embedding with customers or doing analytics/dashboards. Customer-facing partnership is collaborative, not forward-deployed.",
+  "notes": "Microsoft Security context with a hard government/Cloud Background Check screening requirement; comp band spans IC4 (AI Engineer II and Senior). MLOps and Responsible AI/governance are emphasized more than most AI Engineer JDs.",
+  "classified_ts": "2026-06-30"
+}
