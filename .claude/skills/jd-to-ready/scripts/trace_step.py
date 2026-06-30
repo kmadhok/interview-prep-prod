@@ -80,6 +80,17 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
 
 
+def current_session() -> str | None:
+    """The Claude Code session id driving this process, if exposed.
+
+    Used to scope the Stop-hook completeness check to the session that started
+    the run. A background drip-runner (`claude -p`) and an interactive session
+    are different sessions, so the interactive session's Stop hook must not flag
+    the runner's in-flight trace as incomplete.
+    """
+    return os.environ.get("CLAUDE_CODE_SESSION_ID") or None
+
+
 def ensure_dirs() -> None:
     log_dir().mkdir(parents=True, exist_ok=True)
     global_run_dir().mkdir(parents=True, exist_ok=True)
@@ -99,6 +110,7 @@ def load_state() -> dict[str, Any] | None:
     state.setdefault("current_step", None)
     state.setdefault("next_seq", 1)
     state.setdefault("is_test_run", False)
+    state.setdefault("owner_session", None)
     return state
 
 
@@ -294,6 +306,7 @@ def cmd_start(args: argparse.Namespace) -> int:
         "company": args.company,
         "role": args.role,
         "role_folder": role_folder,
+        "owner_session": current_session(),
         "started_at": now_iso(),
         "fallback_trace": str(global_run_dir() / f"{run_id}.jsonl"),
         "required_steps": required,
@@ -468,6 +481,14 @@ def cmd_subagent_event(args: argparse.Namespace) -> int:
 def cmd_check(args: argparse.Namespace) -> int:
     state = load_state()
     if not state:
+        return 0
+    # Session-scope the guard: if the active run was started by a different
+    # Claude session (e.g. the background drip-runner) than the one whose Stop
+    # hook is firing now, it is not ours to flag. Stay silent. Unstamped legacy
+    # runs (owner_session=None) fall through to the original behavior.
+    owner = state.get("owner_session")
+    here = current_session()
+    if owner is not None and here is not None and owner != here:
         return 0
     events = read_events(trace_path(state))
     missing = missing_steps(state, events)

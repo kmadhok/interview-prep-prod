@@ -328,5 +328,52 @@ class RunTypeMapTests(unittest.TestCase):
         self.assertEqual(marker.read_text(encoding="utf-8"), "prepped")
 
 
+class SessionScopeTests(unittest.TestCase):
+    """The Stop-hook completeness check is scoped to the owning Claude session,
+    so a background drip-runner's in-flight trace does not false-positive in an
+    unrelated interactive session."""
+
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.log_dir = Path(self.tmp.name) / "logs"
+
+    def _run(self, *args: str, session: str | None = "__keep__") -> subprocess.CompletedProcess[str]:
+        env = os.environ.copy()
+        env["JD_TO_READY_LOG_DIR"] = str(self.log_dir)
+        if session is None:
+            env.pop("CLAUDE_CODE_SESSION_ID", None)
+        elif session != "__keep__":
+            env["CLAUDE_CODE_SESSION_ID"] = session
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), *args], env=env, capture_output=True, text=True
+        )
+
+    def test_check_suppressed_for_foreign_session(self) -> None:
+        self.assertEqual(
+            self._run("start-run", "--run-type", "jd-to-ready",
+                      "--company", "Acme", "--role", "X", session="sess-A").returncode,
+            0,
+        )
+        # Session B's Stop hook must NOT flag session A's run.
+        other = self._run("check", "--strict", session="sess-B")
+        self.assertEqual(other.returncode, 0, other.stderr)
+        self.assertEqual(other.stderr, "")
+        # The owning session A's Stop hook still flags it.
+        mine = self._run("check", "--strict", session="sess-A")
+        self.assertEqual(mine.returncode, 2)
+        self.assertIn("incomplete", mine.stderr)
+
+    def test_check_flags_unstamped_legacy_run(self) -> None:
+        # No session id at start → owner_session=None → fail-closed default kept:
+        # any session's check still flags an incomplete run.
+        self.assertEqual(
+            self._run("start-run", "--run-type", "jd-to-ready", session=None).returncode, 0
+        )
+        res = self._run("check", "--strict", session="sess-B")
+        self.assertEqual(res.returncode, 2)
+        self.assertIn("incomplete", res.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()
