@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "Automating operations through AI agents."},
+    {"tag": "end-to-end", "evidence": "5+ years of full software development life cycle experience."},
+    {"tag": "platform", "evidence": "Developing cloud-native architectural patterns."},
+    {"tag": "business-translation", "evidence": "Establishing technical relationships with clients / internal stakeholders... Serving as the customer voice internally."},
+    {"tag": "LLM-orchestration", "evidence": "Championing GenAI and agentic technologies across the org."},
+    {"tag": "cross-functional", "evidence": "Mentoring teams through workshops and deep dives."}
+  ],
+  "archetype": "FDE / client-facing",
+  "archetype_rationale": "The role's day-to-day centers on establishing technical relationships with clients/stakeholders, serving as the customer voice internally, and building AI solutions for customers facing complex technical challenges — classic forward-deployed engineer work, not pure backend platform engineering.",
+  "notes": "",
+  "classified_ts": "2026-06-30"
+}
