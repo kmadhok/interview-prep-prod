@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "platform", "evidence": "Contribute to strategic design and evolution of the people data platform and tooling (SQLMesh, Iceberg, Flyte)"},
+    {"tag": "end-to-end", "evidence": "own the full data lifecycle from ingestion to analytics-ready datasets for People Analysts and business stakeholders"},
+    {"tag": "engineering-rigor", "evidence": "champion data-engineering best practices (version control, testing, CI/CD)"},
+    {"tag": "business-translation", "evidence": "Partner with People Analysts, HRBPs, stakeholders to translate analytical needs into robust data solutions"},
+    {"tag": "ML-pipeline", "evidence": "Design, build, optimize robust ETL/ELT pipelines to ingest/integrate/transform diverse people data from HR systems"},
+    {"tag": "cross-functional", "evidence": "Collaborate with broader enterprise analytics/data-engineering teams on data architecture standards"}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day is building/optimizing ETL/ELT pipelines, data models/schemas/ontologies, and a people-data platform with dbt/Airflow/Snowflake-class tooling — squarely analytics/data engineering, not agent or ML modeling.",
+  "notes": "ML-pipeline is the closest vocab match for ETL/ELT data-pipeline work; the JD is data pipelines, not ML model pipelines. No agents/RAG/NL→SQL/LLM/RPA/experimentation/dashboards signal beyond preferred-BI mention.",
+  "classified_ts": "2026-06-29"
+}
