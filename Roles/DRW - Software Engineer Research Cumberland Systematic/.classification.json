@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "end-to-end", "evidence": "design and develop the full stack needed to enable a global trading operation with high-availability requirements"},
+    {"tag": "ML-pipeline", "evidence": "Accelerate the research lifecycle from data engineering to feature generation and analysis"},
+    {"tag": "platform", "evidence": "Design, develop, test, document, maintain software and infrastructure for quantitative financial research"},
+    {"tag": "engineering-rigor", "evidence": "Built complex systems in modern Python that are maintainable and safely refactorable"},
+    {"tag": "evaluation", "evidence": "Test at the unit, functional, and integration levels"},
+    {"tag": "cross-functional", "evidence": "work directly with quantitative researchers daily"}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day is building Python/C++ data integrations, managing large evolving timeseries data, and accelerating the research lifecycle from data engineering to feature generation — core data-engineering work, not agent or product building.",
+  "notes": "Heavy blockchain/crypto and timeseries-data emphasis with no AI-agent/LLM-orchestration relevance; 'ML-pipeline' is a stretch tied to research-lifecycle/feature-generation language, and 'high-level machine learning concepts' is only a bonus, so downstream should weight data-engineering bullets over any ML/agent achievements.",
+  "classified_ts": "2026-06-29"
+}
