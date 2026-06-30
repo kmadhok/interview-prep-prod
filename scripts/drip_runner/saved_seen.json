@@ -45,6 +45,11 @@
       "status": "done",
       "ts": "2026-06-25"
     },
+    "4398965812": {
+      "note": "Notion - SWE AI Workflows: SKIP-CHECK (c) folder exists + already filed (Pipeline row 'Filed only' since 2026-05-27, resume+PDF prepped via prior saved-jobs intake); not re-processed this run",
+      "status": "done",
+      "ts": "2026-06-30"
+    },
     "4400836758": {
       "note": "Okta - Senior Analytics Engineer",
       "status": "done",
