@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "dashboards", "evidence": "Design, build, and maintain the data models, dashboards, and reporting frameworks that give the commercial org clear, trusted visibility"},
+    {"tag": "end-to-end", "evidence": "Implement operational improvements end-to-end: design + drive adoption + measure impact"},
+    {"tag": "business-translation", "evidence": "Translate commercial problems into well-defined briefs that Product and Engineering can act on"},
+    {"tag": "cross-functional", "evidence": "Experience working cross-functionally with Product/Engineering, with technical fluency"},
+    {"tag": "simplification", "evidence": "Map, challenge, and rebuild core commercial workflows ... into cleaner, faster, scalable ways of working"},
+    {"tag": "NL→SQL", "evidence": "Proficiency in SQL + hands-on with BI/data tools (Looker, Tableau, or BigQuery)"}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day is building data models, dashboards, and reporting frameworks on SQL/BI tools (Looker, Tableau, BigQuery) to give the commercial org KPI visibility — core analytics-engineering work despite the 'Strategy & Analytics Manager' title.",
+  "notes": "The 'NL→SQL' tag is a loose fit — the JD names SQL and BI tools heavily but never mentions natural-language-to-SQL specifically; it was the closest data/SQL theme in the vocab. AI is framed as an accelerant for the analyst's own workflow (not agent-building), so agents/LLM-orchestration were deliberately excluded.",
+  "classified_ts": "2026-06-30"
+}
