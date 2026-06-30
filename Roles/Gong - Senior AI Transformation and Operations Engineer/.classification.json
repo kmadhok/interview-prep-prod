@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "turn it into a working agentic workflow without external engineering resources"},
+    {"tag": "LLM-orchestration", "evidence": "Orchestration: LangChain or similar agentic frameworks"},
+    {"tag": "business-translation", "evidence": "translate complex technical AI patterns into clear business value and ROI for stakeholders"},
+    {"tag": "dashboards", "evidence": "build dashboards to track SLAs/SLOs — latency, accuracy, uptime — and monitor usage, cost, error rates"},
+    {"tag": "cross-functional", "evidence": "coordinate AI project execution across Talent, Support, Sales, Go-To-Market"},
+    {"tag": "end-to-end", "evidence": "drive them from concept to measurable business outcome"}
+  ],
+  "archetype": "agent-builder",
+  "archetype_rationale": "Day-to-day is a 'scrappy builder' who independently builds and deploys POCs and turns stakeholder ideas into working agentic workflows using LangChain, vector DBs, and the modern AI stack — hands-on agent construction is the core function, not client embedding or pure analytics.",
+  "notes": "Role sits inside IT/internal digital transformation (internal use cases, not customer-facing product), and carries a heavy AI-ops/governance half — token management, prompt libraries, cost/SLA monitoring — so 'leverage' (maximizing enterprise AI spend value) is a near-miss theme worth noting downstream.",
+  "classified_ts": "2026-06-30"
+}
