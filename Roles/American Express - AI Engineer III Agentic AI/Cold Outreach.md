@@ -4,6 +4,8 @@ _Drafted by write-outreach (drip/pipeline mode) 2026-06-21. Two intro emails, no
 
 **STAGED in Gmail 2026-06-21** — drafts `r2498823915874942283` (Monika Zutshi) + `r6216545518691221099` (Tifany Pan). Not sent.
 
+**Re-confirmed STAGED 2026-06-29** (drip-runner Pass B) — Monika Zutshi cold-emailed 2026-06-25 (sent); Tifany Pan draft `r6216545518691221099` confirmed still live in Gmail. No NEW draft created this run (same-company double-send guard). Terminal.
+
 **Role:** AI Engineer III – Agentic AI · American Express (Amex Technology) · Palo Alto, CA / **remote-eligible** · $103.8K–$174.8K + bonus · LinkedIn 4412390541.
 **Archetype:** agent-builder. **Lead theme:** agents / RAG / evaluation.
 **Apply channel:** Amex careers (responses managed off LinkedIn).

@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "Build and extend agentic AI workflows that reason over context, call tools, and perform actions"},
+    {"tag": "RAG", "evidence": "implement and maintain retrieval-augmented generation (RAG) pipelines over financial data, with emphasis on correctness and safety"},
+    {"tag": "LLM-orchestration", "evidence": "tooling for agent orchestration, RAG, vector storage, and evaluation"},
+    {"tag": "platform", "evidence": "Contribute to shared AI infrastructure: LLM services, orchestration components, and evaluation/monitoring tooling"},
+    {"tag": "evaluation", "evidence": "Participate in operating AI systems in production: monitoring, debugging, improving reliability and performance"},
+    {"tag": "end-to-end", "evidence": "write production code, contribute to system design, and operate what you build"}
+  ],
+  "archetype": "agent-builder",
+  "archetype_rationale": "Hands-on builder shipping production agentic AI systems (agent workflows that call tools + act, RAG over financial data, shared LLM/orchestration infra) in a regulated customer-facing environment — explicitly 'not a research-only role.' Core agent-builder work.",
+  "notes": "Remote-eligible (Amex Flex) — no hard geo gate. Comp band $103.8K–$174.8K — handle leveling/comp early. Go/Kafka/K8s listed but framed as growth, not checklist. Warm contact 'Kshitiz' in network. Classified inline (main-thread).",
+  "classified_ts": "2026-06-29"
+}
