@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "Build working AI systems quickly"},
+    {"tag": "LLM-orchestration", "evidence": "Expertise with Python, LLMs, prompt engineering, and AI frameworks"},
+    {"tag": "experimentation", "evidence": "Experimentation and iteration (rapidly test and refine with user feedback)"},
+    {"tag": "end-to-end", "evidence": "translate ideas into functioning prototypes"},
+    {"tag": "cross-functional", "evidence": "Collaborate closely with PMs, UX designers, and Research & Signals Lead"},
+    {"tag": "evaluation", "evidence": "Test feasibility and performance of AI behaviors in real workflow scenarios"}
+  ],
+  "archetype": "FDE / client-facing",
+  "archetype_rationale": "The role is explicitly a 'Forward-Deployed AI Engineer' embedded in a discovery team, rapidly prototyping AI solutions in real-world advisor workflows alongside PMs, UX, and researchers — collapsing the gap between concept and reality rather than building production systems.",
+  "notes": "Advisor-facing prototypes, not end customers — the 'client' is the internal advisor workflow. Heavy emphasis on speed/feasibility validation and handoff to downstream production teams; prototypes are throwaway-grade, so engineering-rigor/platform themes were deliberately not picked despite the AI-engineering title.",
+  "classified_ts": "2026-06-29"
+}
