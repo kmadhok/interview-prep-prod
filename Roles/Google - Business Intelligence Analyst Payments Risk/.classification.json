@@ -1,0 +1,13 @@
+{
+  "themes": [
+    {"tag": "dashboards", "evidence": "suggest thresholds, dashboards, and reports to visualize metrics across slices of data"},
+    {"tag": "business-translation", "evidence": "Present data insights to technical and non-technical audiences"},
+    {"tag": "cross-functional", "evidence": "collaborate with engineering partners and other stakeholders to improve data management and validation processes"},
+    {"tag": "leverage", "evidence": "Leverage AI models to enhance capabilities, including for risk assessments and monitoring programs"},
+    {"tag": "engineering-rigor", "evidence": "Ensure accuracy, completeness, and integrity of risk data"}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day is collecting/analyzing large datasets, developing metrics, and building dashboards/reports in SQL/R/Sheets — a business intelligence analyst role, not a builder or platform engineer.",
+  "notes": "AI-forward angle is real (prompt engineering preferred, 'leverage AI models' in responsibilities) but applied/assistive, not agent-building — could pull a 'leverage' achievement that shows AI used to enhance analytics.",
+  "classified_ts": "2026-06-29"
+}
