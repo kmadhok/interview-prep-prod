@@ -1,0 +1,14 @@
+{
+  "themes": [
+    {"tag": "platform", "evidence": "owns the data infrastructure, governance, and enablement powering the company — Medallion Architecture and Unity Catalog in Databricks"},
+    {"tag": "agents", "evidence": "connecting AI agents and agentic workflows to governed data"},
+    {"tag": "RAG", "evidence": "building/integrating NLP/LLM-based systems — RAG pipelines, semantic search, agent frameworks, NL interfaces"},
+    {"tag": "NL→SQL", "evidence": "enabling non-technical users to get self-service answers"},
+    {"tag": "engineering-rigor", "evidence": "Establish guardrails to ensure AI-generated code, queries, and pipelines are correct, consistent, production-ready"},
+    {"tag": "evaluation", "evidence": "evaluating AI model outputs (eval harnesses, quality metrics, regressions)"}
+  ],
+  "archetype": "platform / ML engineering",
+  "archetype_rationale": "Day-to-day is owning deployment paths for Databricks Apps, building the AI layer on the data platform, and embedding AI tooling into how the Data Platform team ships code — squarely platform/ML infrastructure engineering, not analytics or client-facing work.",
+  "notes": "",
+  "classified_ts": "2026-06-29"
+}
