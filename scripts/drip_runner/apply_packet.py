@@ -12,6 +12,8 @@ from __future__ import annotations
 import argparse, difflib, hashlib, json, os, re, subprocess, sys
 from pathlib import Path
 
+from outreach_worklist import active_section, row_is_applied
+
 PACKET_FILE = ".apply-packet.json"
 CLASSIFICATION_FILE = ".classification.json"
 ANSWERS_MD = "Application Answers.md"
@@ -187,6 +189,105 @@ def _cli_repost_check(args) -> int:
     return 0
 
 
+def _company_applied(company: str, pipeline_text: str) -> bool:
+    pat = re.compile(r"\b" + re.escape(company) + r"\b", re.IGNORECASE)
+    return any(row_is_applied(l) and pat.search(l) for l in active_section(pipeline_text))
+
+
+def _packet_folders(repo_root: Path) -> list[Path]:
+    out = []
+    for base in (repo_root / "Roles", repo_root / "_Archived"):
+        if base.is_dir():
+            out.extend(sorted(p.parent for p in base.glob(f"*/{PACKET_FILE}")))
+    return out
+
+
+def reconcile_actions(repo_root: Path, pipeline_text: str) -> list[dict]:
+    """Pure diff of repo truth vs recorded mirror state. No side effects."""
+    actions: list[dict] = []
+    for folder in _packet_folders(repo_root):
+        rec = read_packet(folder)
+        if not rec or rec.get("state") != "queued":
+            continue
+        company, _ = split_company_role(folder.name)
+        if folder.parent.name == "_Archived":
+            actions.append({"action": "delete", "folder": folder, "record": rec})
+        elif _company_applied(company, pipeline_text):
+            actions.append({"action": "move", "folder": folder, "record": rec})
+        else:
+            pdf = find_resume_pdf(folder)
+            if pdf is not None and sha256_of(pdf) != rec.get("pdf_sha256"):
+                actions.append({"action": "reupload", "folder": folder, "record": rec})
+    return actions
+
+
+def _applied_dest(remote_path: str, remote_dir: str) -> str:
+    name = remote_path[len(remote_dir) + 1:]  # strip "<remote_dir>/"
+    return f"{remote_dir}/Applied/{name}"
+
+
+def apply_reconcile(actions: list[dict], run=subprocess.run, now_iso: str = "") -> list[str]:
+    """Execute actions via rclone; rewrite each record; return summary lines.
+
+    One failing role must not block the rest (fail loud per role, keep going):
+    errors become summary lines the digest/log surfaces.
+    """
+    lines: list[str] = []
+    for a in actions:
+        folder, rec = a["folder"], a["record"]
+        try:
+            if a["action"] == "move":
+                for key in ("pdf_remote", "answers_remote"):
+                    if rec.get(key):
+                        dest = _applied_dest(rec[key], rec["remote_dir"])
+                        _rclone(["moveto", rec[key], dest], run)
+                        rec[key] = dest
+                rec["state"] = "applied"
+                rec["moved_ts"] = now_iso
+                lines.append(f"moved to Applied/: {folder.name}")
+            elif a["action"] == "delete":
+                for key in ("pdf_remote", "answers_remote"):
+                    if rec.get(key):
+                        _rclone(["deletefile", rec[key]], run)
+                rec["state"] = "removed"
+                rec["removed_ts"] = now_iso
+                lines.append(f"removed (archived): {folder.name}")
+            elif a["action"] == "reupload":
+                pdf = find_resume_pdf(folder)
+                _rclone(["copyto", str(pdf), rec["pdf_remote"]], run)
+                rec["pdf_sha256"] = sha256_of(pdf)
+                rec["uploaded_ts"] = now_iso
+                lines.append(f"re-uploaded stale PDF: {folder.name}")
+            write_packet(folder, rec)
+        except PacketError as e:
+            lines.append(f"FAILED {a['action']} {folder.name}: {e}")
+    return lines
+
+
+def _cli_reconcile(args) -> int:
+    from datetime import datetime, timezone
+    repo_root = Path(args.repo_root)
+    pipeline = (repo_root / "Pipeline.md").read_text(encoding="utf-8-sig", errors="replace")
+    now_iso = datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
+    actions = reconcile_actions(repo_root, pipeline)
+    lines = apply_reconcile(actions, now_iso=now_iso)
+    for l in lines:
+        print(l)
+    if args.commit and lines and not any(l.startswith("FAILED") for l in lines):
+        # Stage ONLY the packet records this pass rewrote — never a blanket
+        # `git add Roles` (a crashed Claude run can leave unrelated dirty files
+        # there, and sweeping them into this commit would hide the crash).
+        changed = [str((a["folder"] / PACKET_FILE).relative_to(repo_root)) for a in actions]
+        subprocess.run(["git", "add"] + changed, cwd=repo_root)
+        r = subprocess.run(["git", "commit", "-m", "drip-runner: packet reconcile"],
+                           cwd=repo_root, capture_output=True, text=True)
+        if r.returncode == 0:
+            subprocess.run(["git", "push"], cwd=repo_root)
+    if not lines:
+        print("reconcile: no-op")
+    return 1 if any(l.startswith("FAILED") for l in lines) else 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -196,11 +297,16 @@ def main(argv=None) -> int:
     rp = sub.add_parser("repost-check", help="fuzzy-match this JD against every filed JD")
     rp.add_argument("role_folder")
     rp.add_argument("--repo-root", default=".")
+    rc = sub.add_parser("reconcile", help="make the Drive mirror follow Pipeline/folder truth")
+    rc.add_argument("--repo-root", default=".")
+    rc.add_argument("--commit", action="store_true")
     args = p.parse_args(argv)
     if args.cmd == "upload":
         return _cli_upload(args)
     if args.cmd == "repost-check":
         return _cli_repost_check(args)
+    if args.cmd == "reconcile":
+        return _cli_reconcile(args)
     return 2
 
 

@@ -117,3 +117,61 @@ def test_load_jd_corpus_skips_self(tmp_path):
         (d / "Job Description.md").write_text(text, encoding="utf-8")
     corpus = ap.load_jd_corpus(tmp_path, exclude=roles / "A - X")
     assert [c[0] for c in corpus] == ["B - Y"]
+
+
+PIPELINE = """## Active
+| **Scribd — Senior AI Data Engineer** | Applied 2026-06-30 | notes |
+| **DRW — AI Engineer** | Recruiter screen | notes |
+
+## Considering / not yet applied
+| **Amazon — AI Builder Ring** | not yet applied | notes |
+"""
+
+
+def make_packet_role(tmp_path, base, company, role, state="queued", pdf_bytes=b"%PDF-1.4 fake"):
+    folder = tmp_path / base / f"{company} - {role}"
+    folder.mkdir(parents=True)
+    pdf = folder / f"Kanu Madhok Resume - {company}.pdf"
+    pdf.write_bytes(pdf_bytes)
+    rec = {"schema": 1, "state": state,
+           "pdf_remote": f"gdrive:Apply Queue/2026-06-28 · {company} - {role}.pdf",
+           "answers_remote": f"gdrive:Apply Queue/{company} - {role} - Answers.txt",
+           "pdf_sha256": ap.sha256_of(pdf), "uploaded_ts": "2026-06-28T08:00:00-05:00",
+           "posted_date": "2026-06-28", "canonical_url": None, "repost": False,
+           "easy_apply": False, "remote_dir": "gdrive:Apply Queue"}
+    ap.write_packet(folder, rec)
+    return folder
+
+
+def test_reconcile_moves_applied_deletes_archived_reuploads_drift(tmp_path):
+    applied = make_packet_role(tmp_path, "Roles", "Scribd", "Senior AI Data Engineer")
+    steady = make_packet_role(tmp_path, "Roles", "DRW", "AI Engineer")
+    archived = make_packet_role(tmp_path, "_Archived", "Meta", "AI PM")
+    drifted = make_packet_role(tmp_path, "Roles", "Amazon", "AI Builder Ring")
+    # simulate a re-tailored resume: PDF content changed after upload
+    next(drifted.glob("*.pdf")).write_bytes(b"%PDF-1.4 retailored")
+
+    actions = ap.reconcile_actions(tmp_path, PIPELINE)
+    by = {a["folder"].name: a["action"] for a in actions}
+    assert by == {"Scribd - Senior AI Data Engineer": "move",
+                  "Meta - AI PM": "delete",
+                  "Amazon - AI Builder Ring": "reupload"}
+    assert steady.name not in by  # untouched role produces no action
+
+
+def test_apply_reconcile_executes_and_updates_state(tmp_path):
+    applied = make_packet_role(tmp_path, "Roles", "Scribd", "Senior AI Data Engineer")
+    actions = ap.reconcile_actions(tmp_path, PIPELINE)
+    calls = []
+    lines = ap.apply_reconcile(actions, run=fake_run_factory(calls), now_iso="t2")
+    # both remotes moved into Applied/
+    assert ["rclone", "moveto"] == calls[0][:2] and "/Applied/" in calls[0][3]
+    assert ["rclone", "moveto"] == calls[1][:2]
+    rec = ap.read_packet(applied)
+    assert rec["state"] == "applied"
+    assert any("Scribd" in l for l in lines)
+
+
+def test_reconcile_skips_non_queued_states(tmp_path):
+    make_packet_role(tmp_path, "Roles", "Scribd", "Senior AI Data Engineer", state="applied")
+    assert ap.reconcile_actions(tmp_path, PIPELINE) == []
