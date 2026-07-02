@@ -4,6 +4,11 @@ This is the **apply-gated** half of the two-orchestrator split. Pass A (saved-jo
 
 LinkedIn calls are **sequential only** — one browser op at a time, one role at a time, never parallel (see `linkedin-mcp-operations`).
 
+WATCHDOG — CLOUD-SIDE LIVENESS CHECK (run once, every run, before the worklist)
+0. The PC watches the cloud secretary. Run: `py -3 scripts/drip_runner/watchdog.py --check cloud --heartbeat scripts/drip_runner/heartbeat.json`
+   - If it prints NOTHING, the cloud side is healthy — continue.
+   - If it prints a `⚠ WATCHDOG …` line, the cloud secretary's Gmail sweep is stale (>3 weekdays). ANTI-FLAP: scan the top of `Pipeline.md` for an existing `⚠ WATCHDOG` cloud-sweep line dated within the last 24h. If one is already there, do NOT add another (alert once per incident, re-alert at most every 24h). Otherwise: prepend the exact printed line as a new `_⚠ WATCHDOG …_` audit line at the top of `Pipeline.md` (same chained style as the `_Last updated:_` line), and open your run-summary output with that same line. Commit `Pipeline.md` with a `drip-runner:` prefix. Then continue with the run below — the watchdog only makes the failure seen; it does not block outreach.
+
 PRE-RUN HEALTH CHECK
 1. Confirm the LinkedIn daemon is up: a `mcp__linkedin__get_my_profile` call returns without transport error. If it errors, STOP — write nothing, commit nothing, exit. (Applied rows stay un-staged and the next hourly run retries; this is a transient blip, not a per-role failure, so do NOT park anything.)
 
