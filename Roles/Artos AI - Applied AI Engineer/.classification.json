@@ -1,0 +1,36 @@
+{
+  "themes": [
+    {
+      "tag": "agents",
+      "evidence": "designing multi-step LLM workflows and task-specific agents"
+    },
+    {
+      "tag": "LLM-orchestration",
+      "evidence": "implement and orchestrate multi-step agentic workflows"
+    },
+    {
+      "tag": "RAG",
+      "evidence": "advanced prompt engineering strategies, evaluation frameworks, and RAG pipelines"
+    },
+    {
+      "tag": "evaluation",
+      "evidence": "using evaluation tools such as Langfuse or LangSmith"
+    },
+    {
+      "tag": "engineering-rigor",
+      "evidence": "design and maintain scalable, production-grade backend systems for AI applications"
+    },
+    {
+      "tag": "experimentation",
+      "evidence": "conduct rapid experimentation and research on LLM capabilities and translate findings into production"
+    }
+  ],
+  "archetype": "agent-builder",
+  "archetype_rationale": "Day-to-day the role creates, orchestrates, and evaluates LLM-based agents and chained/multi-step agentic workflows, with prompt engineering, RAG, and eval tooling at the center. Backend/FastAPI/cloud work exists but serves the agent systems rather than defining the job.",
+  "notes": "Strong backend + IaC/cloud expectations (FastAPI, Django, AWS/GCP/Azure, Terraform) mean platform/ML-engineering is a close second archetype; regulated biopharma/clinical-R&D domain raises the bar on evaluation rigor and clear communication with non-technical medical writers.",
+  "classified_ts": "2026-07-02",
+  "posted_date": "2026-06-08",
+  "canonical_url": "https://jobs.ashbyhq.com/artosai/ce2566f2-ada7-44de-bd7a-0c2b62823b86",
+  "easy_apply": false,
+  "repost": false
+}

@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-06-08 · Artos AI - Applied AI Engineer.pdf",
+  "answers_remote": "gdrive:Apply Queue/Artos AI - Applied AI Engineer - Answers.txt",
+  "pdf_sha256": "95a629588756808614b8b6798d78372850c47fca29c625d783ae66f93b559c07",
+  "uploaded_ts": "2026-07-02T05:26:53-05:00",
+  "posted_date": "2026-06-08",
+  "canonical_url": "https://jobs.ashbyhq.com/artosai/ce2566f2-ada7-44de-bd7a-0c2b62823b86",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}
