@@ -45,11 +45,12 @@ The root holds project-wide config, the pipeline tracker, and **cross-role reusa
 - `scripts/render_pipeline.py` — regenerates `Pipeline.html` from `Pipeline.md`. Run only when Kanu asks for a refreshed HTML view.
 - `Work Artifacts/` — exception to the "one folder per role" rule. Holds internal Walmart project write-ups (cp-analytics, cp-platform, customer-voice-semantic-layer, jira-ticket-worker, cp-analytics-mcp) referenced by the Demo Portfolio and Story Bank. Read-only context, not a role folder.
 
-**Installable skills (at root, as `.skill` files):**
+**Installable skills (repo-local under `.claude/skills/`; a legacy `.skill` bundle or two remains at root):**
 
 - `interview-prep-intake.skill` — files a new JD into the workspace (creates the role folder, writes `Job Description.md`, adds the Pipeline row, updates auto-memory).
 - `interview-prep-reusables.skill` — bootstraps or refreshes the five cross-role reusable files above.
-- `jd-to-ready.skill` — one-shot apply-ready pipeline: runs intake, tailors a resume from `Resume Achievements Master.md`, researches recruiter + HM contacts, drafts `Cold Outreach.md`. Composes the three primitives above.
+- `jd-to-ready` — **prep half** of the two-orchestrator pipeline: intake → classify (writes `.classification.json`) → tailor resume from `Resume Achievements Master.md` → build + verify PDF. **Stops at the apply gate** — no contact research, no outreach, no Gmail. (Steps 4/4b/4c/5 moved to `stage-outreach` in the 2026-06-27 split.)
+- `stage-outreach` — **apply-side half**: for a role already marked **Applied** in `Pipeline.md`, finds the recruiter on LinkedIn, verifies their email, drafts `Cold Outreach.md`, and drops Gmail drafts addressed to them (never sent). Fired by the PC's hourly Pass B poll (Applied rows with no `STAGED in Gmail` marker) or a manual kick. See the Automation section below.
 - `linkedin-saved-jobs-intake.skill` — bulk-files jobs Kanu pastes from his LinkedIn Saved Jobs page. Appends to `Saved Jobs Export.md`, creates one folder per job, WebFetches the full JD per folder, adds Pipeline subsection.
 - `find-fresh-jobs.skill` — morning pulse: surfaces N (default 10) fresh LinkedIn roles posted in the last 24h that match `Job Search Target Profile.md`. Applies geo-adjusted comp floor, seniority, hard-skip list, leetcode filter, industry exclusions. Dedupes against `Pipeline.md`. Read-only — does not file roles.
 - `recruiter-contact-tracker.skill` — mines Gmail for recruiter/HM/referrer contacts and rebuilds `Recruiter Contacts.html`.
@@ -72,6 +73,23 @@ Inside a role's folder, the standard artifact set (build these out as prep deepe
 
 If a `.html` version of a `.md` file exists, it's usually a rendered/printable copy — when editing, edit the `.md` and (only if asked) regenerate the `.html`.
 
+## Automation — the two-orchestrator drip runner
+
+A background conveyor belt runs against this repo; sessions must not fight it. The purpose: compress time-to-applied and time-to-outreach to near zero so the only human actions left are clicking **apply** and hitting **send**. Save a job → the PC preps it; mark the row Applied → the PC stages recruiter outreach; a cloud routine keeps `Pipeline.md` reconciled with Gmail.
+
+- **Pass A (PC cron, daily)** — sweeps LinkedIn saved jobs → runs `jd-to-ready` (prep only: intake, classify, resume, PDF) → commits with the `drip-runner:` prefix.
+- **Pass B (PC cron, hourly)** — polls `Pipeline.md` for Active rows marked **Applied** with no `STAGED in Gmail` marker → runs `stage-outreach` (find recruiter → verify email → Gmail drafts, never sent) → writes the `STAGED` marker.
+- **Cloud routine (2×/weekday)** — Gmail secretary: marks rows Applied from application acks, detects sent drafts, archives rejections. Its drafting step is being retired so the PC is the only drafter (pending — build-list item 7).
+
+State is read from files that already exist — resume `.md` in the folder = *prepped*, `Applied` token in the Pipeline row = *applied*, `STAGED in Gmail <date>` in folder + row = *staged*. **No state database.** Rules for any session working here:
+
+- Never write a `STAGED` marker except from `stage-outreach` on an Applied role — a stale marker silently suppresses outreach staging.
+- Never run LinkedIn contact research for a role that isn't marked Applied (the apply gate rations the flag-risky LinkedIn channel).
+- The system drafts, never sends — every outward action keeps a human gate.
+- `git pull` before editing `Pipeline.md`; multiple writers (PC passes + cloud routine) commit to `main`.
+
+Docs: the running system is described by the `Automation Architecture - *.md` files at root (start with `Automation Architecture - Drip Runner.md`); design + rationale live in `Automation Design - Two-Orchestrator/` (read its README, then `Automation Architecture - Purpose.md` for the invariants any change is judged against). End-to-end testing: the `two-orchestrator-e2e-test` skill runs one role through all 7 skills in an isolated `_jd-to-ready-test/` clone without touching real `Roles/` or `Pipeline.md`.
+
 ## How to help
 
 **Default to specifics over generalities.** "Talk about a time you handled ambiguity" → don't write generic advice; pull from the role folder, the JD, and his resume, and draft an actual answer in his voice with concrete project details. If you don't have the specifics, ask before writing filler.
@@ -84,7 +102,8 @@ If a `.html` version of a `.md` file exists, it's usually a rendered/printable c
 
 - `interview-prep-intake` — Kanu shares a fresh JD he wants filed (creates role folder, `Job Description.md`, Pipeline row, auto-memory).
 - `linkedin-saved-jobs-intake` — Kanu pastes 3+ jobs copied from his LinkedIn Saved Jobs page and wants them filed in bulk. Appends to `Saved Jobs Export.md`, creates one `Company - Role` folder per job (skips existing), WebFetches full JD per folder, adds a Pipeline subsection. Trigger on "here are my saved jobs", "intake my saved jobs", "file all of these", "bulk import these".
-- `jd-to-ready` — Kanu wants the full apply-ready package in one pass: intake + tailored resume + researched contacts + drafted cold outreach. Trigger on "get me apply-ready", "full intake", "do everything for this JD", "I want to apply to this". Prefer this over `interview-prep-intake` when intent is clearly to apply, not just track. Before editing its logging/tracing, read `.claude/skills/jd-to-ready/TRACEABILITY.md`, `TRACE_SCHEMA.md`, `TOKEN_ACCOUNTING.md`, `RUNBOOK.md`, and `TRACE_TEST_PLAN.md`.
+- `jd-to-ready` — Kanu wants a JD prepped to apply-ready: intake + classification + tailored resume + PDF. Trigger on "get me apply-ready", "full intake", "I want to apply to this". It **stops at the apply gate** — no contact research or outreach (that's `stage-outreach`, post-apply). Prefer this over `interview-prep-intake` when intent is clearly to apply, not just track. Before editing its logging/tracing, read `.claude/skills/jd-to-ready/TRACEABILITY.md`, `TRACE_SCHEMA.md`, `TOKEN_ACCOUNTING.md`, `RUNBOOK.md`, and `TRACE_TEST_PLAN.md`.
+- `stage-outreach` — a role Kanu has **applied** to needs its recruiter outreach staged: find-contacts → enrich → verify-emails → write-outreach → Gmail drafts (never sent) + `STAGED in Gmail <date>` marker. Normally fired by the hourly Pass B cron; invoke manually when he wants the draft immediately. Never run its LinkedIn/Gmail steps for a role that isn't marked Applied — the apply gate exists to ration LinkedIn budget.
 - `interview-prep-reusables` — bootstrap, refresh, or extend the cross-role reusables at root (Story Bank, TMAY Master, Demo Portfolio, Outreach Templates, Resume Master). Trigger on new project shipped, new outreach pattern, new role archetype, new demo URL, "rebuild my prep library."
 - `job-outreach` — recruiter/HM lookup + cold-email drafting for one specific JD (when JD is already filed and only outreach is needed).
 - `recruiter-contact-tracker` — mine Gmail for *all* recruiter/HM/referrer contacts, build/refresh `Recruiter Contacts.html`.

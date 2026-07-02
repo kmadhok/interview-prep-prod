@@ -1,6 +1,6 @@
 # Skills — Interview Prep
 
-_Last updated: 2026-05-31_
+_Last updated: 2026-07-01 (two-orchestrator split reflected)_
 
 
 This is the human-readable map of every skill Kanu uses inside the Interview Prep workspace — what each one does, when to reach for it, and when to use a different one instead. The live skill triggers are defined in each skill's own `description` frontmatter; this file is the cheat-sheet view of all of them together.
@@ -23,8 +23,10 @@ The funnel runs left to right. **Each outward-facing stage names exactly one sou
 | 2     | **Tailor resume** ⚠️                                                 | `tailor-resume`                    | **`Resume Achievements Master.md`** (+ its `Resume Tailoring Contract`)                          | Don't quantify beyond verified proof points; leave `[VERIFY:]`. Scan draft against `Resume Claims To Verify.md` and strip unpromoted claims. Older tailored resumes are outputs, not evidence. | role folder resume `.md`                            |
 | 3     | **Find contacts**                                                    | `find-contacts`                    | LinkedIn MCP (live)                                                                              | Never fabricate a person, title, or email; surface only what MCP returns                                                                                                                       | chat / role folder                                  |
 | 3b    | **Enrich contacts** (scrape recruiter activity → new people + hooks) | `enrich-contacts`                  | LinkedIn MCP (live, recruiter feeds)                                                             | Every surfaced person / hook must cite a real scraped post; does NOT rank — hands new people back to `find-contacts`                                                                           | chat / role folder                                  |
+| 3c    | **Verify emails**                                                    | `verify-emails`                    | EmailFinder/SMTP (live) + the contacts ledger                                                    | Verified beats inferred; never fabricate an address — degrade to inferred rows, flagged                                                                                                        | `Verified Emails.md`                                |
 | 4     | **Draft cold outreach** ⚠️                                           | `write-outreach`                   | **`Outreach Templates.md`**                                                                      | No fabricated personalization — if no real hook exists, ask. Pull template, personalize only with verified facts (incl. `enrich-contacts` hooks)                                               | role folder draft                                   |
-| 2+3+4 | **Apply-ready (one-shot)**                                           | `jd-to-ready`                      | **calls** the primitives below — owns no logic itself                                            | Inherits every primitive's rules; merges their `gaps[]`                                                                                                                                        | full role folder package                            |
+| 1+2   | **Apply-ready prep (save-side)**                                     | `jd-to-ready`                      | **calls** intake + inline classifier + `tailor-resume` — owns no logic itself                    | Inherits every primitive's rules; merges their `gaps[]`; **stops at the apply gate**                                                                                                           | resume `.md`+`.pdf`, `.classification.json`         |
+| 3–4   | **Stage outreach (apply-side)**                                      | `stage-outreach`                   | **calls** `find-contacts` → `enrich-contacts` → `verify-emails` → `write-outreach`               | Inherits every primitive's rules; fires **only** on Pipeline rows marked Applied with no `STAGED` marker                                                                                       | ledger, `Verified Emails.md`, `Cold Outreach.md`, Gmail drafts (never sent) |
 | 5     | **Submit + log applied**                                             | `track-application`                | `Pipeline.md`                                                                                    | Status/date facts only; no narrative invention                                                                                                                                                 | `Pipeline.md`, memory                               |
 | 6     | **Follow up / nudge** ⚠️                                             | `follow-up`                        | `Outreach Templates.md` + the role's prior correspondence                                        | Reference only events that actually happened (a real round, a real silence window)                                                                                                             | role folder draft                                   |
 | 7     | **Interview prep** (answers, Q-bank, TMAY, walkthrough)              | _no skill — normal Claude editing_ | `Master Story Bank.md`, `Tell Me About Yourself - Master.md`, `AI Build Walkthrough - Master.md` | Select + tailor from masters; `[NUMBER?]` for any missing metric                                                                                                                               | role folder                                         |
@@ -35,7 +37,7 @@ The funnel runs left to right. **Each outward-facing stage names exactly one sou
 
 ### Containerization refactor (2026-05-31) — `jd-to-ready` is now pure orchestration
 
-`jd-to-ready` was a 549-line skill that **reimplemented** the primitives' logic inline (two definitions of resume-tailoring, two of contact-research, two of outreach). It is now a **316-line pure orchestrator** (docker-compose model): each step *calls* a primitive that owns its logic, and wires the outputs forward.
+`jd-to-ready` was a 549-line skill that **reimplemented** the primitives' logic inline (two definitions of resume-tailoring, two of contact-research, two of outreach). It is now a pure orchestrator (docker-compose model): each step *calls* a primitive that owns its logic, and wires the outputs forward. _(Historical note: the step table below shows the pre-split monolith; steps 4/4b/5 moved to `stage-outreach` on 2026-06-27 — see the next section.)_
 
 | jd-to-ready step | calls | mode | the primitive owns |
 |---|---|---|---|
@@ -46,6 +48,19 @@ The funnel runs left to right. **Each outward-facing stage names exactly one sou
 | 5 | `write-outreach` | `drip` | cold-outreach drip per `Outreach Templates.md` |
 
 **Conventions established:** (a) every primitive has a `## Contract` block (inputs/outputs/modes); (b) every primitive returns a cross-skill `gaps[]` of `{source, kind, detail}` objects the orchestrator merges; (c) mode names are per-primitive — `pipeline`/`full`/`drip` are each that primitive's heavy mode, `standalone`/`shortlist`/`single` the light standalone mode; (d) `Outreach Templates.md` and `Resume Achievements Master.md` are the single sources of truth — primitives *reference* them, never restate them (the old "inline rules supersede Outreach Templates" clause was deleted). The skill files now live in a git repo at `~/.claude/skills` (per-edit commits, file-granular rollback). `jd-to-ready` step 7 carries an **observability layer**: a per-step evidence record (`steps[]` with prediction / prediction_met / tokens / failure_pattern) + a failure-pattern taxonomy, so each run is traceable step-by-step.
+
+### Two-orchestrator split (2026-06-27) — `jd-to-ready` cut at the apply gate
+
+The monolith above ran all 7 steps on **every saved job** — burning flag-risky LinkedIn budget and piling up Gmail drafts for roles Kanu never applied to. It is now **two apply-gated skills**:
+
+| | `jd-to-ready` (prep, save-side) | `stage-outreach` (apply-side) |
+|---|---|---|
+| **Fires on** | job saved (PC cron Pass A, daily; or manual JD share) | Pipeline row marked **Applied** with no `STAGED` marker (PC cron Pass B, hourly; or manual kick) |
+| **Steps** | 1 intake · 2 classify · 3 resume · 3.5 PDF | 4 find-contacts · 4b enrich · 4c verify-emails · 5 write-outreach (+Gmail draft) |
+| **LinkedIn / Gmail** | trigger + JD fetch only / none | contact research / drafts (never sent) |
+| **Produces** | resume `.md`+`.pdf`, **`.classification.json`** (hand-off) | `.contacts-ledger.md`, `Verified Emails.md`, `Cold Outreach.md`, Gmail draft, `STAGED in Gmail <date>` marker |
+
+The primitives are unchanged — only the compose layer was recut. State is read from files that already exist (resume `.md` = prepped, `Applied` token = applied, `STAGED` marker = staged); no state database. Each skill is its own fail-closed trace run (`jd-to-ready` requires steps {1, 2, 3, 3.5, 6, 7}; `stage-outreach` {4, 4b, 4c, 5, 6, 7}). Design + specs: `Automation Design - Two-Orchestrator/` at workspace root; the running cron topology is in `Automation Architecture - Drip Runner.md`. End-to-end test harness: the `two-orchestrator-e2e-test` skill (isolated `_jd-to-ready-test/` clone, never touches real `Roles/` or `Pipeline.md`).
 
 ### Where each skill physically lives (for a fresh harness)
 
@@ -59,7 +74,9 @@ The funnel runs left to right. **Each outward-facing stage names exactly one sou
 | `find-contacts` | `~/.claude/skills/find-contacts/SKILL.md` | LinkedIn MCP (live) |
 | `enrich-contacts` | `~/.claude/skills/enrich-contacts/SKILL.md` | LinkedIn MCP (live, recruiter activity feeds) |
 | `track-application` | `~/.claude/skills/track-application/SKILL.md` | `Pipeline.md` |
-| `jd-to-ready` | `~/.claude/skills/jd-to-ready/SKILL.md` (the stale root `jd-to-ready.skill` was deleted 2026-05-31) | composes the above |
+| `jd-to-ready` | `~/.claude/skills/jd-to-ready/SKILL.md` (the stale root `jd-to-ready.skill` was deleted 2026-05-31) | composes intake + classifier + `tailor-resume` (prep half — stops at the apply gate) |
+| `stage-outreach` | `~/.claude/skills/stage-outreach/SKILL.md` | composes `find-contacts` + `enrich-contacts` + `verify-emails` + `write-outreach` (apply-side half) |
+| `verify-emails` | `~/.claude/skills/verify-emails/SKILL.md` | EmailFinder/SMTP (live) + the contacts ledger |
 | `interview-prep-intake` | `<workspace>/interview-prep-intake.skill` | the JD |
 | `linkedin-saved-jobs-intake` | `<workspace>/linkedin-saved-jobs-intake.skill` | LinkedIn paste + MCP |
 | `find-fresh-jobs` | `<workspace>/find-fresh-jobs.skill` | `Job Search Target Profile.md` |
@@ -152,19 +169,35 @@ These are bundled `.skill` files that live with the workspace, version-controlle
 
 ### `jd-to-ready`
 
-**Intent.** One-shot apply-ready pipeline. Given a fresh JD, runs intake → tailors the resume from `Resume Achievements Master.md` → researches recruiter + hiring-manager contacts via LinkedIn → drafts a `Cold Outreach.md` with two personalized emails. End state: the role folder has `Job Description.md`, a tailored resume `.md`, and `Cold Outreach.md` — Kanu just reads and hits Send.
+**Intent.** Save-side **prep half** of the two-orchestrator pipeline. Given a fresh JD, runs intake → classifies the role (themes + archetype, persisted to `.classification.json` as the hand-off to `stage-outreach`) → tailors the resume from `Resume Achievements Master.md` → builds and vision-verifies the PDF. End state: the role folder is apply-ready — Kanu applies on the ATS, marks the row Applied, and outreach auto-stages from there. **Stops at the apply gate**: no contact research, no outreach, no Gmail.
 
 **Resume safety rule.** When tailoring the resume, use only the canonical achievements and verified proof points in `Resume Achievements Master.md`. Role-specific resumes are prior outputs, not evidence. Do not pull from `Resume Claims To Verify.md` or older tailored resumes unless Kanu has explicitly confirmed the claim and it has been promoted into the master.
 
-**Reach for it when.** Kanu pastes a JD with apply intent. Trigger language: "full intake", "intake and prep", "do everything for this JD", "get me apply-ready", "get this ready to send", "I want to apply to this". Composes intake + resume tailoring + outreach in one pass.
+**Reach for it when.** Kanu pastes a JD with apply intent. Trigger language: "full intake", "intake and prep", "get me apply-ready", "I want to apply to this". Also fired automatically by the PC cron's daily Pass A on newly saved LinkedIn jobs.
 
-**Don't reach for it when.** He only wants to file the JD with no further prep (that's `interview-prep-intake` alone). Or he only wants outreach for a JD already filed (that's `job-outreach` / `write-outreach` alone). Or he's deep into interview prep and wants Question Bank / Interview Answers built (this skill stops at apply-ready, not interview-ready).
+**Don't reach for it when.** He only wants to file the JD with no further prep (that's `interview-prep-intake` alone). Or he wants outreach staged for a role he already applied to (that's `stage-outreach`). Or he's deep into interview prep and wants Question Bank / Interview Answers built (this skill stops at apply-ready, not interview-ready).
 
-**Output.** Role folder with `Job Description.md` + `Kanu Madhok Resume - <Company> <Short Role>.md` + `Cold Outreach.md`, plus updated `Pipeline.md` and `active_interview_pipeline.md` memory.
+**Output.** Role folder with `Job Description.md` + `Kanu Madhok Resume - <Company> <Short Role>.md` + `.pdf` + `.classification.json`, plus a `Considering` row in `Pipeline.md` and updated `active_interview_pipeline.md` memory. Nothing in Gmail; no contacts.
 
-**Traceability.** Before editing `jd-to-ready` logging, read the canonical docs in `.claude/skills/jd-to-ready/`: `TRACEABILITY.md`, `TRACE_SCHEMA.md`, `TOKEN_ACCOUNTING.md`, `RUNBOOK.md`, and `TRACE_TEST_PLAN.md`. The intended contract is fail-closed production tracing with per-step token accounting.
+**Traceability.** Its own fail-closed trace run, run-type `jd-to-ready`, required steps {1, 2, 3, 3.5, 6, 7}. Before editing `jd-to-ready` logging, read the canonical docs in `.claude/skills/jd-to-ready/`: `TRACEABILITY.md`, `TRACE_SCHEMA.md`, `TOKEN_ACCOUNTING.md`, `RUNBOOK.md`, and `TRACE_TEST_PLAN.md`.
 
-**File.** `~/.claude/skills/jd-to-ready/SKILL.md` (the stale root `jd-to-ready.skill` was deleted in the 2026-05-31 containerization refactor — see the Process Map note).
+**File.** `.claude/skills/jd-to-ready/SKILL.md` (the stale root `jd-to-ready.skill` was deleted in the 2026-05-31 containerization refactor — see the Process Map note).
+
+---
+
+### `stage-outreach`
+
+**Intent.** Apply-side **outreach half** of the two-orchestrator pipeline. For a role Kanu has **already applied to**: find the recruiter on LinkedIn (`find-contacts` → `enrich-contacts`), verify their email (`verify-emails`), draft the outreach (`write-outreach`, drip mode), and drop Gmail drafts addressed to the recruiter (+ hiring manager) — **never sent**. Reads the role folder and the `.classification.json` that `jd-to-ready` wrote; on success writes `STAGED in Gmail <date>` to the folder + Pipeline row, the terminal marker the poll never re-stages.
+
+**Reach for it when.** Normally not by hand — the PC's hourly Pass B cron polls `Pipeline.md` for Active rows marked **Applied** with no `STAGED` marker and fires it. Invoke manually when Kanu just applied and wants the draft now instead of within the hour.
+
+**Don't reach for it when.** The role isn't marked Applied — the apply gate exists to ration the flag-risky LinkedIn channel; never spend it on maybes. Or he wants a one-off email to a person he already knows (that's `write-outreach`). Or the JD isn't filed/prepped yet (run `jd-to-ready` first).
+
+**Output.** `.contacts-ledger.md`, `Verified Emails.md`, `Cold Outreach.md`, Gmail draft(s) in Drafts (never sent), and the `STAGED in Gmail <date>` marker in folder + Pipeline row.
+
+**Traceability.** A second, independent fail-closed trace run, run-type `stage-outreach`, required steps {4, 4b, 4c, 5, 6, 7}; `set-role-folder` binds the existing folder (must not create).
+
+**File.** `.claude/skills/stage-outreach/SKILL.md`.
 
 ---
 
@@ -304,11 +337,12 @@ When Kanu shares a JD or talks about a role, pick the skill by what he wants to 
 - **"Log that I applied / moved to next round / got rejected"** → `track-application`
 
 **Apply-ready prep**
-- **"Get me apply-ready / full intake / do everything for this JD"** → `jd-to-ready` (composes intake + resume + outreach in one pass)
-- **"Tailor my resume for this role"** (no outreach needed) → `tailor-resume`
+- **"Get me apply-ready / full intake / I want to apply to this"** → `jd-to-ready` (intake + classification + resume + PDF; **stops at the apply gate** — outreach stages post-apply)
+- **"Tailor my resume for this role"** (no intake needed) → `tailor-resume`
 
 **Contacts & outreach**
-- **"Find recruiters at [Company] / who do I email"** (JD-anchored) → `job-outreach` OR `find-contacts` + `write-outreach`
+- **"I applied — stage the outreach / get me the recruiter draft now"** → `stage-outreach` (or just mark the Pipeline row Applied and let the hourly Pass B cron fire it)
+- **"Find recruiters at [Company] / who do I email"** (JD-anchored, not yet applied) → `job-outreach` OR `find-contacts` + `write-outreach`
 - **"Draft a cold email to [Person]"** (contact already known) → `write-outreach`
 - **"Draft a thank-you / nudge a recruiter / follow up"** → `follow-up`
 - **"Find me every recruiter who's ever emailed me / build my contact list"** → `recruiter-contact-tracker`
@@ -319,7 +353,7 @@ When Kanu shares a JD or talks about a role, pick the skill by what he wants to 
 **No skill needed**
 - **"Draft answers for this interview / build a question bank"** → normal Claude editing in the role folder
 
-When two could apply (e.g., a JD share with "and draft outreach too"), prefer `jd-to-ready` — it's the explicit composition skill. Run `interview-prep-intake` alone only when he's clearly *just* filing the JD and doesn't want further work. Run the granular skills (`find-contacts`, `write-outreach`, `tailor-resume`) when only one step is needed and the full `jd-to-ready` pipeline would be overkill.
+When two could apply, remember the apply gate: `jd-to-ready` owns everything up to the apply-ready folder; `stage-outreach` owns everything after the row is marked Applied. A JD share with "and draft outreach too" → run `jd-to-ready`, tell him outreach auto-stages once he applies and marks the row (or kick `stage-outreach` manually right after he applies). Run `interview-prep-intake` alone only when he's clearly *just* filing the JD. Run the granular skills (`find-contacts`, `write-outreach`, `tailor-resume`, `verify-emails`) when only one step is needed and a full orchestrator run would be overkill.
 
 ---
 
