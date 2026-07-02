@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · D.E. Shaw - AI Product Engineer Private Equity Platform.pdf",
+  "answers_remote": "gdrive:Apply Queue/D.E. Shaw - AI Product Engineer Private Equity Platform - Answers.txt",
+  "pdf_sha256": "9e3db9f12e0d76ec15a9fda3888b5534785b34557aaba641db4fafe80aae620e",
+  "uploaded_ts": "2026-07-02T05:49:54-05:00",
+  "posted_date": null,
+  "canonical_url": "https://www.deshaw.com/careers/ai-product-engineer-private-equity-platform-5637",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

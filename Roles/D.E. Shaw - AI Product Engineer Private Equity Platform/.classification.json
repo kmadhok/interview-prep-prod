@@ -1,0 +1,37 @@
+{
+  "themes": [
+    {
+      "tag": "agents",
+      "evidence": "translate AI capabilities (autonomous agents, tool use, multi-step reasoning) into practical product features"
+    },
+    {
+      "tag": "LLM-orchestration",
+      "evidence": "developing and integrating LLM-powered systems into production with knowledge of agentic frameworks"
+    },
+    {
+      "tag": "platform",
+      "evidence": "helping build the AI-powered platform at the core of the fund"
+    },
+    {
+      "tag": "business-translation",
+      "evidence": "translate workflow challenges into clear product direction"
+    },
+    {
+      "tag": "end-to-end",
+      "evidence": "own product design end-to-end"
+    },
+    {
+      "tag": "leverage",
+      "evidence": "where AI adds genuine leverage"
+    }
+  ],
+  "archetype": "consulting / product-builder",
+  "archetype_rationale": "The day-to-day is product strategy plus technical execution — surfacing high-impact opportunities with business teams, translating workflow challenges into product direction, and driving products from conception to production while contributing code. That is a product-builder who sits between stakeholders and engineering, not a pure ML/platform engineer.",
+  "notes": "Role is a founding-team hire at Cove, D. E. Shaw's new PE venture; startup/0-to-1 ownership and entrepreneurial mindset are emphasized over deep infra/ML depth.",
+  "classified_ts": "2026-07-02",
+  "posted_date": null,
+  "canonical_url": "https://www.deshaw.com/careers/ai-product-engineer-private-equity-platform-5637",
+  "easy_apply": false,
+  "repost": false,
+  "posting_note": "Canonical posting on deshaw.com custom careers site (id 5637) shows no posted date; LinkedIn relative not trusted. NYC hybrid; $185K-250K base + guaranteed first-year bonus. Cove founding-team hire."
+}
