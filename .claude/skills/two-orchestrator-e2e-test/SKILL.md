@@ -42,7 +42,7 @@ python3 "<repo root>/scripts/build_resume_pdf.py" "<clone>/Kanu Madhok Resume - 
 ```
 Capture the `PAGES=<n> TITLE_LEAK=<0|1>` line.
 
-## Step 3.7 — apply-packet (main loop)
+## Step 3.5b — apply-packet (main loop)
 - **apply-packet** (jd-to-ready Step 3.7) → the sub-agent runs it with the test remote so the REAL Apply Queue is never touched: set `APPLY_PACKET_REMOTE_DIR="gdrive:_test/Apply Queue e2e"` in the step's environment (or pass `--remote-dir` to the upload CLI). Writes `<clone>/Application Answers.md` + `<clone>/.apply-packet.json`. Cleanup record in TEST REPORT.md gains one line: `rclone purge "gdrive:_test/Apply Queue e2e"` to empty the test remote.
 
 ## Step 3.6 — Simulated apply gate (main loop)
