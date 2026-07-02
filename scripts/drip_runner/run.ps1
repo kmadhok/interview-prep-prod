@@ -24,7 +24,10 @@ function Log($m) {
 }
 
 Log "run start (mode=$Mode)"
-git pull --rebase
+# --autostash: a crashed run can leave an unclosed trace .jsonl dirty in the tree,
+# and plain --rebase then refuses to pull — deadlocking every future run until a
+# human commits the file (happened 2026-06-30 → 07-01, ~34h of silent no-ops).
+git pull --rebase --autostash
 if (-not $?) { Log "git pull failed; aborting run (no claude invocation)"; exit 1 }
 
 $promptFile = switch ($Mode) {
