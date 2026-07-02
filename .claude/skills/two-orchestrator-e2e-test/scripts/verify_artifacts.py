@@ -104,6 +104,25 @@ def check_pdf(clone: Path, pages, title_leak) -> dict:
     return skill_result(checks)
 
 
+def check_packet(clone: Path) -> dict:
+    """Apply-packet artifacts: record exists, parses, and — non-negotiable —
+    points at a _test remote, never the real Apply Queue."""
+    f = clone / ".apply-packet.json"
+    if not f.exists():
+        return skill_result([check("packet-present", False, str(f))])
+    try:
+        rec = json.loads(f.read_text(encoding="utf-8-sig"))
+    except json.JSONDecodeError as exc:
+        return skill_result([check("packet-parses", False, str(exc))])
+    return skill_result([
+        check("packet-parses", True),
+        check("packet-state-queued", rec.get("state") == "queued", str(rec.get("state"))),
+        check("packet-remote-is-test", "_test" in str(rec.get("remote_dir", "")),
+              rec.get("remote_dir", "")),
+        check("answers-md-present", (clone / "Application Answers.md").exists()),
+    ])
+
+
 def check_gate(worklist_text: str, company: str) -> dict:
     ok = bool(company) and company.lower() in (worklist_text or "").lower()
     return skill_result([check("worklist-surfaces-role", ok, f"company={company!r}")])
@@ -239,6 +258,7 @@ def run_all(args) -> dict:
         "classify": check_classify(clone),
         "tailor-resume": check_tailor_resume(clone),
         "pdf": check_pdf(clone, args.pages, args.title_leak),
+        "apply-packet": check_packet(clone),
         "apply-gate": check_gate(worklist_text, args.company),
         "find-contacts": check_find_contacts(clone),
         "enrich-contacts": check_enrich_contacts(clone),

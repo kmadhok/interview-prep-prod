@@ -211,6 +211,15 @@ def test_write_outreach_same_company_guard_one_draft_warns():
     assert any(c["name"] == "both-drafts-present" and not c["ok"] for c in res["checks"])
 
 
+_PACKET_OK = json.dumps({
+    "schema": 1, "state": "queued",
+    "pdf_remote": "gdrive:_test/Apply Queue/2026-06-28 · Snowflake - FDE.pdf",
+    "answers_remote": "gdrive:_test/Apply Queue/Snowflake - FDE - Answers.txt",
+    "pdf_sha256": "0" * 64, "remote_dir": "gdrive:_test/Apply Queue",
+})
+_PACKET_FILES = {".apply-packet.json": _PACKET_OK, "Application Answers.md": "Q1: ...\nA1: ..."}
+
+
 def test_run_all_two_drafts_list_pass():
     files = {
         "Job Description.md": "# Role\n" + "x" * 80,
@@ -220,6 +229,7 @@ def test_run_all_two_drafts_list_pass():
         ".contacts-ledger.md": _LEDGER,
         "Verified Emails.md": _VERIFIED_OK,
         "Cold Outreach.md": "two intros",
+        **_PACKET_FILES,
     }
     clone = _clone_with(files)
     worklist = clone / "_worklist.txt"
@@ -250,6 +260,7 @@ def test_run_all_full_fixture_overall_pass():
         ".contacts-ledger.md": _LEDGER,
         "Verified Emails.md": _VERIFIED_OK,
         "Cold Outreach.md": "Hi Brad,",
+        **_PACKET_FILES,
     }
     clone = _clone_with(files)
     worklist = clone / "_worklist.txt"
@@ -293,6 +304,7 @@ def test_run_all_blocked_apply_marks_apply_skills_blocked():
         ".classification.json": _GOOD_CLASS,
         "Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK,
         "Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        **_PACKET_FILES,
     }
     clone = _clone_with(files)
     worklist = clone / "_worklist.txt"
@@ -316,3 +328,27 @@ def test_run_all_empty_draft_json_degrades_without_crash():
     args = va.build_parser().parse_args(["--clone", str(clone), "--draft-json", str(empty)])
     report = va.run_all(args)  # must not raise
     assert report["skills"]["write-outreach"]["status"] == "fail"
+
+
+def test_check_packet_passes_on_test_remote(tmp_path):
+    import json
+    (tmp_path / ".apply-packet.json").write_text(json.dumps({
+        "schema": 1, "state": "queued",
+        "pdf_remote": "gdrive:_test/Apply Queue/2026-06-28 · X - Y.pdf",
+        "answers_remote": "gdrive:_test/Apply Queue/X - Y - Answers.txt",
+        "pdf_sha256": "0" * 64, "remote_dir": "gdrive:_test/Apply Queue",
+    }), encoding="utf-8")
+    (tmp_path / "Application Answers.md").write_text("x", encoding="utf-8")
+    result = va.check_packet(tmp_path)
+    assert all(c["ok"] for c in result["checks"])
+
+
+def test_check_packet_fails_on_real_remote(tmp_path):
+    import json
+    (tmp_path / ".apply-packet.json").write_text(json.dumps({
+        "schema": 1, "state": "queued", "pdf_remote": "gdrive:Apply Queue/x.pdf",
+        "answers_remote": None, "pdf_sha256": "0" * 64,
+        "remote_dir": "gdrive:Apply Queue",
+    }), encoding="utf-8")
+    result = va.check_packet(tmp_path)
+    assert any(c["name"] == "packet-remote-is-test" and not c["ok"] for c in result["checks"])
