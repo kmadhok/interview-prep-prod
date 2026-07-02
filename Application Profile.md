@@ -11,9 +11,10 @@ Canonical **apply-side** answers for ATS application forms — the source of tru
 - **Notice period / availability:** 2 weeks from offer acceptance.
 - **Current employer / title:** Walmart Data Ventures — Senior Data Analyst, Customer Perception team.
 - **Email:** madhok.kanu@gmail.com
-- **Phone:** `[NUMBER?]`
-- **LinkedIn URL:** `[URL?]`
-- **Location / relocation / remote preference:** `[PREFERENCE?]`
+- **Phone:** 952-303-1045
+- **LinkedIn URL:** linkedin.com/in/kanu-madhok
+- **GitHub URL:** github.com/kmadhok
+- **Location / relocation / remote preference:** open to remote or in-person, any location.
 
 ## Standard short answers
 
