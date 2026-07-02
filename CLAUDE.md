@@ -40,6 +40,7 @@ The root holds project-wide config, the pipeline tracker, and **cross-role reusa
 - `Demo Portfolio.md` — canonical descriptions, URLs, and talking points for live demos (NL-to-SQL Copilot, FTI capstone) plus the internal Walmart artifacts. Source of truth for the "Live Demo" line on resumes and the links in outreach.
 - `Outreach Templates.md` — voice-locked templates for cold recruiter, post-screen thank-you, nudge-after-silence, cold hiring-manager, post-interview thank-you, application follow-up, networking ask, graceful decline. Hook bank tuned per role archetype.
 - `Cold Outreach Emails Best Practices.md` — companion reference to `Outreach Templates.md`: principles, anti-patterns, and what makes a cold email actually land. Use when editing templates or coaching tone, not for drop-in copy.
+- `Application Profile.md` — canonical apply-side facts and short answers for ATS forms (salary expectation, work authorization, notice period). Source for the apply packet's answers doc (see `Automation Design - Two-Orchestrator/Spec - Apply Packet.md`); search-side filters stay in `Job Search Target Profile.md`.
 
 **Other root-level files:**
 
