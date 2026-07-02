@@ -1,0 +1,37 @@
+{
+  "themes": [
+    {
+      "tag": "agents",
+      "evidence": "build end-to-end AI agent systems (reasoning loops, planning mechanisms, tool orchestration)"
+    },
+    {
+      "tag": "RAG",
+      "evidence": "build scalable RAG pipelines with optimized embedding/retrieval"
+    },
+    {
+      "tag": "LLM-orchestration",
+      "evidence": "design multi-agent architectures (planner, executor, verifier, critic patterns)"
+    },
+    {
+      "tag": "consulting",
+      "evidence": "Provide technical guidance to external clients and internal Bain stakeholders (80%)"
+    },
+    {
+      "tag": "business-translation",
+      "evidence": "translate business requirements into technical requirements"
+    },
+    {
+      "tag": "evaluation",
+      "evidence": "evaluate model performance beyond accuracy (reasoning quality, hallucination rate, task success)"
+    }
+  ],
+  "archetype": "FDE / client-facing",
+  "archetype_rationale": "80% of the role is technical guidance to external clients and internal stakeholders — driving AI transformation, defining technical approaches with clients' technical teams — with only 20% hands-on build. That client-facing, technical-advisor-plus-builder split is the FDE pattern, not a pure agent-builder or product-builder role.",
+  "notes": "Despite the FDE framing, the build 20% is deep and modern (multi-agent architectures, RAG, LLM eval, tokenization/context/cost optimization); a strong secondary case exists for agent-builder, but the explicit 80% client-guidance split makes FDE / client-facing the day-to-day reality.",
+  "classified_ts": "2026-07-02",
+  "posted_date": null,
+  "canonical_url": "https://www.bain.com/careers/find-a-role/position/?jobid=104885",
+  "easy_apply": false,
+  "repost": false,
+  "posting_note": "Role posted across many Bain offices INCLUDING CHICAGO (also Atlanta/Austin/Boston/Dallas/Houston/LA/NY/SF/Silicon Valley) — Seattle-relocation gate softened; Kanu can select Chicago home office (~$179,875 range). Posted date not resolvable: bain.com careers returns 403 to fetch; LinkedIn relative date not trusted."
+}

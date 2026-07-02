@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Bain - Lead Engineering Excellence.pdf",
+  "answers_remote": "gdrive:Apply Queue/Bain - Lead Engineering Excellence - Answers.txt",
+  "pdf_sha256": "6dd4ecd9deec0f81cd7d5e0b04783fdc8454d940dd7db8f5ba15eef60204a6e4",
+  "uploaded_ts": "2026-07-02T05:38:59-05:00",
+  "posted_date": null,
+  "canonical_url": "https://www.bain.com/careers/find-a-role/position/?jobid=104885",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}
