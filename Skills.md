@@ -177,7 +177,7 @@ These are bundled `.skill` files that live with the workspace, version-controlle
 
 **Don't reach for it when.** He only wants to file the JD with no further prep (that's `interview-prep-intake` alone). Or he wants outreach staged for a role he already applied to (that's `stage-outreach`). Or he's deep into interview prep and wants Question Bank / Interview Answers built (this skill stops at apply-ready, not interview-ready).
 
-**Output.** Role folder with `Job Description.md` + `Kanu Madhok Resume - <Company> <Short Role>.md` + `.pdf` + `.classification.json`, plus a `Considering` row in `Pipeline.md` and updated `active_interview_pipeline.md` memory. Nothing in Gmail; no contacts.
+**Output.** Role folder with `Job Description.md` + `Kanu Madhok Resume - <Company> <Short Role>.md` + `.pdf` + `.classification.json`, plus a `Considering` row in `Pipeline.md` and updated `active_interview_pipeline.md` memory. Nothing in Gmail; no contacts. Pass A's finish line is the apply packet: the tailored PDF + an answers file land in the Drive `Apply Queue/` folder (rclone remote `gdrive`), the hourly run reconciles the folder against Pipeline truth, and the daily run pushes an ntfy digest — see `Automation Design - Two-Orchestrator/Spec - Apply Packet.md`.
 
 **Traceability.** Its own fail-closed trace run, run-type `jd-to-ready`, required steps {1, 2, 3, 3.5, 6, 7}. Before editing `jd-to-ready` logging, read the canonical docs in `.claude/skills/jd-to-ready/`: `TRACEABILITY.md`, `TRACE_SCHEMA.md`, `TOKEN_ACCOUNTING.md`, `RUNBOOK.md`, and `TRACE_TEST_PLAN.md`.
 
