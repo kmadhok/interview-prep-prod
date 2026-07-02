@@ -1,0 +1,11 @@
+{
+    "pc":  {
+               "last_ok_saved":  "2026-07-01T16:11:41-05:00",
+               "last_ok_outreach":  "2026-07-01T22:00:40-05:00",
+               "consecutive_aborts":  0,
+               "daemon_ok":  true
+           },
+    "cloud":  {
+                  "last_ok_sweep":  "2026-07-01T15:11:41-05:00"
+              }
+}
