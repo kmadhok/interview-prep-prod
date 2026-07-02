@@ -1,0 +1,36 @@
+{
+  "themes": [
+    {
+      "tag": "evaluation",
+      "evidence": "Build the evaluation systems that answer whether an AI feature is good enough to ship... eval harnesses, datasets, and production monitoring"
+    },
+    {
+      "tag": "ML-pipeline",
+      "evidence": "Production AI/ML experience (must-have): built and shipped AI/ML systems real users depended on in production"
+    },
+    {
+      "tag": "platform",
+      "evidence": "Build and ship the systems behind Tern's AI features: data infrastructure, services, and agentic tooling they run on"
+    },
+    {
+      "tag": "end-to-end",
+      "evidence": "you own that data end to end, from the pipelines that move it through to the reporting built on top of it"
+    },
+    {
+      "tag": "dashboards",
+      "evidence": "build the reporting that gives advisors and agency owners real visibility into how their business is performing"
+    },
+    {
+      "tag": "agents",
+      "evidence": "actively building agentic and MCP-based tooling on top of our own systems"
+    }
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day is owning ETL pipelines from application sources into BigQuery, dbt modeling, data-quality across ingestion/modeling/reporting, and advisor reporting — core data-engineering work, with AI feature systems and evals layered on top.",
+  "notes": "Strong secondary pull toward platform/ML engineering and evaluation-heavy AI work; MCP/agentic tooling is a bonus, not the core. Stack is Rails+Postgres+BigQuery+dbt+ThoughtSpot/Hex. 'Evals as engineering' is the standout differentiator this JD leans on hardest.",
+  "classified_ts": "2026-07-02",
+  "posted_date": "2026-06-04",
+  "canonical_url": "https://jobs.ashbyhq.com/tern/587a90f9-8c2f-4a9d-b837-092bc887e016",
+  "easy_apply": false,
+  "repost": false
+}

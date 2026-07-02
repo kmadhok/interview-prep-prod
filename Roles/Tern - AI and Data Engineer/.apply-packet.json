@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-06-04 · Tern - AI and Data Engineer.pdf",
+  "answers_remote": "gdrive:Apply Queue/Tern - AI and Data Engineer - Answers.txt",
+  "pdf_sha256": "fe44dbcc31c6e1bc40ddae078fd309ed990659432d52ab1a3da42384d3cb95b2",
+  "uploaded_ts": "2026-07-02T05:20:04-05:00",
+  "posted_date": "2026-06-04",
+  "canonical_url": "https://jobs.ashbyhq.com/tern/587a90f9-8c2f-4a9d-b837-092bc887e016",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}
