@@ -1,0 +1,37 @@
+{
+  "themes": [
+    {
+      "tag": "RAG",
+      "evidence": "Lead the architecture and development of RAG systems combining LLMs"
+    },
+    {
+      "tag": "agents",
+      "evidence": "develop AI-powered assistants for technicians diagnosing anomalies in factory/plant/industrial settings"
+    },
+    {
+      "tag": "ML-pipeline",
+      "evidence": "build pipelines to ingest, preprocess, and index large document corpora"
+    },
+    {
+      "tag": "evaluation",
+      "evidence": "design evaluation strategies to measure performance, accuracy, and UX of RAG systems in production"
+    },
+    {
+      "tag": "engineering-rigor",
+      "evidence": "design scalable, privacy-compliant, latency-sensitive LLM applications"
+    },
+    {
+      "tag": "cross-functional",
+      "evidence": "cross-functional communication"
+    }
+  ],
+  "archetype": "platform / ML engineering",
+  "archetype_rationale": "Day-to-day is core ML/AI engineering: 5+ years ML with PyTorch and Hugging Face Transformers, fine-tuning open-source models, building production RAG pipelines with vector stores (FAISS, Weaviate, Pinecone). The work is architecting and shipping scalable, latency-sensitive LLM systems, not client-facing consulting or analytics.",
+  "notes": "M.S. or Ph.D. required and 5+ years ML with core RL/decision-modeling — a stiffer research/ML-eng bar than Kanu's analyst-to-agent-builder profile; industrial/sensor/time-series and startup-from-scratch experience are bonuses.",
+  "classified_ts": "2026-07-02",
+  "posted_date": "2025-08-08",
+  "canonical_url": "https://job-boards.greenhouse.io/brightai/jobs/5616545004",
+  "easy_apply": false,
+  "repost": false,
+  "posting_note": "Greenhouse evergreen req (first_published 2025-08-08, updated 2025-12-15); LinkedIn reposted-18h is gamed. ZipRecruiter est. comp ~$122.8K-$168.7K (unofficial)."
+}

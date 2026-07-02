@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2025-08-08 · BrightAI - Senior AI Engineer LLM RAG.pdf",
+  "answers_remote": "gdrive:Apply Queue/BrightAI - Senior AI Engineer LLM RAG - Answers.txt",
+  "pdf_sha256": "7f9aed5352b15d7037e415abf2796702145a653d975be1bfe46d56d7dafc617f",
+  "uploaded_ts": "2026-07-02T05:32:54-05:00",
+  "posted_date": "2025-08-08",
+  "canonical_url": "https://job-boards.greenhouse.io/brightai/jobs/5616545004",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}
