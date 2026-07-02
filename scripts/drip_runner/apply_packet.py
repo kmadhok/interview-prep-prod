@@ -259,7 +259,10 @@ def apply_reconcile(actions: list[dict], run=subprocess.run, now_iso: str = "") 
                 rec["uploaded_ts"] = now_iso
                 lines.append(f"re-uploaded stale PDF: {folder.name}")
             write_packet(folder, rec)
-        except PacketError as e:
+        except Exception as e:
+            # Broad on purpose: a malformed .apply-packet.json (missing
+            # remote_dir/pdf_remote etc.) must become a FAILED summary line and
+            # let the pass continue to the next role, not abort the whole sweep.
             lines.append(f"FAILED {a['action']} {folder.name}: {e}")
     return lines
 

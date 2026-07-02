@@ -172,6 +172,31 @@ def test_apply_reconcile_executes_and_updates_state(tmp_path):
     assert any("Scribd" in l for l in lines)
 
 
+def test_apply_reconcile_survives_malformed_record(tmp_path):
+    # Two queued Applied roles; corrupt one record by dropping remote_dir so the
+    # "move" branch raises KeyError. The malformed role must become a FAILED line
+    # while the healthy role still gets processed (pass keeps going, not aborts).
+    healthy = make_packet_role(tmp_path, "Roles", "Scribd", "Senior AI Data Engineer")
+    broken = make_packet_role(tmp_path, "Roles", "DRW", "AI Engineer")
+    rec = ap.read_packet(broken)
+    del rec["remote_dir"]
+    ap.write_packet(broken, rec)
+
+    pipeline = """## Active
+| **Scribd — Senior AI Data Engineer** | Applied 2026-06-30 | notes |
+| **DRW — AI Engineer** | Applied 2026-06-30 | notes |
+"""
+    actions = ap.reconcile_actions(tmp_path, pipeline)
+    assert {a["folder"].name for a in actions} == {
+        "Scribd - Senior AI Data Engineer", "DRW - AI Engineer"}
+    calls = []
+    lines = ap.apply_reconcile(actions, run=fake_run_factory(calls), now_iso="t2")
+    # malformed role -> FAILED line, healthy role -> moved
+    assert any(l.startswith("FAILED move DRW - AI Engineer") for l in lines)
+    assert any(l.startswith("moved to Applied/: Scribd") for l in lines)
+    assert ap.read_packet(healthy)["state"] == "applied"
+
+
 def test_reconcile_skips_non_queued_states(tmp_path):
     make_packet_role(tmp_path, "Roles", "Scribd", "Senior AI Data Engineer", state="applied")
     assert ap.reconcile_actions(tmp_path, PIPELINE) == []

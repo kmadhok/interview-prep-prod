@@ -212,7 +212,7 @@ if ($code -eq 0) {
 try {
   $rec = (& py -3 (Join-Path $repo "scripts\drip_runner\apply_packet.py") reconcile --repo-root $repo --commit) | Out-String
   if ($rec.Trim()) { Log "packet reconcile: $($rec.Trim())" }
-  if ($rec -match "FAILED") { Show-Toast "Apply packet reconcile failed" ($rec.Trim()) }
+  if ($LASTEXITCODE -ne 0 -or $rec -match "FAILED") { Show-Toast "Apply packet reconcile failed" ($rec.Trim()) }
 } catch { Log "packet reconcile crashed: $($_.Exception.Message)"; Show-Toast "Apply packet reconcile crashed" $_.Exception.Message }
 
 if ($Mode -eq 'saved') {

@@ -25,7 +25,7 @@ def gather(repo_root: Path, now: datetime) -> dict:
                  "easy_apply": rec.get("easy_apply"), "uploaded_ts": rec.get("uploaded_ts")}
         queued.append(entry)
         try:
-            age = (now - datetime.fromisoformat(rec["uploaded_ts"])).days
+            age = (now - datetime.fromisoformat(rec.get("uploaded_ts"))).days
         except (TypeError, ValueError):
             age = None
         if age is not None and age > STALE_DAYS:
