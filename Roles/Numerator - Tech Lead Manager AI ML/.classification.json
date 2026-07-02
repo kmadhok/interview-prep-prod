@@ -1,0 +1,37 @@
+{
+  "themes": [
+    {
+      "tag": "agents",
+      "evidence": "apply agentic LLM patterns (tool use, multi-step reasoning, orchestration) to automate high-complexity tasks that required human judgment"
+    },
+    {
+      "tag": "RAG",
+      "evidence": "strong GenAI fundamentals (LLM APIs, context engineering, RAG, tool/function calling, agents, evaluation methodology)"
+    },
+    {
+      "tag": "LLM-orchestration",
+      "evidence": "agentic LLM patterns (tool use, multi-step reasoning, orchestration)"
+    },
+    {
+      "tag": "evaluation",
+      "evidence": "evaluation methodology"
+    },
+    {
+      "tag": "platform",
+      "evidence": "Platform handles millions of requests / massive data"
+    },
+    {
+      "tag": "business-translation",
+      "evidence": "translate ambiguous business problems into well-scoped technical work"
+    }
+  ],
+  "archetype": "platform / ML engineering",
+  "archetype_rationale": "Day-to-day technical work is designing and building production GenAI systems on a platform handling millions of requests — LLM APIs, RAG, tool calling, agents, evaluation, plus Python/REST/CI-CD SWE fundamentals. Agentic patterns are one tool applied on top of that ML platform work, not the whole role.",
+  "notes": "Manager role (50/50 player-coach) requiring 2+ yrs people-management with 4+ direct reports — a gate Kanu (IC) does not meet on paper; technical half maps well.",
+  "classified_ts": "2026-07-02",
+  "posted_date": null,
+  "canonical_url": "https://www.numerator.com/careers/",
+  "easy_apply": false,
+  "repost": false,
+  "posting_note": "Posted date not resolvable — Numerator careers has no standard Greenhouse board (slug 404); LinkedIn relative date not trusted. Remote US, no location gate. Interview process includes a cognitive + personality assessment."
+}

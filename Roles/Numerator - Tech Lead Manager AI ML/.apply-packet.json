@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Numerator - Tech Lead Manager AI ML.pdf",
+  "answers_remote": "gdrive:Apply Queue/Numerator - Tech Lead Manager AI ML - Answers.txt",
+  "pdf_sha256": "429a412eb3dc30c841193551d03aea6f25dc78c448828d3bd8bbef8febd22c7d",
+  "uploaded_ts": "2026-07-02T05:44:24-05:00",
+  "posted_date": null,
+  "canonical_url": "https://www.numerator.com/careers/",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}
