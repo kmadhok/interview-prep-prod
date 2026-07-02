@@ -28,6 +28,8 @@ By the end of one invocation, the role folder contains:
 1. `Job Description.md` — clean reading copy of the JD (from intake)
 2. `Kanu Madhok Resume - <Company> <Short Role>.md` — tailored resume pulling bullets from `Resume Achievements Master.md`, **plus a one-page `.pdf` rendered from it (BCG X gold-standard layout) and vision-verified** (step 3.5)
 3. `.classification.json` — validated JD classification (themes + archetype + evidence) written at the end of step 2; the `stage-outreach` skill reads this to skip re-classifying
+4. `Application Answers.md` — copy-paste ATS answers drafted from root `Application Profile.md` (never invented)
+5. `.apply-packet.json` + the uploaded Drive packet (`Apply Queue/<posted-date> · <Company> - <Role>.pdf` + answers `.txt`) — the mobile-ready finish line
 
 Plus: a new row in `Pipeline.md`, an updated `active_interview_pipeline.md` memory entry, and a short report-back with paths, hard gates, and gaps.
 
@@ -253,6 +255,65 @@ python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.5 --prim
 
 Use `status: ok` when the clean case holds, `partial` when files were written but a defect/overflow was logged, `failed` when no files were produced (export-unavailable). Merge whatever gaps you recorded into the step-6 report and step-7 log alongside the other steps' gaps.
 
+### Step 3.7 — Build + upload the apply packet
+
+The prep finish line is not "PDF in the repo" — it is "packet on the phone" (`Automation Design - Two-Orchestrator/Spec - Apply Packet.md`). This step resolves the true posting date, drafts the application answers, and uploads both artifacts to the Drive `Apply Queue/` via rclone. The PDF must NEVER be read into context or passed through an MCP call — the upload CLI moves it disk→Drive.
+
+Begin the trace:
+
+```bash
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step 3.7 --primitive apply-packet --mode "" --prediction "canonical ATS URL + posted date resolved, Application Answers.md drafted from Application Profile.md with zero invented facts, packet uploaded to the Apply Queue with a date-prefixed filename, .apply-packet.json written"
+```
+
+**3.7a — Resolve the canonical posting + true posted date.** LinkedIn's "posted X days ago" is gamed by reposts; the ATS timestamp is the honest one. From the JD source (the LinkedIn posting's outbound apply link, or a search for `<company> greenhouse|ashby|lever <role>`), find the employer's own posting. Greenhouse (`boards-api.greenhouse.io/v1/boards/<org>/jobs`), Ashby (`api.ashbyhq.com/posting-api/job-board/<org>`), and Lever (`api.lever.co/v0/postings/<org>`) expose public JSON with real `updated_at`/`publishedDate`/`createdAt` fields — WebFetch the posting or the board JSON and extract the date. If no canonical source is found after ~3 fetches, set `posted_date: null` and record a gap `{source:"apply-packet", kind:"posted-date-unknown", detail:"no canonical ATS posting found"}` — do NOT trust the LinkedIn relative date. Also note whether the LinkedIn posting offers **Easy Apply** (`easy_apply`: true/false/null if unknown).
+
+**3.7b — Repost check** (deterministic — do not judge similarity yourself):
+
+```bash
+python3 "<repo root>/scripts/drip_runner/apply_packet.py" repost-check "<role folder>" --repo-root "<repo root>"
+```
+
+Parse the JSON line. If `repost` is true, record a gap `{source:"apply-packet", kind:"repost-detected", detail:"~<similarity> match: <match_folder>"}` — the role still gets a packet (deprioritize, don't drop).
+
+**3.7c — Update `.classification.json`.** Add/overwrite exactly these keys on the existing JSON (preserve everything else): `posted_date` (`"YYYY-MM-DD"` or null), `canonical_url` (string or null), `easy_apply` (true/false/null), `repost` (boolean from 3.7b).
+
+**3.7d — Draft `Application Answers.md`.** The mobile copy-paste sheet for ATS forms. Pull facts ONLY from root `Application Profile.md` (never-invent rule: copy or placeholder). Structure:
+
+```markdown
+# Application Answers — <Company> · <Role>
+
+**Apply here:** <canonical_url or the JD source URL>
+
+## Standard fields
+- Salary expectation: <from Application Profile.md, verbatim>
+- Work authorization: <from Application Profile.md, verbatim>
+- Notice period: <from Application Profile.md, verbatim>
+- Phone / LinkedIn / GitHub: <from Application Profile.md, verbatim>
+
+## Why <Company>
+<3-5 sentences drafted from the step-2 themes + JD evidence, Kanu's voice, no hype words>
+
+## Relevant project
+<the 1-2 walkthroughs from AI Build Walkthrough - Master.md matching the archetype, compressed to a form-field paragraph each>
+
+## Custom questions visible on the posting
+<question → drafted answer, one pair per question; omit the section if none are visible>
+```
+
+**3.7e — Upload:**
+
+```bash
+python3 "<repo root>/scripts/drip_runner/apply_packet.py" upload "<role folder>"
+```
+
+Honor `APPLY_PACKET_REMOTE_DIR` if the environment sets it (the e2e test does). On non-zero exit, record a gap `{source:"apply-packet", kind:"upload-failed", detail:"<stderr line>"}` and close the step `partial` — the `.md`/`.pdf` in the repo remain the source of truth, and the hourly reconcile will retry the upload via the hash-drift path once the cause is fixed. Never let an upload failure abort the run.
+
+Close the step (gaps from 3.7a/b/e, `--failure-pattern ""` — no taxonomy value covers packet defects yet, same known gap as the PDF-export kinds):
+
+```bash
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.7 --primitive apply-packet --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Application Answers.md",".apply-packet.json"]' --gaps '<gaps or []>' --failure-pattern "" --tokens "$UNKNOWN_TOKENS"
+```
+
 ### Step 6 — Report back
 
 Keep the recap short and actionable. Include:
@@ -261,13 +322,14 @@ Keep the recap short and actionable. Include:
 - **Hard gates flagged** — surface citizenship/clearance/sponsorship/travel/RTO blockers by name if present in the JD. Better one direct question than tailored work for a role he can't take.
 - **Classification** — archetype + top 3 themes with their JD evidence quotes (from the step 2 subagent) so Kanu can spot-check whether the resume angle is right. Include the subagent's `notes` field verbatim if non-empty.
 - **Gaps** — any `[NUMBER?]` placeholders in the resume, missing demo URL, PDF overflow or defects, anything else worth a second look
+- **Apply packet** — confirm the packet uploaded (Drive `Apply Queue/` filename with its posted-date prefix), flag `repost-detected` / `posted-date-unknown` / `upload-failed` gaps, and note Easy Apply availability
 - **`Pipeline.html` is now stale** — ask if he wants it regenerated
 
 End with the obvious next step: apply on the ATS; once the Pipeline row is marked Applied, `stage-outreach` auto-stages the recruiter draft. Offer to regenerate the PDF or tweak a bullet if he wants the page tighter.
 
 ### Step 7 — Log the run
 
-Close the trace by wrapping this step and then calling `finish-run`. This appends one compact summary line to `~/.claude/logs/jd-to-ready.jsonl`, links that summary to `<role folder>/.jd-to-ready-trace.jsonl`, and clears the active-run state used by hooks. Before calling `finish-run`, confirm that steps `1`, `2`, `3`, `3.5`, `6`, and `7` all have `step_end` events. See `RUNBOOK.md` for inspection commands.
+Close the trace by wrapping this step and then calling `finish-run`. This appends one compact summary line to `~/.claude/logs/jd-to-ready.jsonl`, links that summary to `<role folder>/.jd-to-ready-trace.jsonl`, and clears the active-run state used by hooks. Before calling `finish-run`, confirm that steps `1`, `2`, `3`, `3.5`, `3.7`, `6`, and `7` all have `step_end` events. See `RUNBOOK.md` for inspection commands.
 
 Begin Step 7:
 
@@ -285,7 +347,7 @@ python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 7 --primit
 Then finish the run:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py finish-run --status "ok|partial|failed" --gaps '<merged gaps JSON array>' --files-written '["Job Description.md","Kanu Madhok Resume - <Company> <Short Role>.md",".classification.json"]'
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py finish-run --status "ok|partial|failed" --gaps '<merged gaps JSON array>' --files-written '["Job Description.md","Kanu Madhok Resume - <Company> <Short Role>.md",".classification.json","Application Answers.md",".apply-packet.json"]'
 ```
 
 `finish-run` computes the final status from the step results and rejects a mismatched `--status`; the argument is kept only as an explicit caller assertion. If the run is interrupted, close it with:
@@ -305,10 +367,10 @@ The final summary line contains this shape:
   "role_folder": "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Cohere - Forward Deployed Engineer Prompt Specialist",
   "trace_file": "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Cohere - Forward Deployed Engineer Prompt Specialist/.jd-to-ready-trace.jsonl",
   "status": "ok",
-  "steps_closed": ["1", "2", "3", "3.5", "6", "7"],
-  "required_steps": ["1", "2", "3", "3.5", "6", "7"],
+  "steps_closed": ["1", "2", "3", "3.5", "3.7", "6", "7"],
+  "required_steps": ["1", "2", "3", "3.5", "3.7", "6", "7"],
   "gaps": [],
-  "files_written": ["Job Description.md", "Kanu Madhok Resume - Cohere FDE Prompt Specialist.md", ".classification.json"],
+  "files_written": ["Job Description.md", "Kanu Madhok Resume - Cohere FDE Prompt Specialist.md", ".classification.json", "Application Answers.md", ".apply-packet.json"],
   "steps": [{"event": "step_end", "...": "..."}]
 }
 ```

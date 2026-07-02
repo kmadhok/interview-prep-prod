@@ -650,7 +650,7 @@ git commit -m "drip-runner: packet reconcile — mirror follows Pipeline/_Archiv
 **Files:**
 - Create: `scripts/drip_runner/apply_digest.py`
 - Test: `scripts/drip_runner/test_apply_digest.py`
-- Create (on the PC, NOT committed): `~/.claude/ntfy_topic.txt` containing `job-auto-abcee`
+- Create (on the PC, NOT committed): `~/.claude/ntfy_topic.txt` containing `<topic — see ~/.claude/ntfy_topic.txt>`
 
 **Interfaces:**
 - Consumes: `.apply-packet.json` records via `apply_packet.read_packet` / `_packet_folders`.
@@ -708,8 +708,8 @@ def test_send_posts_to_ntfy():
             def __exit__(self, *a): return False
             status = 200
         return R()
-    dg.send("job-auto-abcee", "hello", opener=opener)
-    assert seen["url"] == "https://ntfy.sh/job-auto-abcee"
+    dg.send("<topic — see ~/.claude/ntfy_topic.txt>", "hello", opener=opener)
+    assert seen["url"] == "https://ntfy.sh/<topic — see ~/.claude/ntfy_topic.txt>"
     assert seen["data"] == b"hello"
 ```
 
@@ -809,10 +809,10 @@ Expected: 4 passed
 - [ ] **Step 5: Create the topic file on the PC** (one-time; NOT committed — it lives outside the repo)
 
 ```powershell
-Set-Content -Path "$env:USERPROFILE\.claude\ntfy_topic.txt" -Value "job-auto-abcee" -Encoding utf8
+Set-Content -Path "$env:USERPROFILE\.claude\ntfy_topic.txt" -Value "<topic — see ~/.claude/ntfy_topic.txt>" -Encoding utf8
 ```
 
-- [ ] **Step 6: Live smoke test** (expect a push on Kanu's iPhone ntfy app, subscribed to `job-auto-abcee`)
+- [ ] **Step 6: Live smoke test** (expect a push on Kanu's iPhone ntfy app, subscribed to `<topic — see ~/.claude/ntfy_topic.txt>`)
 
 Run: `py -3 scripts/drip_runner/apply_digest.py --repo-root . --send`
 Expected: prints the digest text; exit 0; push arrives on the phone.

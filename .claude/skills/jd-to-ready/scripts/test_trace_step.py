@@ -108,13 +108,13 @@ class TraceStepTests(unittest.TestCase):
 
     def test_happy_path_finishes_ok(self) -> None:
         self.start_and_bind()
-        for step in ["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"]:
+        for step in ["1", "2", "3", "3.5", "3.7", "4", "4b", "4c", "5", "6", "7"]:
             self.close_step(step)
         self.run_cmd("finish-run", "--status", "ok", "--gaps", "[]", "--files-written", "[]")
 
         summary = json.loads((self.log_dir / "jd-to-ready.jsonl").read_text(encoding="utf-8").splitlines()[-1])
         self.assertEqual(summary["status"], "ok")
-        self.assertEqual(summary["steps_closed"], ["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"])
+        self.assertEqual(summary["steps_closed"], ["1", "2", "3", "3.5", "3.7", "4", "4b", "4c", "5", "6", "7"])
         events = self.read_trace()
         self.assertEqual([event["seq"] for event in events], list(range(1, len(events) + 1)))
 
@@ -123,7 +123,7 @@ class TraceStepTests(unittest.TestCase):
         for step in ["1", "2", "3"]:
             self.close_step(step)
         result = self.run_cmd("finish-run", "--status", "partial", "--gaps", "[]", "--files-written", "[]", ok=False)
-        self.assertIn("missing closed steps: 3.5, 4, 4b, 4c, 5, 6, 7", result.stderr)
+        self.assertIn("missing closed steps: 3.5, 3.7, 4, 4b, 4c, 5, 6, 7", result.stderr)
 
     def test_finish_refuses_when_3_5_missing(self) -> None:
         self.start_and_bind()
@@ -136,7 +136,7 @@ class TraceStepTests(unittest.TestCase):
 
     def test_finish_refuses_when_4c_missing(self) -> None:
         self.start_and_bind()
-        for step in ["1", "2", "3", "3.5", "4", "4b", "5", "6", "7"]:
+        for step in ["1", "2", "3", "3.5", "3.7", "4", "4b", "5", "6", "7"]:
             self.close_step(step)
         result = self.run_cmd(
             "finish-run", "--status", "ok", "--gaps", "[]", "--files-written", "[]", ok=False
@@ -145,14 +145,15 @@ class TraceStepTests(unittest.TestCase):
 
     def test_steps_closed_order_places_3_5_and_4c(self) -> None:
         self.start_and_bind()
-        for step in ["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"]:
+        for step in ["1", "2", "3", "3.5", "3.7", "4", "4b", "4c", "5", "6", "7"]:
             self.close_step(step)
         self.run_cmd("finish-run", "--status", "ok", "--gaps", "[]", "--files-written", "[]")
 
         summary = json.loads((self.log_dir / "jd-to-ready.jsonl").read_text(encoding="utf-8").splitlines()[-1])
         closed = summary["steps_closed"]
         self.assertEqual(closed.index("3.5"), closed.index("3") + 1)
-        self.assertEqual(closed.index("3.5"), closed.index("4") - 1)
+        self.assertEqual(closed.index("3.7"), closed.index("3.5") + 1)
+        self.assertEqual(closed.index("3.7"), closed.index("4") - 1)
         self.assertEqual(closed.index("4c"), closed.index("4b") + 1)
         self.assertEqual(closed.index("4c"), closed.index("5") - 1)
 
@@ -269,7 +270,7 @@ class RunTypeMapTests(unittest.TestCase):
         spec.loader.exec_module(self.mod)
 
     def test_run_type_required_steps(self) -> None:
-        self.assertEqual(self.mod.required_steps_for("jd-to-ready"), ["1", "2", "3", "3.5", "6", "7"])
+        self.assertEqual(self.mod.required_steps_for("jd-to-ready"), ["1", "2", "3", "3.5", "3.7", "6", "7"])
         self.assertEqual(self.mod.required_steps_for("stage-outreach"), ["4", "4b", "4c", "5", "6", "7"])
 
     def test_unknown_run_type_falls_back_to_full(self) -> None:

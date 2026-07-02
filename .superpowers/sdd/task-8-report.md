@@ -1,88 +1,57 @@
-## Task 8 Report: CLI assembly + full-fixture integration test
+# Task 8 Report — e2e test integration for apply packet
 
-### Files Changed
-- `.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py` — appended `run_all`, `build_parser`, `main`, and `if __name__ == "__main__"` guard (53 lines)
-- `.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py` — appended `test_run_all_full_fixture_overall_pass` and `test_run_all_flags_issue1_overall_fail` (40 lines)
+## What was implemented / tested
+- Added `check_packet(clone: Path) -> dict` to `verify_artifacts.py` (after `check_pdf`), using the module's existing `check`/`skill_result` helpers. It asserts: `.apply-packet.json` present, parses, `state == "queued"`, `remote_dir` contains `_test` (load-bearing guard), and `Application Answers.md` present.
+- Wired `"apply-packet": check_packet(clone)` into `run_all`'s `skills` dict, right after `"pdf"` and before `"apply-gate"` (prep-side placement, mirroring how `check_pdf` is keyed/collected).
+- Appended the brief's two tests to `test_verify_artifacts.py`, adapting the import spelling from `verify_artifacts.check_packet` to the file's actual `import verify_artifacts as va` → `va.check_packet`.
+- Because `run_all` now includes the packet check, three existing full-pipeline `run_all` fixtures (`test_run_all_two_drafts_list_pass`, `test_run_all_full_fixture_overall_pass`, `test_run_all_blocked_apply_marks_apply_skills_blocked`) needed the packet artifacts to stay green. Added a shared `_PACKET_OK` / `_PACKET_FILES` constant and spread `**_PACKET_FILES` into those three fixtures (they represent complete prep-side runs, so they should include the packet).
+- Added the apply-packet step to `SKILL.md` as `## Step 3.7 — apply-packet (main loop)` immediately after the PDF step (verbatim text from the brief), forcing `APPLY_PACKET_REMOTE_DIR="gdrive:_test/Apply Queue e2e"` and recording the `rclone purge` cleanup line.
 
----
+## TDD Evidence
+- RED: after appending tests, `py -3 -m pytest .../test_verify_artifacts.py -q` → `2 failed, 27 passed`, failure `AttributeError: module 'verify_artifacts' has no attribute 'check_packet'`.
+- After implementing + wiring: 3 pre-existing run_all tests broke (fixtures lacked packet artifacts, e.g. `AssertionError: assert 'fail' != 'fail'`) — expected consequence of adding a required prep-side check.
+- GREEN: after updating the three fixtures → `29 passed`.
 
-### TDD RED → GREEN
+## How check_packet was wired into the flow
+In `run_all`, the `skills` dict now has `"apply-packet": check_packet(clone)` between `"pdf"` and `"apply-gate"`. It flows through the same `statuses`/`summary` rollup as every other prep-side skill (fail dominates, then warn, then blocked). It is a prep-side check, so it is NOT in the `--blocked-apply` override list (which only blanks the four apply-side skills).
 
-**Step 1: Append failing tests**  
-Appended both integration tests to `test_verify_artifacts.py` verbatim from brief.
+## Test results
+- `py -3 -m pytest ".claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py" -q` → 29 passed.
+- Fuller sweep `py -3 -m pytest scripts/drip_runner .claude/skills/jd-to-ready ".claude/skills/two-orchestrator-e2e-test/scripts" -q` → 137 passed.
 
-**Step 2: RED run**
+## Files changed
+- `.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py` — added `check_packet`, wired into `run_all`.
+- `.claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py` — two new tests + `_PACKET_OK`/`_PACKET_FILES` fixture constant spread into three run_all fixtures.
+- `.claude/skills/two-orchestrator-e2e-test/SKILL.md` — new Step 3.7 apply-packet section.
+
+Commit: `0904555` — "e2e-test: verify apply packet artifacts; force _test remote".
+
+## Self-review
+- Completeness: all 6 brief steps done; check implemented, wired, tested, doc updated, committed.
+- Quality/Discipline: reused existing helpers and checker/report patterns; no new abstractions (YAGNI). Adapted import to the file's real style as instructed.
+- Testing: the `_test`-remote guard is asserted in BOTH directions — positive (`test_check_packet_passes_on_test_remote` asserts all checks ok, including `packet-remote-is-test`) and negative (`test_check_packet_fails_on_real_remote` asserts `packet-remote-is-test` present and not ok on a real `gdrive:Apply Queue`). Real behavior, no mocks, no real rclone.
+- Pristine output: full suite green (137).
+
+## Concerns
+- Doc numbering: the new section is labeled `Step 3.7` but sits before the test-only `Step 3.6` (simulated apply gate). This matches the brief's naming (jd-to-ready Step 3.7) and the instruction to place it right after the PDF step; the non-monotonic 3.7→3.6 sequence is cosmetic. Flagging in case strict numeric order is preferred.
+
+## Fix wave
+
+**Issue:** After commit 0904555, `SKILL.md` had two `## Step 3.7` headers — the new apply-packet section (inserted between 3.5 PDF and 3.6 apply gate) and the pre-existing LinkedIn preflight section.
+
+**Change:** Renamed only the new apply-packet header from `## Step 3.7 — apply-packet (main loop)` to `## Step 3.5b — apply-packet (main loop)`. The body's cross-reference `(jd-to-ready Step 3.7)` was left intact so the pointer to jd-to-ready's step 3.7 survives. No e2e-sequence self-references to 3.7 existed in the body, so none were changed. The pre-existing `## Step 3.7 — LinkedIn preflight` section and all bullet body text were untouched.
+
+**Verification 1** — `grep -n "Step 3\." SKILL.md`:
 ```
-python3 -m pytest ".claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py" -k run_all -v
+39:## Step 3.5 — PDF (main loop)
+45:## Step 3.5b — apply-packet (main loop)
+46:- **apply-packet** (jd-to-ready Step 3.7) → ...
+48:## Step 3.6 — Simulated apply gate (main loop)
+55:## Step 3.7 — LinkedIn preflight (main loop)
 ```
+Written order 3.5 → 3.5b → 3.6 → 3.7; exactly one `Step 3.7` (LinkedIn preflight).
+
+**Verification 2** — `py -3 -m pytest test_verify_artifacts.py -q`:
 ```
-FAILED test_run_all_full_fixture_overall_pass -- AttributeError: module 'verify_artifacts' has no attribute 'build_parser'
-FAILED test_run_all_flags_issue1_overall_fail -- AttributeError: module 'verify_artifacts' has no attribute 'build_parser'
-2 failed, 18 deselected in 0.10s
+29 passed in 0.34s
 ```
-Confirmed RED as expected.
-
-**Step 3: Append implementation**  
-Appended `run_all`, `build_parser`, `main`, and `__main__` guard verbatim from brief.
-
-**Step 4: GREEN run (full suite)**
-```
-python3 -m pytest ".claude/skills/two-orchestrator-e2e-test/scripts/test_verify_artifacts.py" -v
-```
-```
-20 passed in 0.10s
-```
-All 20 tests pass.
-
----
-
-### Step 5: Smoke-run Output
-
-```
-python3 ".claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py" \
-  --clone "_jd-to-ready-test/Two-Orchestrator Split E2E - Snowflake FDE 2026-06-28/produced-artifacts" \
-  --company "Snowflake" --pages 2 --title-leak 0
-```
-
-Summary from output:
-```json
-{
-  "summary": { "pass": 6, "warn": 1, "fail": 2, "overall": "fail" }
-}
-```
-
-Per-skill statuses:
-| Skill | Status | Detail |
-|---|---|---|
-| interview-prep-intake | pass | JD 5857 chars |
-| classify | pass | 6 themes, FDE / client-facing |
-| tailor-resume | pass | 5318 chars, no leaks |
-| pdf | **warn** | PAGES=2 (expected) |
-| apply-gate | fail | no --worklist-out provided (expected — not passed in smoke cmd) |
-| find-contacts | pass | 21 contact rows |
-| enrich-contacts | pass | hooks section found |
-| verify-emails | **pass** | 3 verified rows (expected) |
-| write-outreach | fail | no --draft-json provided (expected — not passed in smoke cmd) |
-
-All 9 skills present. `verify-emails` = **pass** (3 rows) and `pdf` = **warn** (PAGES=2) confirmed as per brief. `apply-gate` and `write-outreach` fail because no `--worklist-out`/`--draft-json` were provided in the smoke command — this is expected behavior for this spot-check.
-
-Exit code 1 because of the two expected failures (no worklist/draft inputs).
-
----
-
-### Commit
-- SHA: `59a43f5`
-- Subject: `feat(e2e-test): CLI assembly + summary rollup + full-fixture integration test`
-
----
-
-### Self-Review
-
-- Implementation matches brief verbatim; no deviations.
-- `run_all` correctly delegates to all 9 `check_*` functions, threads args through properly.
-- `build_parser` flag names match brief exactly (`--worklist-out`, `--title-leak` with hyphens; `args.worklist_out`, `args.title_leak` with underscores via argparse).
-- `main` returns 0 on pass/warn, 1 on fail — consistent with Unix convention.
-- Stdlib only; no new imports needed (argparse, json, sys, Path all already imported).
-
-### Concerns
-- None. Implementation is a clean transcription. The two "fails" in the smoke run are structurally expected (missing optional inputs), not bugs.

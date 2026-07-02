@@ -204,5 +204,24 @@ if ($code -eq 0) {
 } else {
   Log "claude exited $code (not a pre-Claude abort; heartbeat not stamped, streak unchanged)"
 }
+
+# ---- Apply Packet post-steps (Spec - Apply Packet.md) ----------------------
+# Deterministic, LLM-free: reconcile makes the Drive mirror follow repo truth
+# (runs every mode — cheap + idempotent); the digest pushes to ntfy on the
+# daily saved pass only. Failures are loud (log + toast) but never kill the run.
+try {
+  $rec = (& py -3 (Join-Path $repo "scripts\drip_runner\apply_packet.py") reconcile --repo-root $repo --commit) | Out-String
+  if ($rec.Trim()) { Log "packet reconcile: $($rec.Trim())" }
+  if ($LASTEXITCODE -ne 0 -or $rec -match "FAILED") { Show-Toast "Apply packet reconcile failed" ($rec.Trim()) }
+} catch { Log "packet reconcile crashed: $($_.Exception.Message)"; Show-Toast "Apply packet reconcile crashed" $_.Exception.Message }
+
+if ($Mode -eq 'saved') {
+  try {
+    $dg = (& py -3 (Join-Path $repo "scripts\drip_runner\apply_digest.py") --repo-root $repo --send) | Out-String
+    Log "digest: $($dg.Trim())"
+    if ($LASTEXITCODE -ne 0) { Show-Toast "Apply digest failed" ($dg.Trim()) }
+  } catch { Log "digest crashed: $($_.Exception.Message)"; Show-Toast "Apply digest crashed" $_.Exception.Message }
+}
+
 Log "run end (exit $code)"
 exit $code

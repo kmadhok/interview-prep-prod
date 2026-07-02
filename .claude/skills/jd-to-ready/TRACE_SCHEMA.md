@@ -31,7 +31,7 @@ Required fields:
 - `required_steps`
 - `source`
 
-`required_steps` defaults to `["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"]`.
+`required_steps` defaults to `["1", "2", "3", "3.5", "3.7", "4", "4b", "4c", "5", "6", "7"]`.
 
 ### `role_folder_set`
 

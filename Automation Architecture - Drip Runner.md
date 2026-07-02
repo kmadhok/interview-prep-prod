@@ -20,7 +20,7 @@ Gmail drafting moved to a new `stage-outreach` skill that fires on roles marked 
 with no `STAGED` marker — so LinkedIn budget is spent only on jobs Kanu actually applies
 to. The cloud routine becomes a pure Gmail secretary (no drafting). Two deterministic
 worklist readers (`outreach_worklist.py`, `prepped_not_applied.py`) drive the apply-side
-poll without an LLM.
+poll without an LLM. Pass A's finish line is the apply packet: the tailored PDF + an answers file land in the Drive `Apply Queue/` folder (rclone remote `gdrive`), the hourly run reconciles the folder against Pipeline truth, and the daily run pushes an ntfy digest — see `Automation Design - Two-Orchestrator/Spec - Apply Packet.md`.
 
 Full design + specs: `Automation Design - Two-Orchestrator/` (read `README.md` there
 first). Implementation plan: `docs/superpowers/plans/2026-06-27-two-orchestrator-split.md`.

@@ -20,13 +20,13 @@ from typing import Any
 
 
 TRACE_NAME = ".jd-to-ready-trace.jsonl"
-REQUIRED_STEPS = ["1", "2", "3", "3.5", "4", "4b", "4c", "5", "6", "7"]
+REQUIRED_STEPS = ["1", "2", "3", "3.5", "3.7", "4", "4b", "4c", "5", "6", "7"]
 
 # Per-run-type required-steps. REQUIRED_STEPS above stays the legacy "full"
 # list so any caller that does not pass a run-type keeps the old contract.
 RUN_TYPES = {
     "full": list(REQUIRED_STEPS),
-    "jd-to-ready": ["1", "2", "3", "3.5", "6", "7"],
+    "jd-to-ready": ["1", "2", "3", "3.5", "3.7", "6", "7"],
     "stage-outreach": ["4", "4b", "4c", "5", "6", "7"],
 }
 

@@ -374,7 +374,7 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     # ------------------------------------------------------------------
     # RUN A — jd-to-ready (prep half, steps 1,2,3,3.5,6,7)
     # ------------------------------------------------------------------
-    JD_PREP_STEPS = ["1", "2", "3", "3.5", "6", "7"]
+    JD_PREP_STEPS = ["1", "2", "3", "3.5", "3.7", "6", "7"]
 
     r = _run(["start-run", "--run-type", "jd-to-ready",
               "--company", "Acme", "--role", "Agent Builder"], env)
