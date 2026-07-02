@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · McKinsey - Software Delivery Specialist USG Analytics.pdf",
+  "answers_remote": "gdrive:Apply Queue/McKinsey - Software Delivery Specialist USG Analytics - Answers.txt",
+  "pdf_sha256": "35241ab4fe4f023212c11aa6c97711d31d163cdf5b60daeb2558ff453e94689c",
+  "uploaded_ts": "2026-07-02T07:22:41-05:00",
+  "posted_date": null,
+  "canonical_url": "https://mckinsey.avature.net/careers/ApplicationMethods?folderId=106150&appsource=LinkedIn",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

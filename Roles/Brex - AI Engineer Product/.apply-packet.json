@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-06-24 · Brex - AI Engineer Product.pdf",
+  "answers_remote": "gdrive:Apply Queue/Brex - AI Engineer Product - Answers.txt",
+  "pdf_sha256": "7bc8157ad786f914b85b67d0c8f15c9846bb7c93b51ba13a7cc5d2d28173e06d",
+  "uploaded_ts": "2026-07-02T07:26:40-05:00",
+  "posted_date": "2026-06-24",
+  "canonical_url": "https://www.brex.com/careers/8606845002?gh_jid=8606845002",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

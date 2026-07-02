@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-04-21 · Pave - AI Engineer.pdf",
+  "answers_remote": "gdrive:Apply Queue/Pave - AI Engineer - Answers.txt",
+  "pdf_sha256": "56bdd8695bfcb58a507d77525bfe18c1d0da085d233c0c6bd1ff0f110a258c22",
+  "uploaded_ts": "2026-07-02T07:34:40-05:00",
+  "posted_date": "2026-04-21",
+  "canonical_url": "https://job-boards.greenhouse.io/paveakatroveinformationtechnologies/jobs/4660955005",
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

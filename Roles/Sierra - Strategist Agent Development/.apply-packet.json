@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Sierra - Strategist Agent Development.pdf",
+  "answers_remote": "gdrive:Apply Queue/Sierra - Strategist Agent Development - Answers.txt",
+  "pdf_sha256": "f6d4ce50b092489f36d465b08de820307f7c1b2868939743dab036ef0df6f635",
+  "uploaded_ts": "2026-07-02T07:35:28-05:00",
+  "posted_date": null,
+  "canonical_url": "https://jobs.ashbyhq.com/sierra/c25ca18c-dbe6-439d-9a40-ce23b40c323c",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

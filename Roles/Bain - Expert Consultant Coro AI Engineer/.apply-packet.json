@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Bain - Expert Consultant Coro AI Engineer.pdf",
+  "answers_remote": "gdrive:Apply Queue/Bain - Expert Consultant Coro AI Engineer - Answers.txt",
+  "pdf_sha256": "693d890b41929062cf35a2fb8dc5b428017df2747d740bdba947d7fa8f3b94af",
+  "uploaded_ts": "2026-07-02T07:27:28-05:00",
+  "posted_date": null,
+  "canonical_url": null,
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

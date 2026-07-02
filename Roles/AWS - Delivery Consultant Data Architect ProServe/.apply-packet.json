@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · AWS - Delivery Consultant Data Architect ProServe.pdf",
+  "answers_remote": "gdrive:Apply Queue/AWS - Delivery Consultant Data Architect ProServe - Answers.txt",
+  "pdf_sha256": "36da45b0ac1d0a1704462155cc398a30419b4ba62bff54f0ad4f6e41df59397d",
+  "uploaded_ts": "2026-07-02T07:27:00-05:00",
+  "posted_date": null,
+  "canonical_url": "https://www.amazon.jobs/en/jobs/10388898/delivery-consultant-data-architect-aws-professional-services",
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

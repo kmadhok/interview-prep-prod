@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · PhD Source (Anthropic) - Research Engineer Scientist Tokens.pdf",
+  "answers_remote": "gdrive:Apply Queue/PhD Source (Anthropic) - Research Engineer Scientist Tokens - Answers.txt",
+  "pdf_sha256": "a042e2525c5d86adfbd54d3b725ad31498d32b91e0ba932f7b1495eadb51115a",
+  "uploaded_ts": "2026-07-02T07:34:46-05:00",
+  "posted_date": null,
+  "canonical_url": "https://www.linkedin.com/jobs/view/4431311964/",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

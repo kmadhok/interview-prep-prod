@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Cohere - Forward Deployed Engineer Prompt Specialist.pdf",
+  "answers_remote": "gdrive:Apply Queue/Cohere - Forward Deployed Engineer Prompt Specialist - Answers.txt",
+  "pdf_sha256": "97f683bc3c2dc5cda1a2c591e021a21d90d69f65cde86fa3f8bfa41cfbc91b92",
+  "uploaded_ts": "2026-07-02T07:30:43-05:00",
+  "posted_date": null,
+  "canonical_url": "https://jobs.ashbyhq.com/cohere/6745547c-cc72-466c-867c-a0539b04909b",
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

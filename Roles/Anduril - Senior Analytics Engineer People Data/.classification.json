@@ -10,5 +10,9 @@
   "archetype": "data-engineering / analytics",
   "archetype_rationale": "Day-to-day is building/optimizing ETL/ELT pipelines, data models/schemas/ontologies, and a people-data platform with dbt/Airflow/Snowflake-class tooling — squarely analytics/data engineering, not agent or ML modeling.",
   "notes": "ML-pipeline is the closest vocab match for ETL/ELT data-pipeline work; the JD is data pipelines, not ML model pipelines. No agents/RAG/NL→SQL/LLM/RPA/experimentation/dashboards signal beyond preferred-BI mention.",
-  "classified_ts": "2026-06-29"
+  "classified_ts": "2026-06-29",
+  "posted_date": null,
+  "canonical_url": null,
+  "easy_apply": null,
+  "repost": false
 }

@@ -9,5 +9,9 @@
   "archetype": "data-engineering / analytics",
   "archetype_rationale": "Day-to-day work is authoring logical data model ontologies and KG mapping assets connecting relational DBs, REST APIs, and streaming sources into an enterprise knowledge graph — core data-modeling/data-engineering, not agent or client delivery work.",
   "notes": "Niche semantic-web / ontology engineering role (RDF/OWL/SKOS, SPARQL, virtual KG). Kanu has no direct ontology/knowledge-graph authoring experience; closest adjacent assets are his semantic layer work (customer-voice-semantic-layer) and NL-to-SQL/data-modeling — the resume tailoring should lean on those rather than implying production ontology authoring. Comp $114K-$170K is below his target floor and the role is on-site Jersey City.",
-  "classified_ts": "2026-06-30"
+  "classified_ts": "2026-06-30",
+  "posted_date": "2026-04-06",
+  "canonical_url": "https://www.linkedin.com/jobs/view/4421295461",
+  "easy_apply": false,
+  "repost": false
 }

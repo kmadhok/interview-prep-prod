@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Burtch Works - Senior Software Engineer Data AI Engineering.pdf",
+  "answers_remote": "gdrive:Apply Queue/Burtch Works - Senior Software Engineer Data AI Engineering - Answers.txt",
+  "pdf_sha256": "71083bef436e456ad6a894df4735cbaac9f2ac3b38e5811c060e78095d66ed04",
+  "uploaded_ts": "2026-07-02T07:26:44-05:00",
+  "posted_date": null,
+  "canonical_url": "https://www.linkedin.com/jobs/view/4427572734/",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

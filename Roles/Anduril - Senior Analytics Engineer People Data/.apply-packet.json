@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Anduril - Senior Analytics Engineer People Data.pdf",
+  "answers_remote": "gdrive:Apply Queue/Anduril - Senior Analytics Engineer People Data - Answers.txt",
+  "pdf_sha256": "ba0c60cb96c75ae3168dbf123c16d6f0fd55da8e214ee330b80352d1aa08d223",
+  "uploaded_ts": "2026-07-02T07:26:56-05:00",
+  "posted_date": null,
+  "canonical_url": null,
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

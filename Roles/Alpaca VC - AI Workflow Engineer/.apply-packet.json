@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Alpaca VC - AI Workflow Engineer.pdf",
+  "answers_remote": "gdrive:Apply Queue/Alpaca VC - AI Workflow Engineer - Answers.txt",
+  "pdf_sha256": "1571565fa86a48304f6c914cb719d6bcac9666bc60c40f928ab3dae21f2ae933",
+  "uploaded_ts": "2026-07-02T07:26:51-05:00",
+  "posted_date": null,
+  "canonical_url": "https://apply.workable.com/alpaca-vc/j/89D682FC4C",
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

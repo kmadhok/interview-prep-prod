@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-06-04 · Pinterest - AI Solutions Engineer.pdf",
+  "answers_remote": "gdrive:Apply Queue/Pinterest - AI Solutions Engineer - Answers.txt",
+  "pdf_sha256": "39cd35a56c67af4a5ba19a1e21dd03898246f967d78a6984e8672bb6470b5001",
+  "uploaded_ts": "2026-07-02T07:34:49-05:00",
+  "posted_date": "2026-06-04",
+  "canonical_url": "https://www.pinterestcareers.com/jobs/?gh_jid=7714127",
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

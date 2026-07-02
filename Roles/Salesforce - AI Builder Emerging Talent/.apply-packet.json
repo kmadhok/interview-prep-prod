@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Salesforce - AI Builder Emerging Talent.pdf",
+  "answers_remote": "gdrive:Apply Queue/Salesforce - AI Builder Emerging Talent - Answers.txt",
+  "pdf_sha256": "6da8969c8a5a1516de428c989fcc936edb8725a5ad54f1b77bbb15c4db890452",
+  "uploaded_ts": "2026-07-02T07:34:59-05:00",
+  "posted_date": null,
+  "canonical_url": "https://careers.salesforce.com/en/jobs/jr341276/ai-builder-emerging-talent/",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

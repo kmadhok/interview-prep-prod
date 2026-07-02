@@ -10,5 +10,9 @@
   "archetype": "FDE / client-facing",
   "archetype_rationale": "The role is literally 'forward-deployed; onsite at customer sites,' embedding directly with customer data/analytics/business teams to build foundations and acting as 'the translation layer.' Day-to-day it ships data/semantic engineering inside client engagements, which is the defining FDE / client-facing pattern over a pure backend data-engineering role.",
   "notes": "Hard gate: 5+ years in analytics/data engineering with a customer-facing or cross-functional slice — evidence the customer-facing portion. Stated baseline (not nice-to-have): daily use of an AI coding assistant as primary dev tool — lead with Claude-Code/agent-builder projects. Onsite/relocation to Menlo Park is real. Responses managed off LinkedIn — apply via Snowflake channel. Considered but dropped: ML-pipeline (work is data pipelines, not ML training); cross-functional (subsumed by business-translation + FDE archetype).",
-  "classified_ts": "2026-06-28"
+  "classified_ts": "2026-06-28",
+  "posted_date": null,
+  "canonical_url": "https://jobs.ashbyhq.com/snowflake/44ca2f15-1af0-49e3-92f1-1f96a9f6a616",
+  "easy_apply": false,
+  "repost": false
 }

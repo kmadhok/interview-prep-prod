@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Venture Up - Founding Engineer.pdf",
+  "answers_remote": "gdrive:Apply Queue/Venture Up - Founding Engineer - Answers.txt",
+  "pdf_sha256": "c7fca8985a87db0f04e742310164d3b3633fa8f1092f62d54d65b588881860ac",
+  "uploaded_ts": "2026-07-02T07:29:55-05:00",
+  "posted_date": null,
+  "canonical_url": "https://www.linkedin.com/jobs/view/4430984248/",
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

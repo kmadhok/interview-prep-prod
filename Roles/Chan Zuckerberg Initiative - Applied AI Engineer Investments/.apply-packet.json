@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Chan Zuckerberg Initiative - Applied AI Engineer Investments.pdf",
+  "answers_remote": "gdrive:Apply Queue/Chan Zuckerberg Initiative - Applied AI Engineer Investments - Answers.txt",
+  "pdf_sha256": "5fd001d6f9f03a06f4fbe6aecef15754682f74f7260628f7f2928b9d8de5f875",
+  "uploaded_ts": "2026-07-02T07:29:54-05:00",
+  "posted_date": null,
+  "canonical_url": "https://job-boards.greenhouse.io/chanzuckerberginitiative/jobs/7958444",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

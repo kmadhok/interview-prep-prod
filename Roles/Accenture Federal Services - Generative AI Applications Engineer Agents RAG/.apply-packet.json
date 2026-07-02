@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-04-01 · Accenture Federal Services - Generative AI Applications Engineer Agents RAG.pdf",
+  "answers_remote": "gdrive:Apply Queue/Accenture Federal Services - Generative AI Applications Engineer Agents RAG - Answers.txt",
+  "pdf_sha256": "47ed55d3e6b36b5f1f15de748743dd32487ccfa06373ea7ffd91a802593ab32d",
+  "uploaded_ts": "2026-07-02T07:26:47-05:00",
+  "posted_date": "2026-04-01",
+  "canonical_url": "https://job-boards.greenhouse.io/accenturefederalservices/jobs/4669272006",
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

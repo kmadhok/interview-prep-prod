@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2025-10-24 · Snorkel AI - Forward Deployed Engineer DaaS.pdf",
+  "answers_remote": "gdrive:Apply Queue/Snorkel AI - Forward Deployed Engineer DaaS - Answers.txt",
+  "pdf_sha256": "e2bcaa819a61ad49fae1c24bd63512f0434e054b2cf8bf60c06196b26dda66db",
+  "uploaded_ts": "2026-07-02T07:35:35-05:00",
+  "posted_date": "2025-10-24",
+  "canonical_url": "https://job-boards.greenhouse.io/snorkelai/jobs/5689470004",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

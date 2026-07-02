@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-03-04 · Cohere - Forward Deployed Engineer Agentic Platform.pdf",
+  "answers_remote": "gdrive:Apply Queue/Cohere - Forward Deployed Engineer Agentic Platform - Answers.txt",
+  "pdf_sha256": "e6fc1d8ffca2716ed656e6379dd2a7579cad540969b93cc6727cea257a2860f2",
+  "uploaded_ts": "2026-07-02T07:30:39-05:00",
+  "posted_date": "2026-03-04",
+  "canonical_url": "https://jobs.ashbyhq.com/cohere/b0bcef37-1d20-414f-aade-c54942d63df9",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

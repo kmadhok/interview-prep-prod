@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · PepsiCo - Sr AI Engineer.pdf",
+  "answers_remote": "gdrive:Apply Queue/PepsiCo - Sr AI Engineer - Answers.txt",
+  "pdf_sha256": "d479cff10b4548b558d0c22eb9dc31b740940b34ace5eae81e003df3a8cf1f45",
+  "uploaded_ts": "2026-07-02T07:34:43-05:00",
+  "posted_date": null,
+  "canonical_url": "https://www.pepsicojobs.com/main/jobs/391357?lang=en-us",
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

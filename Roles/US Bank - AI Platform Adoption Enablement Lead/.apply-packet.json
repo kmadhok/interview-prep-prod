@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · US Bank - AI Platform Adoption Enablement Lead.pdf",
+  "answers_remote": "gdrive:Apply Queue/US Bank - AI Platform Adoption Enablement Lead - Answers.txt",
+  "pdf_sha256": "1e12a05c6567aaf8ab28bac388e93e2a63f71a48f4533d2894f38ad79c9f98e2",
+  "uploaded_ts": "2026-07-02T07:29:51-05:00",
+  "posted_date": null,
+  "canonical_url": "https://www.linkedin.com/jobs/view/4432056856/",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

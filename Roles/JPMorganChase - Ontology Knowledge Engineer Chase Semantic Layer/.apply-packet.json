@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-04-06 · JPMorganChase - Ontology Knowledge Engineer Chase Semantic Layer.pdf",
+  "answers_remote": "gdrive:Apply Queue/JPMorganChase - Ontology Knowledge Engineer Chase Semantic Layer - Answers.txt",
+  "pdf_sha256": "f26eb783cf6e671b1098167b2400d4c675854545fb4c966cc37c387287596f24",
+  "uploaded_ts": "2026-07-02T07:11:56-05:00",
+  "posted_date": "2026-04-06",
+  "canonical_url": "https://www.linkedin.com/jobs/view/4421295461",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

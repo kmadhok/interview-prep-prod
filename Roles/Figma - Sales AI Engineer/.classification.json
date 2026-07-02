@@ -10,5 +10,9 @@
   "archetype": "agent-builder",
   "archetype_rationale": "The role is a hands-on builder who ships LLM-powered workflows, agents, and connectors from prototype to production, applying agentic patterns with quality checks and monitoring. The day-to-day is building and operationalizing AI workflows, not embedding with external clients or producing dashboards.",
   "notes": "Strong GTM/Salesforce integration flavor (APIs, automation platforms, CRM hygiene) leans toward RPA, but the 'agents/connectors/quality checks' framing makes agent-builder the dominant archetype. SQL is mentioned but only as supporting comfort, not a dashboards/analytics core.",
-  "classified_ts": "2026-06-30"
+  "classified_ts": "2026-06-30",
+  "posted_date": "2026-05-13",
+  "canonical_url": "https://boards.greenhouse.io/figma/jobs/5991176004",
+  "easy_apply": false,
+  "repost": false
 }

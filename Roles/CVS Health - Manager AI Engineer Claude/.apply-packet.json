@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · CVS Health - Manager AI Engineer Claude.pdf",
+  "answers_remote": "gdrive:Apply Queue/CVS Health - Manager AI Engineer Claude - Answers.txt",
+  "pdf_sha256": "3c88249efb1eb5de057f86df3684ef6aabda5ede83ab8e2716df69fd4474df35",
+  "uploaded_ts": "2026-07-02T07:31:18-05:00",
+  "posted_date": null,
+  "canonical_url": null,
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

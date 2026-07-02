@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-05-13 · ServiceNow - Software Engineer Agentic AI Systems Moveworks.pdf",
+  "answers_remote": "gdrive:Apply Queue/ServiceNow - Software Engineer Agentic AI Systems Moveworks - Answers.txt",
+  "pdf_sha256": "c519a32d9f02d12c2edaf9c98e604a97257b2576ead61aebad06bb07d90471e3",
+  "uploaded_ts": "2026-07-02T07:35:03-05:00",
+  "posted_date": "2026-05-13",
+  "canonical_url": "https://careers.servicenow.com/jobs/744000126417779/software-engineer-agentic-ai-systems-moveworks/",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

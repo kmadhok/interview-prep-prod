@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-05-13 · Figma - Sales AI Engineer.pdf",
+  "answers_remote": "gdrive:Apply Queue/Figma - Sales AI Engineer - Answers.txt",
+  "pdf_sha256": "1fb13889a28221bbbce25bc9dc9b9148f6b3ed10b3a2466e7a842dc0074b7ae3",
+  "uploaded_ts": "2026-07-02T07:31:35-05:00",
+  "posted_date": "2026-05-13",
+  "canonical_url": "https://boards.greenhouse.io/figma/jobs/5991176004",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · BlackRock - Data Engineer VP Aladdin Financial Engineering.pdf",
+  "answers_remote": "gdrive:Apply Queue/BlackRock - Data Engineer VP Aladdin Financial Engineering - Answers.txt",
+  "pdf_sha256": "e42a15e342a5d880c5f534de922e430c94cd383ff8aec12ce3b7ac7c99b453cf",
+  "uploaded_ts": "2026-07-02T07:25:54-05:00",
+  "posted_date": null,
+  "canonical_url": "https://careers.blackrock.com/job/new-york/data-engineer-vice-president-aladdin-financial-engineering/45831/91621763888",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

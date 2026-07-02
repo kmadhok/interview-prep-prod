@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-05-28 · Tailscale - Software Engineer Strategic Projects.pdf",
+  "answers_remote": "gdrive:Apply Queue/Tailscale - Software Engineer Strategic Projects - Answers.txt",
+  "pdf_sha256": "c6a3bf2eaf92b4f8554743f1e8f469d3379be3c6e16981919bb0e899e720c5c3",
+  "uploaded_ts": "2026-07-02T07:29:47-05:00",
+  "posted_date": "2026-05-28",
+  "canonical_url": "https://job-boards.greenhouse.io/tailscale/jobs/4700280005",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

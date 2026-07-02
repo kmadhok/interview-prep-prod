@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-04-15 · Cohere - Data Engineer Data Foundations.pdf",
+  "answers_remote": "gdrive:Apply Queue/Cohere - Data Engineer Data Foundations - Answers.txt",
+  "pdf_sha256": "74c5a4bf16f5710ae149e30e1b506bef38c86262ba3645f2a66680c25ffe901e",
+  "uploaded_ts": "2026-07-02T07:30:02-05:00",
+  "posted_date": "2026-04-15",
+  "canonical_url": "https://jobs.ashbyhq.com/cohere/9baccd88-c051-474f-bfe8-6867fca54cee",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

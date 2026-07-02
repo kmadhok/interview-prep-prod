@@ -10,5 +10,9 @@
   "archetype": "platform / ML engineering",
   "archetype_rationale": "Day-to-day is designing, training, and scaling foundation-model/LLM infrastructure (AWS Ultraclusters, PyTorch, VectorDBs, guardrails, observability) and optimizing latency/throughput/cost — core ML-platform engineering, not client-facing or consulting work.",
   "notes": "",
-  "classified_ts": "2026-06-29"
+  "classified_ts": "2026-06-29",
+  "posted_date": "2026-06-08",
+  "canonical_url": "https://www.capitalonecareers.com/job/new-york/senior-lead-ai-engineer-ai-foundations-llm-core-and-agentic-ai/1732/96173808848",
+  "easy_apply": false,
+  "repost": false
 }

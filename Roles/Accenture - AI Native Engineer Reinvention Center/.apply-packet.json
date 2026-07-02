@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Accenture - AI Native Engineer Reinvention Center.pdf",
+  "answers_remote": "gdrive:Apply Queue/Accenture - AI Native Engineer Reinvention Center - Answers.txt",
+  "pdf_sha256": "bf5819e594fc5087b522965aab470a20129e1d55fdd0d5e070c8e4134f950fcb",
+  "uploaded_ts": "2026-07-02T07:26:43-05:00",
+  "posted_date": null,
+  "canonical_url": "https://www.accenture.com/us-en/careers/jobdetails?id=R00325558_en",
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}

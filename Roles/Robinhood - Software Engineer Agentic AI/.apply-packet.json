@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Robinhood - Software Engineer Agentic AI.pdf",
+  "answers_remote": "gdrive:Apply Queue/Robinhood - Software Engineer Agentic AI - Answers.txt",
+  "pdf_sha256": "1d37a8bacaf63c9fd4689ffdaa75067d40c0cc1214227aff600fc3d0f03be95f",
+  "uploaded_ts": "2026-07-02T07:34:56-05:00",
+  "posted_date": null,
+  "canonical_url": "https://boards.greenhouse.io/robinhood/jobs/7975477",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}
