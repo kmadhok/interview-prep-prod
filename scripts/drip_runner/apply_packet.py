@@ -9,7 +9,7 @@ supplies posted_date/canonical_url/easy_apply/repost; this module never
 decides them. The PDF goes disk -> Drive via rclone, never through a model.
 """
 from __future__ import annotations
-import argparse, hashlib, json, os, subprocess, sys
+import argparse, difflib, hashlib, json, os, re, subprocess, sys
 from pathlib import Path
 
 PACKET_FILE = ".apply-packet.json"
@@ -130,15 +130,77 @@ def _cli_upload(args) -> int:
     return 0
 
 
+REPOST_THRESHOLD = 0.85
+_WORDS = re.compile(r"[a-z0-9]+")
+
+
+def normalize_jd(text: str) -> str:
+    """Lowercased word soup — robust to punctuation/whitespace/casing edits."""
+    return " ".join(_WORDS.findall((text or "").lower()))
+
+
+def jd_similarity(a: str, b: str) -> float:
+    # autojunk=False: real JDs exceed 200 chars, where difflib's autojunk
+    # heuristic treats common words as junk and collapses the ratio to noise.
+    return difflib.SequenceMatcher(None, normalize_jd(a), normalize_jd(b),
+                                   autojunk=False).ratio()
+
+
+def load_jd_corpus(repo_root: Path, exclude: Path | None = None) -> list[tuple[str, str]]:
+    """(folder name, JD text) for every filed role except `exclude`."""
+    out: list[tuple[str, str]] = []
+    for base in (repo_root / "Roles", repo_root / "_Archived"):
+        if not base.is_dir():
+            continue
+        for jd in sorted(base.glob("*/Job Description.md")):
+            if exclude is not None and jd.parent.resolve() == Path(exclude).resolve():
+                continue
+            out.append((jd.parent.name, jd.read_text(encoding="utf-8-sig", errors="replace")))
+    return out
+
+
+def find_repost(jd_text: str, corpus: list[tuple[str, str]]) -> dict | None:
+    """Best corpus match at >= REPOST_THRESHOLD, else None.
+
+    A re-appearing JD keeps its ORIGINAL posting's age (repost correlates with
+    ghost/evergreen postings) — the caller records the flag; this only detects.
+    """
+    best_name, best_ratio = None, 0.0
+    for name, text in corpus:
+        r = jd_similarity(jd_text, text)
+        if r > best_ratio:
+            best_name, best_ratio = name, r
+    if best_name is not None and best_ratio >= REPOST_THRESHOLD:
+        return {"match_folder": best_name, "similarity": round(best_ratio, 3)}
+    return None
+
+
+def _cli_repost_check(args) -> int:
+    folder = Path(args.role_folder)
+    jd = folder / "Job Description.md"
+    if not jd.exists():
+        print(json.dumps({"repost": False, "error": "no Job Description.md"}))
+        return 0
+    corpus = load_jd_corpus(Path(args.repo_root), exclude=folder)
+    hit = find_repost(jd.read_text(encoding="utf-8-sig", errors="replace"), corpus)
+    print(json.dumps({"repost": hit is not None, **(hit or {})}))
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
     up = sub.add_parser("upload", help="upload one role's packet to the Apply Queue")
     up.add_argument("role_folder")
     up.add_argument("--remote-dir", default=None)
+    rp = sub.add_parser("repost-check", help="fuzzy-match this JD against every filed JD")
+    rp.add_argument("role_folder")
+    rp.add_argument("--repo-root", default=".")
     args = p.parse_args(argv)
     if args.cmd == "upload":
         return _cli_upload(args)
+    if args.cmd == "repost-check":
+        return _cli_repost_check(args)
     return 2
 
 

@@ -86,3 +86,34 @@ def test_upload_packet_rclone_failure_raises(tmp_path):
         assert False, "expected PacketError"
     except ap.PacketError as e:
         assert "rclone" in str(e)
+
+
+JD_A = "We are hiring a Forward Deployed Engineer to build AI agents for logistics customers. " * 20
+JD_B = JD_A.replace("logistics", "freight")          # near-identical -> repost
+JD_C = "Staff accountant needed for tax season support in our Ohio office. " * 20
+
+
+def test_normalize_jd_strips_noise():
+    assert ap.normalize_jd("  Hello,\n\nWORLD!  ") == "hello world"
+
+
+def test_find_repost_flags_near_duplicate():
+    corpus = [("Old Co - FDE", JD_A), ("Other - Accountant", JD_C)]
+    hit = ap.find_repost(JD_B, corpus)
+    assert hit is not None
+    assert hit["match_folder"] == "Old Co - FDE"
+    assert hit["similarity"] >= 0.85
+
+
+def test_find_repost_none_for_unrelated():
+    assert ap.find_repost(JD_C, [("Old Co - FDE", JD_A)]) is None
+
+
+def test_load_jd_corpus_skips_self(tmp_path):
+    roles = tmp_path / "Roles"
+    for name, text in [("A - X", JD_A), ("B - Y", JD_C)]:
+        d = roles / name
+        d.mkdir(parents=True)
+        (d / "Job Description.md").write_text(text, encoding="utf-8")
+    corpus = ap.load_jd_corpus(tmp_path, exclude=roles / "A - X")
+    assert [c[0] for c in corpus] == ["B - Y"]
