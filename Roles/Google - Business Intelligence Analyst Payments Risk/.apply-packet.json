@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Google - Business Intelligence Analyst Payments Risk.pdf",
+  "answers_remote": "gdrive:Apply Queue/Google - Business Intelligence Analyst Payments Risk - Answers.txt",
+  "pdf_sha256": "91567887c422b9e2365e563fc92e6aea5101ce5179f9c70eed8ef7f673b9c23c",
+  "uploaded_ts": "2026-07-03T09:19:34-05:00",
+  "posted_date": null,
+  "canonical_url": null,
+  "repost": false,
+  "easy_apply": null,
+  "remote_dir": "gdrive:Apply Queue"
+}
