@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "dashboards", "evidence": "Build, maintain, and improve dashboards, self-service reporting, and analytical tools that give stakeholders fast, accurate visibility into performance"},
+    {"tag": "business-translation", "evidence": "translate ambiguous business problems and complex analyses into actionable recommendations for senior stakeholders"},
+    {"tag": "cross-functional", "evidence": "Partner with IT, BI, Data, Operations, Finance, and Business teams to strengthen data infrastructure"},
+    {"tag": "leverage", "evidence": "create leverage beyond the boundaries of a traditional analytics role"},
+    {"tag": "RPA", "evidence": "proactively identifying opportunities to improve workflows, automate repetitive work, and build scalable solutions"},
+    {"tag": "end-to-end", "evidence": "the best analysts increasingly operate like \"one-person teams,\" combining analytical rigor, technical fluency, business judgment, and creativity"}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day is core analytics plus data-engineering-adjacent ownership: 'Own and improve core data models and pipelines, using tools such as dbt' alongside dashboards, SQL deep dives, and statistical analysis for GTM leadership. It is an analytics business-partner seat, not an agent-building or platform engineering role.",
+  "notes": "JD is unusually AI-forward for an analyst role ('highly motivated, AI-forward individual', 'Use AI and modern analytical tools to increase the speed, quality, and scope of your work') — the tailored resume should foreground Kanu's AI/automation builds as analyst leverage, not just BI work. Constraints: NYC-based only, no visa sponsorship, application deadline 07/10/2026 (one week out), $125K–$172K base. This maps directly to Kanu's current Walmart Data Ventures senior-analyst profile; dbt/BigQuery/Looker named as plus-not-required.",
+  "classified_ts": "2026-07-03",
+  "posted_date": "2026-05-19",
+  "canonical_url": "https://www.wiz.io/careers/job/4682244006?gh_jid=4682244006",
+  "easy_apply": false,
+  "repost": false
+}

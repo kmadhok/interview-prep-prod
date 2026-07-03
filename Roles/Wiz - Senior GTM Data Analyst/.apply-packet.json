@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-05-19 · Wiz - Senior GTM Data Analyst.pdf",
+  "answers_remote": "gdrive:Apply Queue/Wiz - Senior GTM Data Analyst - Answers.txt",
+  "pdf_sha256": "123d98d01010ee019695694a6d3f9a36aa9199e6ada3c3e7e0f0092bb7babfeb",
+  "uploaded_ts": "2026-07-03T05:43:10-05:00",
+  "posted_date": "2026-05-19",
+  "canonical_url": "https://www.wiz.io/careers/job/4682244006?gh_jid=4682244006",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}
