@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "business-translation", "evidence": "translating complex automation data into executive-ready decks, white papers, and strategic briefs"},
+    {"tag": "agents", "evidence": "Build AI agents and workflows that automate recurring reporting tasks, data pulls, and narrative generation"},
+    {"tag": "end-to-end", "evidence": "Own the end-to-end reporting pipeline — from raw data to executive presentation"},
+    {"tag": "dashboards", "evidence": "Design best-in-class data visualizations that make the right insight obvious"},
+    {"tag": "cross-functional", "evidence": "Cross-functional teams in a matrixed organization"},
+    {"tag": "simplification", "evidence": "distill complex program activities into \"smart briefs\""}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Despite the 'Automation Engineering' title, the day-to-day is owning 'the end-to-end reporting pipeline — from raw data to executive presentation' across WBR/MBR/QBR cadences, with required proficiency in 'data visualization tools (Power BI, Tableau, or equivalent)' — a dashboards + stakeholder-communication analytics role with an AI-content layer, not an engineering-build role.",
+  "notes": "Internal Walmart role (Kanu is currently at Walmart Data Ventures) — likely an internal transfer path, and 'Element LLM Gateway' familiarity is a direct match to his current environment. JD requires a portfolio of executive-ready writing and presentation materials before the Panel interview — flag this as an apply-packet prerequisite. Strong secondary consulting/storytelling flavor (white papers, board-level narratives, video/multimedia generation) means resume should foreground exec-communication wins alongside agent-automation bullets.",
+  "classified_ts": "2026-07-03",
+  "posted_date": null,
+  "canonical_url": null,
+  "easy_apply": false,
+  "repost": false
+}

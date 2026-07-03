@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Walmart - Senior Manager Automation Engineering.pdf",
+  "answers_remote": "gdrive:Apply Queue/Walmart - Senior Manager Automation Engineering - Answers.txt",
+  "pdf_sha256": "878e3d88c99e833e1891f48ff63b72f5903e394e2731df22ecf4bc6747cc5adf",
+  "uploaded_ts": "2026-07-03T05:25:19-05:00",
+  "posted_date": null,
+  "canonical_url": null,
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}
