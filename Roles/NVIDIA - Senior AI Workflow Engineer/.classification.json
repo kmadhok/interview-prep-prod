@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "designing, developing, and deploying AI agents to automate software development workflows and processes"},
+    {"tag": "LLM-orchestration", "evidence": "leverage Large Language Models and agentic AI to automate end to end software engineering workflows"},
+    {"tag": "evaluation", "evidence": "Continuously measure and report on the impact of AI interventions, demonstrating improvements in key metrics like cycle time, change failure rate"},
+    {"tag": "ML-pipeline", "evidence": "Create and deploy predictive models to identify high-risk commits, forecast potential build failures"},
+    {"tag": "engineering-rigor", "evidence": "Experience with tools for CI/CD setup such as Jenkins, Gitlab CI, Packer, Terraform, Artifactory, Ansible, Chef or similar"},
+    {"tag": "cross-functional", "evidence": "Ability to effectively work across organizational boundaries"}
+  ],
+  "archetype": "agent-builder",
+  "archetype_rationale": "The core mandate is building and shipping LLM/agentic tools that automate engineering workflows ('design and implement tools and software solutions that leverage Large Language Models and agentic AI'), with hands-on agent deployment listed in the day-to-day responsibilities. Full-stack and CI/CD skills are supporting requirements for delivering those agent tools internally, not the job's center of gravity.",
+  "notes": "JD asks for 10+ years experience and deep full-stack breadth (React/Angular, Django/Rails/Spring, Terraform/Ansible) — resume tailoring should foreground production engineering depth and measurable developer-productivity impact (cycle time, MTTR-style metrics), not just agent demos. RAG and LLM fine-tuning appear only in 'Ways To Stand Out', so treat as differentiators, not core requirements.",
+  "classified_ts": "2026-07-03",
+  "posted_date": "2026-05-14",
+  "canonical_url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Senior-AI-Workflow-Engineer_JR1999298",
+  "easy_apply": false,
+  "repost": false
+}
