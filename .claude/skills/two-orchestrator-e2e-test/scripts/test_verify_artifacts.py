@@ -1,5 +1,7 @@
-import sys, json, tempfile
+import os, re, sys, json, tempfile
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent))
 import verify_artifacts as va
@@ -92,6 +94,15 @@ def test_pdf_clean_and_overflow():
     assert va.check_pdf(clone, pages=1, title_leak=1)["status"] == "fail"
 
 
+def test_pdf_missing_contract_warns():
+    # PAGES/TITLE_LEAK not captured -> the skipped checks must surface as a warn,
+    # not read as a clean pass.
+    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4"})
+    res = va.check_pdf(clone, pages=None, title_leak=None)
+    assert res["status"] == "warn", res
+    assert any(c["name"] == "pdf-contract-provided" and not c["ok"] for c in res["checks"])
+
+
 def test_gate_surfaces_role():
     out = "Snowflake\tForward Deployed Analytics Engineer\nMeta\tBusiness Engineer\n"
     assert va.check_gate(out, "Snowflake")["status"] == "pass"
@@ -101,12 +112,22 @@ def test_gate_surfaces_role():
 _LEDGER = "\n".join([
     "# Contacts Ledger",
     "## Recruiters (ranked)",
-    "| Rank | Name | Practice | Email (inferred) |",
-    "|------|------|----------|------------------|",
-    "| 1 | Brad Mallmann | GTM | brad.mallmann@snowflake.com |",
-    "| 2 | Diane Nguyen | Cortex | diane.nguyen@snowflake.com |",
+    "| Rank | Name | Practice | Email (inferred) | Source (search/enrich) |",
+    "|------|------|----------|------------------|------------------------|",
+    "| 1 | Brad Mallmann | GTM | brad.mallmann@snowflake.com | search |",
+    "| 2 | Diane Nguyen | Cortex | diane.nguyen@snowflake.com | search |",
+    "| 3 | Kaitlyn Ryu | Cortex | kaitlyn.ryu@snowflake.com | enrich |",
     "## hooks[]",
     "- Brad: posted about data-foundation governance.",
+])
+
+# Pre-enrich shape: no hooks section, no enrich rows (what find-contacts alone writes).
+_LEDGER_PRE_ENRICH = "\n".join([
+    "# Contacts Ledger",
+    "## Recruiters (ranked)",
+    "| Rank | Name | Practice | Email (inferred) | Source (search/enrich) |",
+    "|------|------|----------|------------------|------------------------|",
+    "| 1 | Brad Mallmann | GTM | brad.mallmann@snowflake.com | search |",
 ])
 
 
@@ -114,11 +135,25 @@ def test_find_contacts_counts_rows():
     clone = _clone_with({".contacts-ledger.md": _LEDGER})
     res = va.check_find_contacts(clone)
     assert res["status"] == "pass"
-    assert va._ledger_contact_rows(_LEDGER) == 2
+    assert va._ledger_contact_rows(_LEDGER) == 3
 
 
 def test_find_contacts_missing_fails():
     assert va.check_find_contacts(_clone_with({}))["status"] == "fail"
+
+
+def test_find_contacts_header_only_ledger_fails():
+    # A ledger with only a header + divider must count 0 contacts even if the
+    # header-skip's column-name keying drifts — rows must carry an email/integer.
+    header_only = "\n".join([
+        "## Recruiters (ranked)",
+        "| Position | Person | Practice |",
+        "|----------|--------|----------|",
+    ])
+    clone = _clone_with({".contacts-ledger.md": header_only})
+    res = va.check_find_contacts(clone)
+    assert res["status"] == "fail"
+    assert va._ledger_contact_rows(header_only) == 0
 
 
 def test_enrich_requires_hooks_section():
@@ -126,6 +161,25 @@ def test_enrich_requires_hooks_section():
     assert va.check_enrich_contacts(clone)["status"] == "pass"
     no_hooks = _clone_with({".contacts-ledger.md": "| Rank | Name |\n| 1 | X |"})
     assert va.check_enrich_contacts(no_hooks)["status"] == "fail"
+
+
+def test_enrich_hook_substring_alone_does_not_pass():
+    # The word "hook" in column wording (or anywhere) must not satisfy the check —
+    # only the "## hooks" heading enrich actually writes does.
+    sneaky = "| Name | Hook |\n| Brad | loves fishing hooks |"
+    clone = _clone_with({".contacts-ledger.md": sneaky})
+    res = va.check_enrich_contacts(clone)
+    assert res["status"] == "fail"
+
+
+def test_enrich_heading_without_enrich_rows_warns():
+    # Heading present but no Source: enrich rows -> warn (legit when no new people),
+    # and the header cell "Source (search/enrich)" must NOT count as an enrich row.
+    text = _LEDGER_PRE_ENRICH + "\n## hooks[]\n- Brad: posted about governance.\n"
+    clone = _clone_with({".contacts-ledger.md": text})
+    res = va.check_enrich_contacts(clone)
+    assert res["status"] == "warn", res
+    assert any(c["name"] == "enrich-rows-present" and not c["ok"] for c in res["checks"])
 
 
 _VERIFIED_OK = "\n".join([
@@ -148,6 +202,27 @@ def test_verify_emails_issue1_empty_with_contacts_fails():
     res = va.check_verify_emails(clone)
     assert res["status"] == "fail"
     assert any("issue1" in c["name"] for c in res["checks"])
+
+
+def test_verify_emails_all_inferred_warns():
+    # EmailFinder down -> every row degrades to inferred. That must warn (fail-loud),
+    # not read identically to a fully SMTP-verified run.
+    degraded = "\n".join([
+        "# Verified Emails",
+        "| Name | Email | Confidence |",
+        "|---|---|---|",
+        "| Brad Mallmann | brad.mallmann@snowflake.com | Medium (inferred first.last) |",
+        "| Diane Nguyen | diane.nguyen@snowflake.com | Medium (inferred first.last) |",
+    ])
+    clone = _clone_with({".contacts-ledger.md": _LEDGER, "Verified Emails.md": degraded})
+    res = va.check_verify_emails(clone)
+    assert res["status"] == "warn", res
+    assert any(c["name"] == "not-all-inferred" and not c["ok"] for c in res["checks"])
+    # A mixed file (one SMTP-verified row) stays pass.
+    mixed = degraded.replace("Medium (inferred first.last) |\n| Diane",
+                             "High (EmailFinder-verified) |\n| Diane")
+    clone2 = _clone_with({".contacts-ledger.md": _LEDGER, "Verified Emails.md": mixed})
+    assert va.check_verify_emails(clone2)["status"] == "pass"
 
 
 def test_write_outreach_pass():
@@ -352,3 +427,61 @@ def test_check_packet_fails_on_real_remote(tmp_path):
     }), encoding="utf-8")
     result = va.check_packet(tmp_path)
     assert any(c["name"] == "packet-remote-is-test" and not c["ok"] for c in result["checks"])
+
+
+def test_apply_after_gate_ordering_warns_when_ledger_predates_worklist():
+    clone = _clone_with({".contacts-ledger.md": _LEDGER})
+    worklist = clone / "_worklist.txt"
+    worklist.write_text("Snowflake\tFDE\n", encoding="utf-8")
+    # Backdate the ledger 100s before the worklist -> apply side ran before the gate.
+    ledger = clone / ".contacts-ledger.md"
+    past = worklist.stat().st_mtime - 100
+    os.utime(ledger, (past, past))
+    args = va.build_parser().parse_args([
+        "--clone", str(clone), "--company", "Snowflake", "--worklist-out", str(worklist)])
+    report = va.run_all(args)
+    gate = report["skills"]["apply-gate"]
+    assert gate["status"] == "warn", gate
+    assert any(c["name"] == "apply-after-gate" and not c["ok"] for c in gate["checks"])
+
+
+def test_apply_after_gate_ordering_passes_when_ledger_is_newer():
+    clone = _clone_with({".contacts-ledger.md": _LEDGER})
+    worklist = clone / "_worklist.txt"
+    worklist.write_text("Snowflake\tFDE\n", encoding="utf-8")
+    ledger = clone / ".contacts-ledger.md"
+    future = worklist.stat().st_mtime + 100
+    os.utime(ledger, (future, future))
+    args = va.build_parser().parse_args([
+        "--clone", str(clone), "--company", "Snowflake", "--worklist-out", str(worklist)])
+    report = va.run_all(args)
+    gate = report["skills"]["apply-gate"]
+    assert all(c["ok"] for c in gate["checks"]), gate
+
+
+def _parse_jd_to_ready_vocab(text: str) -> tuple[set, set]:
+    """Pull the theme + archetype vocab out of jd-to-ready/SKILL.md prose."""
+    theme_line = next(ln for ln in text.splitlines()
+                      if ln.startswith("> `") and "agents" in ln)
+    themes = set(re.findall(r"`([^`]+)`", theme_line))
+    after = text.split("Archetypes:", 1)[1].splitlines()
+    archetypes = set()
+    for ln in after[1:]:
+        m = re.match(r"^- \*\*(.+?)\*\*", ln)
+        if not m:
+            break
+        archetypes.add(m.group(1))
+    return themes, archetypes
+
+
+def test_vocab_matches_jd_to_ready_skill():
+    # THEME_VOCAB/ARCHETYPE_VOCAB are duplicated literals (can't import from Markdown);
+    # this drift test fails loudly if jd-to-ready's vocab changes shape.
+    jdtr = Path(__file__).resolve().parent.parent.parent / "jd-to-ready" / "SKILL.md"
+    if not jdtr.exists():
+        pytest.skip("jd-to-ready/SKILL.md not found (standalone checkout)")
+    themes, archetypes = _parse_jd_to_ready_vocab(
+        jdtr.read_text(encoding="utf-8-sig", errors="ignore"))
+    assert len(themes) == 18 and len(archetypes) == 5, (len(themes), len(archetypes))
+    assert themes == va.THEME_VOCAB
+    assert archetypes == va.ARCHETYPE_VOCAB

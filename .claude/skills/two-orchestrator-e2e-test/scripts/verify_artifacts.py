@@ -101,6 +101,11 @@ def check_pdf(clone: Path, pages, title_leak) -> dict:
         checks.append(check("pdf-one-page", pages == 1, f"PAGES={pages}", severity="warn"))
     if title_leak is not None:
         checks.append(check("pdf-no-title-leak", title_leak == 0, f"TITLE_LEAK={title_leak}"))
+    if pages is None or title_leak is None:
+        # A missing export contract must surface as a warn, not silently skip checks.
+        checks.append(check("pdf-contract-provided", False,
+                            "PAGES/TITLE_LEAK not captured from build_resume_pdf.py",
+                            severity="warn"))
     return skill_result(checks)
 
 
@@ -129,7 +134,8 @@ def check_gate(worklist_text: str, company: str) -> dict:
 
 
 # NOTE: the header-skip below is keyed to find-contacts' current "| Rank | Name | ... |"
-# column wording; if those column names change, the header row is counted as a contact.
+# column wording. If those names change, the data-bearing requirement (an email or a
+# bare-integer Rank/Total cell) still keeps a header-only ledger from counting as 1 contact.
 def _ledger_contact_rows(text: str) -> int:
     rows = 0
     for line in (text or "").splitlines():
@@ -142,6 +148,9 @@ def _ledger_contact_rows(text: str) -> int:
             continue
         lowered = {c.lower() for c in cells}
         if "name" in lowered and "rank" in lowered:  # header row
+            continue
+        # A contact row must carry data: an email or a bare-integer (Rank/Total) cell.
+        if not any("@" in c or re.fullmatch(r"\d+", c) for c in cells):
             continue
         rows += 1
     return rows
@@ -162,8 +171,20 @@ def check_enrich_contacts(clone: Path) -> dict:
     f = clone / ".contacts-ledger.md"
     if not f.exists():
         return skill_result([check("ledger-present", False, str(f))])
-    return skill_result([check("ledger-has-hooks", "hook" in _read(f).lower(),
-                               "expected a hooks section from enrich-contacts")])
+    text = _read(f)
+    # The heading enrich-contacts actually writes ("## hooks[]"), not a bare substring —
+    # "hook" appears in find-contacts column wording and would silently pass pre-enrich.
+    has_heading = bool(re.search(r"^##\s*hooks", text, re.MULTILINE | re.IGNORECASE))
+    checks = [check("ledger-has-hooks-section", has_heading,
+                    "expected a '## hooks' section from enrich-contacts")]
+    # Whole-cell match: the header cell "Source (search/enrich)" must not count.
+    enrich_rows = any(
+        "enrich" in (c.strip().lower() for c in line.strip().strip("|").split("|"))
+        for line in text.splitlines() if line.strip().startswith("|"))
+    checks.append(check("enrich-rows-present", enrich_rows,
+                        "no 'Source: enrich' rows — enrich ran but appended no new people",
+                        severity="warn"))
+    return skill_result(checks)
 
 
 def _verified_email_rows(text: str) -> int:
@@ -181,13 +202,24 @@ def check_verify_emails(clone: Path) -> dict:
     f = clone / "Verified Emails.md"
     if not f.exists():
         return skill_result([check("verified-emails-present", False, str(f))])
-    rows = _verified_email_rows(_read(f))
+    text = _read(f)
+    rows = _verified_email_rows(text)
     ledger = clone / ".contacts-ledger.md"
     ledger_contacts = _ledger_contact_rows(_read(ledger)) if ledger.exists() else 0
     checks = [
         check("verified-emails-present", True),
         check("verified-rows-present", rows >= 1, f"{rows} verified row(s)"),
     ]
+    if rows >= 1:
+        # An EmailFinder-down run degrades every row to "inferred" — that must warn,
+        # not read identically to a fully SMTP-verified run (fail-loud invariant).
+        email_lines = [ln for ln in text.splitlines()
+                       if ln.strip().startswith("|")
+                       and any("@" in c and "." in c for c in ln.split("|"))]
+        all_inferred = all("inferred" in ln.lower() for ln in email_lines)
+        checks.append(check("not-all-inferred", not all_inferred,
+                            "every row is inferred — EmailFinder likely unavailable (degraded run)",
+                            severity="warn"))
     if ledger_contacts >= 1 and rows == 0:
         checks.append(check(
             "issue1-ledger-parsed", False,
@@ -267,6 +299,19 @@ def run_all(args) -> dict:
             clone, drafts, args.expected_recipient or "",
             getattr(args, "expected_lead_recipient", "") or ""),
     }
+    # Ordering signal (invariant 2): the gate writes _worklist.txt; the apply side's
+    # first artifact is the ledger. A ledger older than the worklist suggests LinkedIn
+    # was spent before the apply gate — warn, don't fail (mtimes are edit-sensitive).
+    wl = Path(args.worklist_out) if args.worklist_out else None
+    ledger = clone / ".contacts-ledger.md"
+    if wl is not None and wl.exists() and ledger.exists():
+        ordered = ledger.stat().st_mtime >= wl.stat().st_mtime - 2
+        gate = skills["apply-gate"]
+        gate["checks"].append(check(
+            "apply-after-gate", ordered,
+            "ledger predates the apply-gate worklist — apply side may have run before the gate",
+            severity="warn"))
+        gate["status"] = rollup(gate["checks"])
     if getattr(args, "blocked_apply", False):
         note = "apply side not run (LinkedIn daemon down at preflight)"
         for name in ("find-contacts", "enrich-contacts", "verify-emails", "write-outreach"):
