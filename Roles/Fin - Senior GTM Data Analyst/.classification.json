@@ -1,0 +1,17 @@
+{
+  "themes": [
+    {"tag": "experimentation", "evidence": "Experience designing and analyzing experiments (A/B tests, holdout groups, incrementality measurement)."},
+    {"tag": "business-translation", "evidence": "translate analytical findings into narratives that inform creative and strategic decisions"},
+    {"tag": "cross-functional", "evidence": "Partner with Brand Marketing, Executive Programs, Demand Gen, and Sales"},
+    {"tag": "dashboards", "evidence": "Experience with BI and visualization tools (e.g., Tableau, Looker, Streamlit)."},
+    {"tag": "end-to-end", "evidence": "Own reporting and analysis for upper funnel programs"}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day is measurement and insight work — 'Own reporting and analysis,' 'Strong SQL skills,' experiment design, and BI tooling — a classic senior marketing analytics IC, not building agents or platforms.",
+  "notes": "Strong culture-fit angle: JD explicitly celebrates 'Unlimited access to Claude Code and best-in-class AI tools; experimentation & building is encouraged & celebrated' — Kanu's agent-building work is a differentiator even though the role itself is pure analytics. Also mirrors his current Customer Perception scope (brand/awareness measurement, qualitative + quantitative data), which the tailored resume should foreground. dbt is a plus-skill worth surfacing if available.",
+  "classified_ts": "2026-07-03",
+  "posted_date": "2026-04-29",
+  "canonical_url": "https://job-boards.greenhouse.io/intercom/jobs/7851785",
+  "easy_apply": false,
+  "repost": false
+}
