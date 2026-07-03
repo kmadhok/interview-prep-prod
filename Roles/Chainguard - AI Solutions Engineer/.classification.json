@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "consulting", "evidence": "The role is part internal consultant, part builder."},
+    {"tag": "agents", "evidence": "building on top of LLM APIs — tool/function calling, agents, prompt and context engineering"},
+    {"tag": "MCP", "evidence": "Experience building agent skills, MCP servers, or orchestration and automation frameworks."},
+    {"tag": "business-translation", "evidence": "translating fuzzy needs into shippable prototypes"},
+    {"tag": "cross-functional", "evidence": "You'll partner with functional owners across the company (Engineering, GTM, Product, Operations, and beyond)"},
+    {"tag": "leverage", "evidence": "find the highest-leverage opportunities where AI can materially change the economics of how Chainguard operates"}
+  ],
+  "archetype": "consulting / product-builder",
+  "archetype_rationale": "The JD explicitly frames the role as 'part internal consultant, part builder' — running listening tours, framing problems with non-technical stakeholders, sizing impact, and turning prioritized use cases into working prototypes. Day-to-day is internal consulting plus zero-to-one product building, not customer-facing FDE work or platform/ML engineering.",
+  "notes": "Internal-facing role (no external customers) despite the 'Solutions Engineer' title — outreach and resume framing should emphasize internal enablement, adoption, and evidence-based prioritization. Explicitly NOT a research/fine-tuning role; JD says 'applied tooling and building role, not a research role.' Go and/or Python preferred; base range $121k–$142k may be below Kanu's comp floor — worth checking before deep prep.",
+  "classified_ts": "2026-07-03",
+  "posted_date": "2026-06-10",
+  "canonical_url": "https://job-boards.greenhouse.io/chainguard/jobs/4687328006",
+  "easy_apply": false,
+  "repost": false
+}
