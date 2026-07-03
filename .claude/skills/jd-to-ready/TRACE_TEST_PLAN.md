@@ -10,10 +10,20 @@ Test the trace helper in a temporary log directory. Do not write to real
 
 Required scenarios:
 
-- Happy path: steps `1`, `2`, `3`, `4`, `4b`, `5`, `6`, and `7` open and close
-  in order; `finish-run` writes status `ok`.
+- Happy path (`--run-type full`): all 11 steps (`1`, `2`, `3`, `3.5`, `3.7`,
+  `4`, `4b`, `4c`, `5`, `6`, `7`) open and close in order; `finish-run` writes
+  status `ok`.
+- Run-type contracts: `required_steps_for("jd-to-ready")` is
+  `1, 2, 3, 3.5, 3.7, 6, 7`; `required_steps_for("stage-outreach")` is
+  `4, 4b, 4c, 5, 6, 7`; a `stage-outreach` run finishes with only its own
+  steps closed.
+- Run-type typo guard: `start-run --run-type <unknown>` is rejected at the
+  CLI; the function-level fallback to the legacy full list applies only to
+  legacy state files.
 - Early finish: `finish-run` after step `3` fails because later steps are
   missing.
+- Stateless finish/abort: `finish-run` and `abort-run` fail loudly when no
+  active run exists.
 - Overlapping step: `begin --step 4b` fails while step `4` is open.
 - Invalid end: `end --step 4` fails if step `4` was never opened.
 - Failed step: a step ending with `status: failed` causes final computed status
@@ -24,10 +34,13 @@ Required scenarios:
   and inconsistent totals fail validation.
 - Gap validation: `gaps` must parse as a JSON array.
 - Produced validation: `produced` must parse as a JSON array.
-- Failure pattern validation: values outside the allowed taxonomy fail.
+- Failure pattern validation: values outside the allowed taxonomy fail;
+  `pdf-export-defect` and `apply-packet-defect` are accepted.
 - Role folder validation: production role folders outside `Roles/` fail.
 - Test harness folder validation: non-`Roles/` folders pass only when explicitly
   marked as test runs.
+- Session scoping: `check --strict` flags an incomplete run only for the
+  session that started it; unstamped legacy runs are flagged by any session.
 
 ## Fixture Scenarios
 

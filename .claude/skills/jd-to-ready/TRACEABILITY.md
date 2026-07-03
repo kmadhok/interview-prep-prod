@@ -7,10 +7,12 @@ McKinsey failure mode.
 
 ## Why This Exists
 
-`jd-to-ready` is an orchestrator. It calls intake, classification, resume
-tailoring, contact research, contact enrichment, outreach drafting, report-back,
-and final logging. The trace must make those handoffs inspectable after the
-fact.
+`jd-to-ready` is an orchestrator for the prep half of the pipeline. It calls
+intake, classification, resume tailoring, resume PDF export, the apply packet,
+report-back, and final logging. The apply half (contact research, enrichment,
+email verification, outreach drafting) lives in the `stage-outreach` skill,
+which shares this trace helper under its own run-type. The trace must make
+those handoffs inspectable after the fact.
 
 A healthy trace answers:
 
@@ -44,18 +46,37 @@ Every production run follows this lifecycle:
 3. `begin` and `end` every required step
 4. `finish-run`
 
-Required steps:
+Required steps are selected per run-type at `start-run --run-type <type>`
+(the CLI default is `jd-to-ready`); the contract is the `RUN_TYPES` map in
+`trace_step.py`.
+
+`jd-to-ready` (prep half):
 
 | Step | Primitive | Required close event |
 |---|---|---|
 | `1` | `interview-prep-intake` | `step_end` |
 | `2` | `jd-classification` | `step_end` |
 | `3` | `tailor-resume` | `step_end` |
+| `3.5` | `resume-export` | `step_end` |
+| `3.7` | `apply-packet` | `step_end` |
+| `6` | `report-back` | `step_end` |
+| `7` | `final-log` | `step_end` |
+
+`stage-outreach` (apply half):
+
+| Step | Primitive | Required close event |
+|---|---|---|
 | `4` | `find-contacts` | `step_end` |
 | `4b` | `enrich-contacts` | `step_end` |
+| `4c` | `verify-emails` | `step_end` |
 | `5` | `write-outreach` | `step_end` |
 | `6` | `report-back` | `step_end` |
 | `7` | `final-log` | `step_end` |
+
+`full` (legacy, pre-split): all 11 steps
+(`1, 2, 3, 3.5, 3.7, 4, 4b, 4c, 5, 6, 7`). Kept so legacy state files and the
+combined test harness keep working; new runs should use one of the two
+run-types above. Unknown run-type strings are rejected at the CLI.
 
 Hooks may append telemetry and warn about incomplete traces. Hooks must not be
 the source of truth for finalization.

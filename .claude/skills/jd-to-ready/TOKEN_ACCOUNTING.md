@@ -5,16 +5,21 @@ The scope is per-step accounting, not literal token-by-token stream capture.
 
 ## Scope
 
-Track token usage for each required `jd-to-ready` step:
+Track token usage for each required step of the run's run-type.
+
+`jd-to-ready` (prep half):
 
 - `1` intake
 - `2` classification
 - `3` resume tailoring
-- `4` contact research
-- `4b` contact enrichment
-- `5` outreach drafting
+- `3.5` resume export + vision verification
+- `3.7` apply packet (posting-date research + application answers + upload)
 - `6` report-back
 - `7` final logging
+
+`stage-outreach` (apply half) owns steps `4` contact research, `4b` contact
+enrichment, `4c` email verification, and `5` outreach drafting, plus its own
+`6`/`7`.
 
 If a step delegates to a subagent or primitive, the tokens caused by that
 delegation belong to the parent step.
@@ -73,12 +78,14 @@ Do not omit `tokens` from `step_end`.
 ## Attribution Rules
 
 - Step 2 owns classification tokens, including subagent classification calls.
-- Step 3 owns resume-tailoring tokens and export-decision tokens, but not local
-  PDF/DOCX rendering work unless the renderer reports model usage.
-- Step 4 owns LinkedIn contact research reasoning and any model calls used to
-  score or summarize contacts.
-- Step 4b owns recruiter-activity enrichment reasoning.
-- Step 5 owns outreach drafting tokens.
+- Step 3 owns resume-tailoring tokens.
+- Step 3.5 owns vision-verify subagent tokens. Local PDF rendering
+  (`build_resume_pdf.py`, reportlab) uses no model tokens.
+- Step 3.7 owns posting-date research (WebFetch reasoning) and
+  `Application Answers.md` drafting tokens. The rclone upload uses none.
+- Steps 4/4b/4c/5 are `stage-outreach` steps: 4 owns LinkedIn contact research
+  reasoning, 4b owns recruiter-activity enrichment, 4c owns email
+  verification, 5 owns outreach drafting.
 - Step 6 owns the final user-facing report tokens.
 - Step 7 should usually have low or unknown token usage; it exists to close the
   audit trail.

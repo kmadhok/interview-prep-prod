@@ -261,6 +261,37 @@ class TraceStepTests(unittest.TestCase):
         self.run_cmd("start-run", "--run-type", "full", "--company", "Acme", "--role", "Agent Builder", "--test-run")
         self.run_cmd("set-role-folder", "--role-folder", str(self.root / "sandbox" / "Acme"), "--test-run")
 
+    def test_cli_rejects_unknown_run_type(self) -> None:
+        # Fail closed: a typo'd run-type must not silently inherit the legacy
+        # 11-step contract (which would make the run unfinishable).
+        result = self.run_cmd(
+            "start-run", "--run-type", "jd_to_ready", "--company", "Acme", "--role", "X", ok=False
+        )
+        self.assertIn("invalid choice", result.stderr)
+
+    def test_finish_without_active_run_fails(self) -> None:
+        result = self.run_cmd("finish-run", "--gaps", "[]", "--files-written", "[]", ok=False)
+        self.assertIn("No active jd-to-ready run", result.stderr)
+
+    def test_abort_without_active_run_fails(self) -> None:
+        result = self.run_cmd("abort-run", "--reason", "nothing to abort", ok=False)
+        self.assertIn("No active jd-to-ready run", result.stderr)
+
+    def test_new_failure_patterns_accepted(self) -> None:
+        self.start_and_bind()
+        for step, pattern in [("1", "pdf-export-defect"), ("2", "apply-packet-defect")]:
+            self.run_cmd(
+                "begin", "--step", step, "--primitive", f"p{step}", "--mode", "",
+                "--prediction", "closes",
+            )
+            self.run_cmd(
+                "end", "--step", step, "--primitive", f"p{step}", "--mode", "",
+                "--status", "partial", "--prediction-met", "partial",
+                "--produced", "[]", "--gaps", "[]",
+                "--failure-pattern", pattern, "--tokens", TOKENS,
+            )
+        self.run_cmd("abort-run", "--reason", "enum test complete", "--gaps", "[]")
+
 
 class RunTypeMapTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -274,7 +305,9 @@ class RunTypeMapTests(unittest.TestCase):
         self.assertEqual(self.mod.required_steps_for("stage-outreach"), ["4", "4b", "4c", "5", "6", "7"])
 
     def test_unknown_run_type_falls_back_to_full(self) -> None:
-        # None / unknown → the legacy full list, so old callers keep working
+        # Function-level fallback only: None / unknown → the legacy full list so
+        # legacy STATE FILES loaded via load_state() keep working. The CLI front
+        # door rejects unknown run-types (see test_cli_rejects_unknown_run_type).
         self.assertEqual(self.mod.required_steps_for(None), self.mod.REQUIRED_STEPS)
         self.assertEqual(self.mod.required_steps_for("bogus"), self.mod.REQUIRED_STEPS)
 

@@ -47,6 +47,8 @@ ALLOWED_FAILURE_PATTERNS = {
     "thin-jd-stub",
     "theme-unmatched",
     "thin-results",
+    "pdf-export-defect",
+    "apply-packet-defect",
 }
 TOKEN_SOURCES = {"runtime", "manual", "estimated", None}
 UNKNOWN_TOKENS = {
@@ -508,7 +510,7 @@ def cmd_check(args: argparse.Namespace) -> int:
 def cmd_finish(args: argparse.Namespace) -> int:
     state = load_state()
     if not state:
-        return 0
+        return fail("No active jd-to-ready run; nothing to finish.")
     if state.get("current_step"):
         return fail(f"Cannot finish run; step {state['current_step']} is still open.")
     events = read_events(trace_path(state))
@@ -566,7 +568,7 @@ def cmd_finish(args: argparse.Namespace) -> int:
 def cmd_abort(args: argparse.Namespace) -> int:
     state = load_state()
     if not state:
-        return 0
+        return fail("No active jd-to-ready run; nothing to abort.")
     events = read_events(trace_path(state))
     ok, gaps, error = parse_json_optional(args.gaps, [], "gaps")
     if not ok:
@@ -620,7 +622,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--role")
     p.add_argument("--role-folder")
     p.add_argument("--test-run", action="store_true")
-    p.add_argument("--run-type", default="jd-to-ready")
+    # Fail closed on typos: an unknown run-type would silently inherit the
+    # legacy 11-step contract and make the run unfinishable.
+    p.add_argument("--run-type", default="jd-to-ready", choices=sorted(RUN_TYPES))
     p.set_defaults(func=cmd_start)
 
     p = sub.add_parser("set-role-folder")

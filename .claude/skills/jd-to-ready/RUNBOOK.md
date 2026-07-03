@@ -55,7 +55,10 @@ jq -r '[.timestamp,.company,.role,.status,((.steps_closed//[])|join(",")),((.gap
 
 A production run is healthy when:
 
-- Required steps `1,2,3,4,4b,5,6,7` all have `step_end` events.
+- All steps required by the run's `run_type` have `step_end` events
+  (`jd-to-ready`: `1, 2, 3, 3.5, 3.7, 6, 7`; `stage-outreach`:
+  `4, 4b, 4c, 5, 6, 7`; legacy `full`: all 11). The authoritative list is
+  `required_steps` on the run's `run_start` event.
 - No step is left open.
 - The per-role trace and global summary agree on the role folder.
 - Every `step_end` has a `tokens` object, even if counts are unknown.

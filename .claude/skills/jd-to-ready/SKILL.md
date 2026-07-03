@@ -12,6 +12,10 @@ This skill is **near-pure orchestration** (the docker-compose model). It wires t
 | 1 | `interview-prep-intake` (`.skill` at workspace root) | — | filing the JD |
 | 2 | _(inline subagent — the one bit of logic this skill owns)_ | — | classifying the JD into `themes[]` + `archetype`; **writes `.classification.json`** |
 | 3 | `tailor-resume` | `pipeline` | resume tailoring (canonical-only) |
+| 3.5 | `resume-export` (`build_resume_pdf.py` + vision verify) | — | one-page PDF render + gold-standard visual verification |
+| 3.7 | `apply-packet` (`apply_packet.py` + WebFetch) | — | true posted date, `Application Answers.md`, Drive upload |
+| 6 | `report-back` | — | the short actionable recap to Kanu |
+| 7 | `final-log` | — | global summary line + `finish-run` |
 
 > **Pipeline ends at the apply gate.** Steps 4 / 4b / 4c / 5 (contact research, enrichment, email verification, outreach drafting) have moved to the `stage-outreach` skill. `stage-outreach` reads `.classification.json` from this step's output to skip re-classifying.
 
@@ -37,7 +41,7 @@ Plus: a new row in `Pipeline.md`, an updated `active_interview_pipeline.md` memo
 
 ## Workspace paths (resolved once, used throughout)
 
-- **Workspace root:** `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/`
+- **Workspace root:** machine-dependent — Mac: `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/`; PC (drip-runner): `G:/projects/interview-prep/`. Resolve from the workspace's own `AGENTS.md`/`CLAUDE.md` first; Mac paths elsewhere in this file are examples, not gospel. On PC runs, the `active_interview_pipeline.md` memory update is a known no-op — record it as a `{source:"intake", kind:"memory-noop"}` gap and continue.
 - **Reusables to read** (every run): `Resume Achievements Master.md`, `Demo Portfolio.md`, `Pipeline.md`
 - **Memory file:** `active_interview_pipeline.md` in the session memory directory (path from system prompt; do not hardcode)
 - **Role folder (to be created):** `<workspace root>/Roles/<Company - Role Title>/` (active/considering roles live under `Roles/`; closed roles in `_Archived/`)
@@ -85,9 +89,11 @@ Required traced steps:
 | 6 | `report-back` | `report includes paths, hard gates, classification evidence, gaps, and stale Pipeline.html note` |
 | 7 | `final-log` | `global jd-to-ready summary is appended and active run state is cleared` |
 
-Use only these `failure_pattern` values (or `null`). Emittable by this prep skill: `generic-resume-language`, `verify-placeholder-leak`, `fabricated-hook`, `thin-jd-stub`, `theme-unmatched`, `thin-results`. Defined in the shared trace taxonomy but only emitted by the apply-side `stage-outreach` skill (never here): `non-decision-maker-contact`, `low-confidence-emails`.
+Use only these `failure_pattern` values (or `null`). Emittable by this prep skill: `generic-resume-language`, `verify-placeholder-leak`, `fabricated-hook`, `thin-jd-stub`, `theme-unmatched`, `thin-results`, `pdf-export-defect`, `apply-packet-defect`. Defined in the shared trace taxonomy but only emitted by the apply-side `stage-outreach` skill (never here): `non-decision-maker-contact`, `low-confidence-emails`.
 
 If a step fails or is skipped, still write its `end` event with `status: failed|skipped`, the known `gaps`, and the closest `failure_pattern`. If a value is unknown, use `null` rather than inventing.
+
+Retries happen *before* `end`: fix and re-attempt inside the open step (e.g. the step-3.5 re-render). Once a step ends `failed`, the run's computed status is final — a closed step cannot be reopened.
 
 When editing trace behavior, do not rely on corrected summary lines. The McKinsey run showed why: artifacts can exist while required steps are missing from the per-role trace. `finish-run` now fails closed unless all required production steps are closed; use `abort-run --reason "<reason>"` when a run cannot continue.
 
@@ -245,12 +251,12 @@ The script (`build_resume_pdf.py`, reportlab) renders a one-page PDF that matche
 
 These gaps can stack (e.g. overflow + title leak). Surface any `pdf-overflow` in the step-6 report so Kanu can decide whether to trim a bullet.
 
-**Failure pattern — known taxonomy gap.** Set `--failure-pattern` to the closest enum only when one exists. For `pdf-overflow` and `pdf-formatting-defect` there is **no matching value in the allowed `failure_pattern` taxonomy** (it covers content/contact defects like `generic-resume-language`, `verify-placeholder-leak`, `low-confidence-emails` — nothing for a PDF render/overflow defect). Leave `--failure-pattern ""` (empty) for those: the defect is fully captured in `gaps[]`, but there is **no enum value to name it yet**. Do NOT invent a new `failure_pattern` value — the schema validator would reject it. This is a flagged gap for a future schema decision (add a `pdf-export-defect`-style enum). For `export-unavailable`/`export-quality-unknown`, also leave `--failure-pattern ""` (no taxonomy match).
+**Failure pattern.** Use `--failure-pattern "pdf-export-defect"` when the PDF has a real defect — a `pdf-overflow` or `pdf-formatting-defect` gap (title leak, wrapping dates, vision-verify FAIL). Leave `--failure-pattern ""` when the only gaps are environmental (`export-unavailable`, `export-quality-unknown` — the tooling couldn't run or couldn't judge; that's not a defect in the artifact).
 
 Close the step with the parsed status and gaps, e.g.:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.5 --primitive resume-export --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Kanu Madhok Resume - <Company> <Short Role>.pdf"]' --gaps '<gaps from the mapping above, or []>' --failure-pattern "" --tokens "$UNKNOWN_TOKENS"
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.5 --primitive resume-export --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Kanu Madhok Resume - <Company> <Short Role>.pdf"]' --gaps '<gaps from the mapping above, or []>' --failure-pattern "<pdf-export-defect if a real defect gap was recorded, else empty>" --tokens "$UNKNOWN_TOKENS"
 ```
 
 Use `status: ok` when the clean case holds, `partial` when files were written but a defect/overflow was logged, `failed` when no files were produced (export-unavailable). Merge whatever gaps you recorded into the step-6 report and step-7 log alongside the other steps' gaps.
@@ -308,10 +314,10 @@ python3 "<repo root>/scripts/drip_runner/apply_packet.py" upload "<role folder>"
 
 Honor `APPLY_PACKET_REMOTE_DIR` if the environment sets it (the e2e test does). On non-zero exit, record a gap `{source:"apply-packet", kind:"upload-failed", detail:"<stderr line>"}` and close the step `partial` — the `.md`/`.pdf` in the repo remain the source of truth, and the hourly reconcile will retry the upload via the hash-drift path once the cause is fixed. Never let an upload failure abort the run.
 
-Close the step (gaps from 3.7a/b/e, `--failure-pattern ""` — no taxonomy value covers packet defects yet, same known gap as the PDF-export kinds):
+Close the step (gaps from 3.7a/b/e). Use `--failure-pattern "apply-packet-defect"` when the packet itself is defective — an `upload-failed` or `repost-detected` gap. Leave it `""` when the only gap is environmental (`posted-date-unknown` — no canonical source existed to find):
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.7 --primitive apply-packet --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Application Answers.md",".apply-packet.json"]' --gaps '<gaps or []>' --failure-pattern "" --tokens "$UNKNOWN_TOKENS"
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.7 --primitive apply-packet --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Application Answers.md",".apply-packet.json"]' --gaps '<gaps or []>' --failure-pattern "<apply-packet-defect if upload-failed/repost-detected, else empty>" --tokens "$UNKNOWN_TOKENS"
 ```
 
 ### Step 6 — Report back

@@ -31,7 +31,13 @@ Required fields:
 - `required_steps`
 - `source`
 
-`required_steps` defaults to `["1", "2", "3", "3.5", "3.7", "4", "4b", "4c", "5", "6", "7"]`.
+`required_steps` is set per `--run-type` at `start-run` (see the `RUN_TYPES`
+map in `trace_step.py`). The CLI default is `jd-to-ready` →
+`["1", "2", "3", "3.5", "3.7", "6", "7"]`; `stage-outreach` →
+`["4", "4b", "4c", "5", "6", "7"]`. The full 11-step list
+(`["1", "2", "3", "3.5", "3.7", "4", "4b", "4c", "5", "6", "7"]`) is the
+legacy `full` contract, kept for old state files and the combined test
+harness. Unknown run-type strings are rejected at the CLI.
 
 ### `role_folder_set`
 
@@ -100,6 +106,8 @@ Allowed `failure_pattern` values:
 - `thin-jd-stub`
 - `theme-unmatched`
 - `thin-results`
+- `pdf-export-defect`
+- `apply-packet-defect`
 - `null`
 - empty string
 
@@ -188,6 +196,26 @@ State transition rules:
 - `finish-run` requires `current_step == null`.
 - `finish-run` requires every required step in `closed_steps`.
 - `abort-run` records incomplete state and clears active state.
+
+## Gap Kind Registry
+
+`gaps[]` entries are `{source, kind, detail}` objects. `kind` is documented
+here but NOT enforced by the validator (unlike `failure_pattern`) — new kinds
+may appear, but prefer reusing one of these before inventing another:
+
+| Kind | Meaning |
+|---|---|
+| `pdf-overflow` | PDF exceeded one page; a bullet needs trimming |
+| `pdf-formatting-defect` | Visual defect in the rendered PDF (title leak, wrapping dates, layout) |
+| `export-unavailable` | PDF export could not run (reportlab missing, render failed) |
+| `export-quality-unknown` | Export contract or vision verify could not be evaluated |
+| `posted-date-unknown` | No canonical ATS posting date found; LinkedIn relative date not trusted |
+| `repost-detected` | Deterministic repost check matched an existing role folder |
+| `upload-failed` | Apply-packet upload to Drive failed; hourly reconcile will retry |
+| `memory-noop` | Session memory file update skipped (expected on PC drip-runner runs) |
+| `no-canonical-match` | JD requirement has no matching canonical achievement; not claimed |
+| `needs-stronger-claim` | JD bar exceeds what canonical material supports; flagged, not invented |
+| `hard-gate` | JD blocker surfaced (citizenship, clearance, RTO, travel, location) |
 
 ## Healthy Trace Checklist
 
