@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-06-05 · Zipline - Forward Deployed AI Engineer Operations.pdf",
+  "answers_remote": "gdrive:Apply Queue/Zipline - Forward Deployed AI Engineer Operations - Answers.txt",
+  "pdf_sha256": "e73e58fc8fbdebce59c7c8bc3ffbcd5133f5c79ee01e0ea49401fdebaf34da7a",
+  "uploaded_ts": "2026-07-03T05:17:41-05:00",
+  "posted_date": "2026-06-05",
+  "canonical_url": "https://www.zipline.com/open-roles?gh_jid=7764239003",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

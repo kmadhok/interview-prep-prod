@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "end-to-end", "evidence": "you will build end-to-end AI tools, take them to production, and solve real-world problems"},
+    {"tag": "business-translation", "evidence": "comfortable decomposing messy business problems into reliable technical workflows"},
+    {"tag": "cross-functional", "evidence": "work closely with operators, engineers, product teams, and business leaders to understand user needs"},
+    {"tag": "LLM-orchestration", "evidence": "You should have experience building with LLMs, data processing pipelines, and analytics tools"},
+    {"tag": "evaluation", "evidence": "a solid foundation in machine learning basics such as evaluation, training concepts, and problem decomposition"},
+    {"tag": "engineering-rigor", "evidence": "an engineering mindset focused on delivering production AI systems, not academic benchmarks"}
+  ],
+  "archetype": "FDE / client-facing",
+  "archetype_rationale": "The title is literally Forward Deployed AI Engineer, and the day-to-day matches: 'work directly with Zipline teams to own GenAI strategy and implementation', 'iterating directly with users', and up to 50% travel 'into the Field' to deploy into operational teams.",
+  "notes": "Internal-facing FDE: deploys into Zipline's own ops teams (aviation, fulfillment, maintenance), not external clients — 'hands-on AI startup CTO inside Zipline', reporting to Head of Operations. Success metric is adoption ('systems that are adopted, trusted, and used in daily operations'), so the resume should foreground shipped-and-adopted internal tools. In-office South San Francisco, cash range $112.5K-$300K. JD explicitly says 'Make sure your resume highlights what you have built, shipped, automated, scaled' — bias bullets toward concrete builds over analysis.",
+  "classified_ts": "2026-07-03",
+  "posted_date": "2026-06-05",
+  "canonical_url": "https://www.zipline.com/open-roles?gh_jid=7764239003",
+  "easy_apply": false,
+  "repost": false
+}
