@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/2026-06-11 · Justworks - Senior Analytics Engineer.pdf",
+  "answers_remote": "gdrive:Apply Queue/Justworks - Senior Analytics Engineer - Answers.txt",
+  "pdf_sha256": "8331661ef2d3a32c03f9403dcbe304c75c63df7439364a277689aca4b136daaa",
+  "uploaded_ts": "2026-07-04T05:17:15-05:00",
+  "posted_date": "2026-06-11",
+  "canonical_url": "https://boards.greenhouse.io/justworks/jobs/7996861?gh_jid=7996861",
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

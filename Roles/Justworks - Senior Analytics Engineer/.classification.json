@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "dashboards", "evidence": "build and govern BI content in Tableau and Redash — curated data sources, certified dashboards, and reusable metrics"},
+    {"tag": "business-translation", "evidence": "Partner directly with stakeholders to translate business questions into data requirements"},
+    {"tag": "platform", "evidence": "Design, build, and maintain our semantic layer using Snowflake semantic views"},
+    {"tag": "engineering-rigor", "evidence": "Comfortable with Git, command line, and CI/CD best practices"},
+    {"tag": "simplification", "evidence": "reduce dashboard sprawl through consolidation and clear standards"},
+    {"tag": "cross-functional", "evidence": "work closely with data engineers, analysts, and business stakeholders"}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day is dimensional modeling, dbt/SQL transformation, semantic-layer builds, and governed BI in Tableau/Redash — 'Transform raw data into high-quality data models' and 'Expert understanding of data warehousing concepts... dimensional modeling, star schemas.' No agentic or ML-building work despite the team's 'AI center of excellence' framing.",
+  "notes": "JD mentions the team includes 'AI builders' and is a 'data and AI center of excellence', but this role itself has zero AI/LLM responsibilities — do not lead resume with agent work; lead with semantic layer (Kanu's customer-voice-semantic-layer artifact is a direct hit), dbt/SQL/Snowflake, governed dashboards, and stakeholder metric definition. Privacy/sensitive-data management and mentorship are secondary signals worth one bullet each.",
+  "classified_ts": "2026-07-04",
+  "posted_date": "2026-06-11",
+  "canonical_url": "https://boards.greenhouse.io/justworks/jobs/7996861?gh_jid=7996861",
+  "easy_apply": false,
+  "repost": false
+}
