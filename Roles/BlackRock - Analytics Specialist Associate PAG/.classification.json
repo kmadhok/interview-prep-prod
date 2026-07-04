@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "business-translation", "evidence": "translating complex analytical capabilities into intuitive, fit-for-purpose solutions that integrate seamlessly into how investment teams operate"},
+    {"tag": "end-to-end", "evidence": "experience building end-to-end analytical applications"},
+    {"tag": "cross-functional", "evidence": "Ability to work effectively with both technical and investment stakeholders"},
+    {"tag": "experimentation", "evidence": "Operate with an experimental mindset—rapidly iterating, learning from feedback, and refining approaches"},
+    {"tag": "engineering-rigor", "evidence": "Partner closely with engineering teams to productionize solutions and ensure scalability, reliability, and long-term maintainability"},
+    {"tag": "platform", "evidence": "Develop a deep understanding of the Aladdin ecosystem, including its analytical capabilities and financial models"}
+  ],
+  "archetype": "FDE / client-facing",
+  "archetype_rationale": "The team literally describes itself as 'in-house, forward-deployed engineers and data scientists,' and the day-to-day is embedding with investment teams to 'identify high-impact opportunities, rapidly prototype ideas, and iterate based on real-world feedback' — building alongside internal clients rather than owning a product or platform.",
+  "notes": "Three parallel Associate openings, each embedded with a different investment team (Fixed Income, Multi-Asset, Private Markets) — the recruiter may ask for an asset-class preference. AI/agentic experience is a 'plus,' not core; finance-domain fluency ('solid understanding of financial markets and instruments') is weighted equally with technical skills, so the tailored resume should surface any markets/payments/finance-adjacent work. Kanu lacks direct asset-class experience, which is the main gap to address.",
+  "classified_ts": "2026-07-04",
+  "posted_date": "2026-06-10",
+  "canonical_url": "https://blackrock.wd1.myworkdayjobs.com/en-US/BlackRock_Professional/job/New-York-NY/Analytics-Specialist--Associate--Portfolio-Analytics-Group--PAG--_R264638",
+  "easy_apply": false,
+  "repost": false
+}
