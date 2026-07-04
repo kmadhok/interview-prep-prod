@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Bain - Lead AI Engineering.pdf",
+  "answers_remote": "gdrive:Apply Queue/Bain - Lead AI Engineering - Answers.txt",
+  "pdf_sha256": "cfa2885fa4e21ea71783a1f805936fbdfe3a5a15c31aa5c7568a84f7a81cf5d8",
+  "uploaded_ts": "2026-07-04T05:43:06-05:00",
+  "posted_date": null,
+  "canonical_url": null,
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}

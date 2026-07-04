@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "Implement agentic workflows where they add clear value (e.g., tool use, multi-step execution, human-in-the-loop controls)"},
+    {"tag": "RAG", "evidence": "Design and build advanced search, retrieval, and knowledge pipelines across diverse data structures and stores (e.g., hybrid search, vector stores, graph databases/knowledge graphs)"},
+    {"tag": "evaluation", "evidence": "Build evaluation and observability for GenAI and agentic systems: tracing and instrumentation, regression test suites, automated scoring where appropriate"},
+    {"tag": "business-translation", "evidence": "Translate ambiguous client needs into clear technical requirements, tradeoffs, and delivery plans."},
+    {"tag": "engineering-rigor", "evidence": "Write clean, testable, maintainable code and ship AI services through the full SDLC: build → test → deploy → monitor → iterate."},
+    {"tag": "consulting", "evidence": "work as part of broader Bain consulting teams to move solutions from prototype to real adoption"}
+  ],
+  "archetype": "FDE / client-facing",
+  "archetype_rationale": "Day-to-day is building GenAI/agentic applications while embedded with clients — 'min 3 days/week in person at client site,' 'comfort working directly with clients,' and moving solutions 'from prototype to real adoption.' That deployed-engineer-inside-consulting-teams shape is FDE, not pure platform or product-builder work.",
+  "notes": "Heavier infra/MLOps bar than typical GenAI roles: Docker/Kubernetes, CI/CD, PyTorch/TensorFlow training breadth are required, and secure enterprise deployment (PII handling, access controls, guardrails) is explicit — resume should surface engineering/ops evidence, not just agent builds. Band is 3-5+ years at $203,500 DC with hybrid + travel required.",
+  "classified_ts": "2026-07-04",
+  "posted_date": null,
+  "canonical_url": null,
+  "easy_apply": false,
+  "repost": false
+}
