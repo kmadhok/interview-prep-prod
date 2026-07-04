@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "agents", "evidence": "building proof-of-concept solutions, reference architectures, and deployable single-agent and multi-agent systems that solve real business problems"},
+    {"tag": "LLM-orchestration", "evidence": "Design single-agent and multi-agent workflows for tool use, retrieval, memory, planning, handoffs, and human-in-the-loop execution."},
+    {"tag": "end-to-end", "evidence": "Build full-stack systems that move from prototype to secure production deployment, including APIs, orchestration, observability, evaluation, identity, and rollback."},
+    {"tag": "evaluation", "evidence": "Define evals and feedback loops—including synthetic data generation and synthetic evaluation where useful—for task completion, reliability, latency, safety, cost"},
+    {"tag": "RAG", "evidence": "including prompting, context engineering, retrieval, tool use, fine-tuning tradeoffs, and evaluation"},
+    {"tag": "MCP", "evidence": "Familiarity with MCP, A2A-style communication patterns, or advanced agent interoperability."}
+  ],
+  "archetype": "FDE / client-facing",
+  "archetype_rationale": "The team is 'dedicated to enabling ecosystem partners' and the day-to-day is building POCs, reference architectures, and production deployments to help 'enterprise developers move from prototype to real-world impact' — a hands-on builder embedded with external partners, the forward-deployed pattern rather than internal product building.",
+  "notes": "agent-builder is a very close second archetype — every responsibility bullet is agentic-system construction; the partner-enablement framing is what tips it to FDE. JD also emphasizes coding-agent-assisted development (Codex, Claude Code) and synthetic data/eval experience as a hard requirement, plus GPU inference cost-quality tradeoffs (NVIDIA-specific) — resume should surface any synthetic-eval and cost/latency work. Comp band $152k–$241.5k, Santa Clara.",
+  "classified_ts": "2026-07-04",
+  "posted_date": "2026-04-07",
+  "canonical_url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Solutions-Architect--Applied-AI-Builder_JR2015683",
+  "easy_apply": false,
+  "repost": false
+}
