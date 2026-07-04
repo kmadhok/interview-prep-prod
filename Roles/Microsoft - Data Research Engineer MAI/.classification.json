@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "ML-pipeline", "evidence": "Develop and maintain scalable data pipelines for multimodal ingestion, preprocessing, filtering, and annotation."},
+    {"tag": "experimentation", "evidence": "run experiments on new datasets (data ablations) to assess their impact and determine the most effective data"},
+    {"tag": "evaluation", "evidence": "Create high-quality datasets for training and evaluation"},
+    {"tag": "cross-functional", "evidence": "Collaborate with Safety, Ethics, and Governance teams to ensure datasets meet standards"},
+    {"tag": "engineering-rigor", "evidence": "improve dataset quality and integrity"},
+    {"tag": "business-translation", "evidence": "ability to communicate technical findings clearly to research and product teams"}
+  ],
+  "archetype": "data-engineering / analytics",
+  "archetype_rationale": "Day-to-day work is curating datasets, building ingestion/preprocessing pipelines, running data ablations, and doing exploratory/statistical analysis of large unstructured datasets ('Analyze real-world multimodal datasets to assess quality, diversity, relevance') — data engineering plus analysis, not building agents or client-facing products.",
+  "notes": "Despite being on a frontier-AI team, this is NOT an LLM-app/agent-building role — it is upstream training-data work (curation, ablations, pipelines). Downstream tailoring should lead with Python/Pandas data-pipeline and statistical-analysis achievements over agent-orchestration projects; JD also weights responsible-AI/data-governance collaboration, and preferred quals mention Spark/Ray/Beam-scale processing. Wide IC4 band ($119.8K–$234.7K), US remote.",
+  "classified_ts": "2026-07-04",
+  "posted_date": null,
+  "canonical_url": null,
+  "easy_apply": false,
+  "repost": false
+}

@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "state": "queued",
+  "pdf_remote": "gdrive:Apply Queue/undated · Microsoft - Data Research Engineer MAI.pdf",
+  "answers_remote": "gdrive:Apply Queue/Microsoft - Data Research Engineer MAI - Answers.txt",
+  "pdf_sha256": "603e38067df782e5643c6dc8b7e2b2365f9ac215bb6392a9febee7bd6f6ee112",
+  "uploaded_ts": "2026-07-04T05:30:23-05:00",
+  "posted_date": null,
+  "canonical_url": null,
+  "repost": false,
+  "easy_apply": false,
+  "remote_dir": "gdrive:Apply Queue"
+}
