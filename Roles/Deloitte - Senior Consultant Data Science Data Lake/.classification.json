@@ -1,0 +1,18 @@
+{
+  "themes": [
+    {"tag": "consulting", "evidence": "3+ years of experience in analytics consulting, cybersecurity analytics, security operations, or a combination"},
+    {"tag": "LLM-orchestration", "evidence": "artificial intelligence development tools or frameworks such as vector databases, LangChain, or CrewAI"},
+    {"tag": "ML-pipeline", "evidence": "prepare data for analysis, engineer features, visualize data, or support machine learning workflows"},
+    {"tag": "end-to-end", "evidence": "enterprise data science/AI solution design-development-deployment"},
+    {"tag": "business-translation", "evidence": "Preparing analyses, client deliverables, and recommendations"},
+    {"tag": "cross-functional", "evidence": "coordinating with cross-functional stakeholders and project team members"}
+  ],
+  "archetype": "consulting / product-builder",
+  "archetype_rationale": "Day-to-day is Deloitte engagement delivery — 'contributing to strategy, design, and implementation workstreams across cyber transformation engagements' and 'preparing analyses, client deliverables, and recommendations' in PowerPoint/Visio — but with hands-on building (AI/ML, data engineering, LangChain/CrewAI applied to client use cases), i.e., a builder inside a consulting delivery model rather than a pure forward-deployed engineer.",
+  "notes": "Heavy cybersecurity domain requirement (SOC, threat hunting, incident response, Google SecOps) is a likely gap vs. Kanu's retail-analytics background — resume should lean on transferable AI/agent-framework and telemetry/data-pipeline work rather than claiming cyber experience. Also note 50% travel and the LangChain/CrewAI requirement, which maps directly to his agent-building achievements. Posting says recruiting ended 06/30/2026 (already past at filing) despite fresh repost — verify live before applying.",
+  "classified_ts": "2026-07-04",
+  "posted_date": null,
+  "canonical_url": "https://apply.deloitte.com/en_US/careers/JobDetail/Senior-Consultant-Data-Science-Data-Lake/350466",
+  "easy_apply": false,
+  "repost": false
+}
