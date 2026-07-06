@@ -34,3 +34,14 @@ def resume_filename(profile: dict[str, str], company: str, role: str) -> str:
     return profile["resume_filename_pattern"].format(
         name=profile["user_name"], company=company, role=role
     )
+
+
+def resume_glob_prefix(profile: dict[str, str] | None = None) -> str:
+    """Stable filename prefix shared by every tailored resume in a role folder.
+
+    The pattern is `{name} Resume - {company} {role}`, so all resumes for a user
+    start with `{user_name} Resume - `. Scanners glob on this prefix instead of a
+    hardcoded name.
+    """
+    profile = profile or load_profile()
+    return f"{profile['user_name']} Resume - "

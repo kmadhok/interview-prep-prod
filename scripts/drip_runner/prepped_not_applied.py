@@ -15,6 +15,11 @@ from __future__ import annotations
 import argparse, re, sys
 from pathlib import Path
 
+# config.py lives in the parent scripts/ dir; put it on sys.path so the resume
+# filename prefix resolves from profile.yaml.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from config import resume_glob_prefix
 from outreach_worklist import row_is_applied, active_section
 
 _CLOSED_HEADING = re.compile(r"^##\s+Closed", re.IGNORECASE)
@@ -92,7 +97,7 @@ def _scan_prepped(roles_dir: str):
         return
     now = datetime.now(timezone.utc).timestamp()
     for folder in sorted(p for p in base.iterdir() if p.is_dir()):
-        resumes = list(folder.glob("Kanu Madhok Resume - *.md"))
+        resumes = list(folder.glob(f"{resume_glob_prefix()}*.md"))
         if not resumes:
             continue
         newest = max(r.stat().st_mtime for r in resumes)

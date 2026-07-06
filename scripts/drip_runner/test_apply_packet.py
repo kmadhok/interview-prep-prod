@@ -18,7 +18,7 @@ def make_role(tmp_path, company="Scribd", role="Senior AI Data Engineer",
               posted="2026-06-28", with_answers=True):
     folder = tmp_path / f"{company} - {role}"
     folder.mkdir()
-    (folder / f"Kanu Madhok Resume - {company} {role.split()[0]}.pdf").write_bytes(b"%PDF-1.4 fake")
+    (folder / f"Test User Resume - {company} {role.split()[0]}.pdf").write_bytes(b"%PDF-1.4 fake")
     cls = {"themes": [], "archetype": "FDE / client-facing",
            "posted_date": posted, "canonical_url": "https://boards.greenhouse.io/x/1",
            "easy_apply": False, "repost": False}
@@ -131,7 +131,7 @@ PIPELINE = """## Active
 def make_packet_role(tmp_path, base, company, role, state="queued", pdf_bytes=b"%PDF-1.4 fake"):
     folder = tmp_path / base / f"{company} - {role}"
     folder.mkdir(parents=True)
-    pdf = folder / f"Kanu Madhok Resume - {company}.pdf"
+    pdf = folder / f"Test User Resume - {company}.pdf"
     pdf.write_bytes(pdf_bytes)
     rec = {"schema": 1, "state": state,
            "pdf_remote": f"gdrive:Apply Queue/2026-06-28 · {company} - {role}.pdf",

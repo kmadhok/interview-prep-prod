@@ -17,10 +17,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+from config import WORKSPACE as ROOT, resume_glob_prefix
+
+# Gold-standard reference lives in the workspace, relative to the repo root. The
+# filename prefix follows the profile's resume pattern; the reference itself is
+# opt-in via --reference, so a missing default just SKIPs (see _run).
 DEFAULT_REFERENCE = (
     "Roles/BCG X - Senior AI Factory Product Builder/"
-    "Kanu Madhok Resume - BCG X Senior AI Factory.pdf"
+    f"{resume_glob_prefix()}BCG X Senior AI Factory.pdf"
 )
 DEFAULT_OUT_ROOT = Path("/tmp/resume_verify")
 

@@ -141,7 +141,7 @@ def test_prepped_role_not_in_worklist_until_applied(tmp_path):
     roles_dir = tmp_path / "Roles"
     acme_folder = roles_dir / "Acme - Agent Builder"
     acme_folder.mkdir(parents=True)
-    resume = acme_folder / "Kanu Madhok Resume - Acme Agent Builder.md"
+    resume = acme_folder / "Test User Resume - Acme Agent Builder.md"
     resume.write_text("# Tailored resume for Acme Agent Builder\n", encoding="utf-8")
 
     pipeline = _pipeline(
@@ -363,7 +363,7 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     role_folder.mkdir(parents=True)
 
     # Pre-populate resume so the folder looks truly prepped (mirrors what jd-to-ready Step 3 writes)
-    resume_path = role_folder / "Kanu Madhok Resume - Acme Agent Builder.md"
+    resume_path = role_folder / "Test User Resume - Acme Agent Builder.md"
     resume_path.write_text("# Tailored resume\n", encoding="utf-8")
 
     env = os.environ.copy()
@@ -389,7 +389,7 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
 
     r = _run(["finish-run", "--status", "ok", "--gaps", "[]", "--files-written",
               json.dumps(["Job Description.md",
-                          "Kanu Madhok Resume - Acme Agent Builder.md",
+                          "Test User Resume - Acme Agent Builder.md",
                           ".classification.json"])], env)
     _assert_ok(r, "jd-to-ready finish-run")
 

@@ -1,4 +1,4 @@
-"""Convert a Kanu Madhok resume Markdown into a PDF matching the canonical layout.
+"""Convert the user's resume Markdown into a PDF matching the canonical layout.
 
 Usage:
     python3 scripts/build_resume_pdf.py path/to/Resume.md
@@ -28,7 +28,8 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-ROOT = Path("/Users/kanumadhok/Documents/Claude/Projects/Interview Prep")
+from config import WORKSPACE as ROOT, load_profile
+
 LINK = HexColor("#1A6FB3")
 
 EXP_HEADERS = {"PROFESSIONAL EXPERIENCE", "EXPERIENCE"}
@@ -200,8 +201,8 @@ def parse_resume(md_text: str):
         cleaned.append(ln)
     lines = cleaned
 
-    # Name: first H1
-    name = "Kanu Madhok"
+    # Name: first H1. Fall back to the profile name only if the markdown has no H1.
+    name = load_profile()["user_name"]
     contact_raw = ""
     body_start = 0
     for i, ln in enumerate(lines):

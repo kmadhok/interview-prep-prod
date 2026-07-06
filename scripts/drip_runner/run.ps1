@@ -4,7 +4,9 @@
 #   -Mode outreach       : Pass B — stage recruiter outreach for roles marked Applied.
 param([ValidateSet('saved','email','outreach')][string]$Mode = 'saved')
 $ErrorActionPreference = "Stop"
-$repo = "G:\projects\interview-prep"
+# Repo root = two levels up from this script (scripts\drip_runner\run.ps1).
+# Resolve-Path collapses the ..\.. so downstream Join-Path/Set-Location get a clean path.
+$repo = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $log  = Join-Path $env:USERPROFILE ".claude\logs\drip-runner.log"
 $logDir = Split-Path $log
 if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Force $logDir | Out-Null }

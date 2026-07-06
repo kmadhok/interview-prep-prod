@@ -13,6 +13,8 @@ import re
 import sys
 from pathlib import Path
 
+from config import WORKSPACE, load_profile
+
 
 SECTION_RE = re.compile(r"^##\s+(?P<title>.+?)\s*$", re.MULTILINE)
 H1_RE = re.compile(r"^#\s+(?P<title>.+?)\s*$", re.MULTILINE)
@@ -254,11 +256,12 @@ def render(md: str) -> str:
         note_html = '<span class="note">{}</span>'.format(md_inline(updated_note)) if updated_note else ""
         updated_html = '<div class="updated">Last updated: {}{}</div>'.format(html.escape(updated_value), note_html)
 
+    owner = load_profile()["user_name"]
     return """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>{title} — Kanu Madhok</title>
+<title>{title} — {owner}</title>
 <style>
 {css}
 </style>
@@ -298,6 +301,7 @@ def render(md: str) -> str:
 </html>
 """.format(
         title=html.escape(title),
+        owner=html.escape(owner),
         css=CSS,
         updated=updated_html,
         banners=banners_html or '<p class="empty">Nothing flagged.</p>',
@@ -308,9 +312,8 @@ def render(md: str) -> str:
 
 
 def main(argv):
-    script_dir = Path(__file__).resolve().parent
-    default_md = script_dir.parent / "Pipeline.md"
-    default_html = script_dir.parent / "Pipeline.html"
+    default_md = WORKSPACE / "Pipeline.md"
+    default_html = WORKSPACE / "Pipeline.html"
 
     md_path = Path(argv[1]) if len(argv) > 1 else default_md
     html_path = Path(argv[2]) if len(argv) > 2 else default_html

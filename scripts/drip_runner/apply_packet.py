@@ -12,6 +12,11 @@ from __future__ import annotations
 import argparse, difflib, hashlib, json, os, re, subprocess, sys
 from pathlib import Path
 
+# config.py lives in the parent scripts/ dir; put it on sys.path so the resume
+# filename prefix resolves from profile.yaml (same bootstrap pattern below).
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from config import resume_glob_prefix
 from outreach_worklist import active_section, row_is_applied
 
 PACKET_FILE = ".apply-packet.json"
@@ -45,7 +50,7 @@ def packet_answers_name(company: str, role: str) -> str:
 
 
 def find_resume_pdf(folder: Path) -> Path | None:
-    pdfs = sorted(folder.glob("Kanu Madhok Resume - *.pdf"),
+    pdfs = sorted(folder.glob(f"{resume_glob_prefix()}*.pdf"),
                   key=lambda p: p.stat().st_mtime, reverse=True)
     return pdfs[0] if pdfs else None
 

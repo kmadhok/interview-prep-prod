@@ -11,6 +11,8 @@ If no args, renders the default BCG round-2 prep set.
 """
 import sys, pathlib, markdown
 
+from config import WORKSPACE
+
 CSS = """
 :root { --ink:#1a1a1a; --bcg:#177b4b; --bcg-dark:#0f5e39; --muted:#5b6470;
         --line:#e3e8ee; --bg:#ffffff; --soft:#f5f8fb; --accent:#1A6FB3; }
@@ -45,8 +47,8 @@ em { color:var(--muted); }
 """
 
 DEFAULTS = [
-    "BCG X - Senior AI Factory Product Builder/Resume Deep-Dive Question Bank - Patrick Freyer.md",
-    "BCG X - Senior AI Factory Product Builder/Round 2 Prep Plan - Patrick Freyer.md",
+    "Roles/BCG X - Senior AI Factory Product Builder/Resume Deep-Dive Question Bank - Patrick Freyer.md",
+    "Roles/BCG X - Senior AI Factory Product Builder/Round 2 Prep Plan - Patrick Freyer.md",
 ]
 
 def render(md_path: pathlib.Path):
@@ -63,7 +65,7 @@ def render(md_path: pathlib.Path):
     print(f"wrote {out} ({len(html):,} bytes)")
 
 def main():
-    root = pathlib.Path(__file__).resolve().parent.parent
+    root = WORKSPACE
     args = sys.argv[1:] or DEFAULTS
     for a in args:
         p = pathlib.Path(a)

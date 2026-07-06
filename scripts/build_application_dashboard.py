@@ -10,8 +10,8 @@ from datetime import date
 from pathlib import Path
 from urllib.parse import quote
 
+from config import WORKSPACE as ROOT, resume_glob_prefix
 
-ROOT = Path(__file__).resolve().parents[1]
 PIPELINE = ROOT / "Pipeline.md"
 OUT_MD = ROOT / "Application Dashboard.md"
 OUT_HTML = ROOT / "Application Dashboard.html"
@@ -134,7 +134,7 @@ def add_artifacts(roles: list[Role]) -> list[Role]:
         role.has_jd = jd_path.exists()
         role.jd_placeholder = jd_path.exists() and is_placeholder_jd(jd_path, role)
         role.has_outreach = (path / "Cold Outreach.md").exists()
-        role.has_resume = any(path.glob("Kanu Madhok Resume*.md"))
+        role.has_resume = any(path.glob(f"{resume_glob_prefix()}*.md"))
     return roles
 
 

@@ -8,9 +8,18 @@
 # DripRunner is registered ENABLED (validated by a full end-to-end run 2026-06-21).
 # The old "disabled until the safety gate lands" rule was dropped 2026-06-21 - we
 # learn from real runs + logging instead of a canary; see Drip Runner plan.
+# $Repo defaults to two levels up from this script (scripts\drip_runner\install-tasks.ps1).
+# $DaemonDir defaults to the linkedin-mcp-server checkout beside the repo; override
+# both if your layout differs.
+param(
+  [string]$Repo,
+  [string]$DaemonDir
+)
 $ErrorActionPreference = "Stop"
-$repo      = "G:\projects\interview-prep"
-$daemonDir = "G:\projects\linkedin-mcp-server"
+if (-not $Repo)      { $Repo      = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path }
+if (-not $DaemonDir) { $DaemonDir = (Join-Path (Split-Path $Repo -Parent) "linkedin-mcp-server") }
+$repo      = $Repo
+$daemonDir = $DaemonDir
 $uv        = (Get-Command uv).Source
 $ps        = (Get-Command powershell).Source
 
