@@ -1,0 +1,6 @@
+# User profile — read by scripts/config.py and by skills at run time.
+# Flat key: value only. Created for each user by the /onboard skill.
+user_name: Kanu Madhok
+user_email: madhok.kanu@gmail.com
+resume_filename_pattern: "{name} Resume - {company} {role}"
+timezone: America/Chicago
