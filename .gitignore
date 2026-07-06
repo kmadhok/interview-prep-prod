@@ -14,3 +14,6 @@ __pycache__/
 
 # verify-emails derived credit cache (local, regenerated on demand)
 .claude/skills/verify-emails/.email-cache.json
+
+# Trace output — one dir per run, instance data, never committed
+runs/
