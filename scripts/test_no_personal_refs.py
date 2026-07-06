@@ -46,7 +46,7 @@ def iter_template_files():
 def test_no_personal_refs_in_template_dirs():
     violations = []
     for f in iter_template_files():
-        text = f.read_text(encoding="utf-8", errors="ignore")
+        text = f.read_text(encoding="utf-8", errors="surrogateescape")  # surrogateescape: lossless — never silently drop bytes that could hide a violation
         for pattern in FORBIDDEN:
             for m in pattern.finditer(text):
                 line_no = text.count("\n", 0, m.start()) + 1
