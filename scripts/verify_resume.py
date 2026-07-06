@@ -19,14 +19,16 @@ from pathlib import Path
 
 from config import WORKSPACE as ROOT, resume_glob_prefix
 
-# Gold-standard reference lives in the workspace, relative to the repo root. The
-# filename prefix follows the profile's resume pattern; the reference itself is
-# opt-in via --reference, so a missing default just SKIPs (see _run).
-DEFAULT_REFERENCE = (
-    "Roles/BCG X - Senior AI Factory Product Builder/"
-    f"{resume_glob_prefix()}BCG X Senior AI Factory.pdf"
-)
 DEFAULT_OUT_ROOT = Path("/tmp/resume_verify")
+
+
+def default_reference() -> Path:
+    """Lazy so importing this module (or `--help`) never touches profile.yaml."""
+    rel = (
+        "Roles/BCG X - Senior AI Factory Product Builder/"
+        f"{resume_glob_prefix()}BCG X Senior AI Factory.pdf"
+    )
+    return _resolve_cli_path(rel, ROOT)
 
 VISUAL_CRITERIA = [
     "Name is centered, large, bold at the very top — and there is NO 'Resume' title line above the name",
@@ -227,8 +229,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--reference",
-        default=DEFAULT_REFERENCE,
-        help="Gold-standard reference PDF. Relative paths resolve from the repo root.",
+        default=None,
+        help="Gold-standard reference PDF. Relative paths resolve from the repo root. "
+        "Defaults to the BCG X reference derived from profile.yaml.",
     )
     return parser.parse_args()
 
@@ -236,7 +239,11 @@ def parse_args() -> argparse.Namespace:
 def _run() -> int:
     args = parse_args()
     target_pdf = _resolve_cli_path(args.target_pdf)
-    reference_pdf = _resolve_cli_path(args.reference, ROOT)
+    reference_pdf = (
+        _resolve_cli_path(args.reference, ROOT)
+        if args.reference is not None
+        else default_reference()
+    )
     out_dir = _resolve_cli_path(args.out_dir) if args.out_dir else _default_out_dir(target_pdf)
 
     if not target_pdf.exists():
