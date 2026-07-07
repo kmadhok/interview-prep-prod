@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify not-yet-applied job postings from Pipeline.md.
 
-The script parses Kanu Madhok's Interview Prep pipeline, selects roles that have
+The script parses the user's Interview Prep pipeline, selects roles that have
 not been applied to, verifies company ATS/job URLs deterministically over HTTP,
 and emits ordered LinkedIn MCP worklists for postings that require authenticated
 LinkedIn access.

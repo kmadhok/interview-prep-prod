@@ -64,18 +64,18 @@ def test_classify_missing_file_fails():
     assert va.check_classify(_clone_with({}))["status"] == "fail"
 
 
-_RESUME_OK = ("# Kanu Madhok\n\nmadhok.kanu@gmail.com\n\n" +
+_RESUME_OK = ("# Test User\n\ntest.user@example.com\n\n" +
               "## EXPERIENCE\n- Built a registry-governed semantic layer over 67 tables.\n" * 6)
 
 
 def test_tailor_resume_pass():
-    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK})
+    clone = _clone_with({"Test User Resume - Snowflake FDE.md": _RESUME_OK})
     assert va.check_tailor_resume(clone)["status"] == "pass"
 
 
 def test_tailor_resume_verify_leak_fails():
     leaked = _RESUME_OK + "\n- Drove [VERIFY: 95% accuracy] across the org.\n"
-    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.md": leaked})
+    clone = _clone_with({"Test User Resume - Snowflake FDE.md": leaked})
     res = va.check_tailor_resume(clone)
     assert res["status"] == "fail"
     assert any(c["name"] == "no-verify-leak" and not c["ok"] for c in res["checks"])
@@ -86,7 +86,7 @@ def test_tailor_resume_missing_fails():
 
 
 def test_pdf_clean_and_overflow():
-    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4"})
+    clone = _clone_with({"Test User Resume - Snowflake FDE.pdf": "%PDF-1.4"})
     assert va.check_pdf(clone, pages=1, title_leak=0)["status"] == "pass"
     # 2 pages = warn (pass-with-gap), not fail
     assert va.check_pdf(clone, pages=2, title_leak=0)["status"] == "warn"
@@ -97,7 +97,7 @@ def test_pdf_clean_and_overflow():
 def test_pdf_missing_contract_warns():
     # PAGES/TITLE_LEAK not captured -> the skipped checks must surface as a warn,
     # not read as a clean pass.
-    clone = _clone_with({"Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4"})
+    clone = _clone_with({"Test User Resume - Snowflake FDE.pdf": "%PDF-1.4"})
     res = va.check_pdf(clone, pages=None, title_leak=None)
     assert res["status"] == "warn", res
     assert any(c["name"] == "pdf-contract-provided" and not c["ok"] for c in res["checks"])
@@ -299,8 +299,8 @@ def test_run_all_two_drafts_list_pass():
     files = {
         "Job Description.md": "# Role\n" + "x" * 80,
         ".classification.json": _GOOD_CLASS,
-        "Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK,
-        "Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        "Test User Resume - Snowflake FDE.md": _RESUME_OK,
+        "Test User Resume - Snowflake FDE.pdf": "%PDF-1.4",
         ".contacts-ledger.md": _LEDGER,
         "Verified Emails.md": _VERIFIED_OK,
         "Cold Outreach.md": "two intros",
@@ -330,8 +330,8 @@ def test_run_all_full_fixture_overall_pass():
     files = {
         "Job Description.md": "# Role\n" + "x" * 80,
         ".classification.json": _GOOD_CLASS,
-        "Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK,
-        "Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        "Test User Resume - Snowflake FDE.md": _RESUME_OK,
+        "Test User Resume - Snowflake FDE.pdf": "%PDF-1.4",
         ".contacts-ledger.md": _LEDGER,
         "Verified Emails.md": _VERIFIED_OK,
         "Cold Outreach.md": "Hi Brad,",
@@ -360,8 +360,8 @@ def test_run_all_flags_issue1_overall_fail():
     files = dict({
         "Job Description.md": "# Role\n" + "x" * 80,
         ".classification.json": _GOOD_CLASS,
-        "Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK,
-        "Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        "Test User Resume - Snowflake FDE.md": _RESUME_OK,
+        "Test User Resume - Snowflake FDE.pdf": "%PDF-1.4",
         ".contacts-ledger.md": _LEDGER,
         "Verified Emails.md": "# Verified Emails\n_no rows_\n",  # <- Issue 1
         "Cold Outreach.md": "Hi Brad,",
@@ -377,8 +377,8 @@ def test_run_all_blocked_apply_marks_apply_skills_blocked():
     files = {
         "Job Description.md": "# Role\n" + "x" * 80,
         ".classification.json": _GOOD_CLASS,
-        "Kanu Madhok Resume - Snowflake FDE.md": _RESUME_OK,
-        "Kanu Madhok Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        "Test User Resume - Snowflake FDE.md": _RESUME_OK,
+        "Test User Resume - Snowflake FDE.pdf": "%PDF-1.4",
         **_PACKET_FILES,
     }
     clone = _clone_with(files)

@@ -26,7 +26,9 @@ BANNED = ["i hope this email finds you well","i hope you are doing well",
           "i wanted to reach out to express my interest","i came across your profile",
           "i wanted to take a moment to","leverage","spearhead","synergize","synergy",
           "drove","passionate","rockstar","ninja"]
-SIG = "madhok.kanu@gmail.com · linkedin.com/in/kanu-madhok · github.com/kmadhok"
+# Example signature sentinel — swap for the target skill's actual required
+# signature line (email · linkedin · github) before running the gate.
+SIG = "user@example.com · linkedin.com/in/example · github.com/example"
 
 def parse(text):
     """Return (subject, body). Handles 'Subject: ...' and '## Subject\\n`...`' forms."""

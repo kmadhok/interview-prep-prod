@@ -7,6 +7,14 @@ from __future__ import annotations
 import argparse, json, re, sys
 from pathlib import Path
 
+# config.py lives in the repo-root scripts/ dir. This file sits at
+# .claude/skills/<skill>/scripts/, so the repo root is parents[4]. resolve()
+# follows the global symlink to the real repo, so profile resolves correctly
+# whether invoked here or via ~/.claude/skills/. Mirrors apply_packet.py.
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "scripts"))
+
+from config import load_profile, resume_glob_prefix
+
 # Classification vocab — must match jd-to-ready/SKILL.md (themes ~line 115, archetypes ~118).
 THEME_VOCAB = {
     "agents", "RAG", "NL→SQL", "MCP", "LLM-orchestration", "ML-pipeline", "platform",
@@ -76,27 +84,32 @@ def check_classify(clone: Path) -> dict:
     ])
 
 
-def find_resume(clone: Path) -> Path | None:
-    matches = sorted(clone.glob("Kanu Madhok Resume - *.md"))
+def find_resume(clone: Path, prefix: str | None = None) -> Path | None:
+    prefix = prefix if prefix is not None else resume_glob_prefix()
+    matches = sorted(clone.glob(f"{prefix}*.md"))
     return matches[0] if matches else None
 
 
-def check_tailor_resume(clone: Path) -> dict:
-    r = find_resume(clone)
+def check_tailor_resume(clone: Path, prefix: str | None = None,
+                        email: str | None = None) -> dict:
+    prefix = prefix if prefix is not None else resume_glob_prefix()
+    email = email if email is not None else load_profile()["user_email"]
+    r = find_resume(clone, prefix)
     if r is None:
-        return skill_result([check("resume-md-present", False, "glob: Kanu Madhok Resume - *.md")])
+        return skill_result([check("resume-md-present", False, f"glob: {prefix}*.md")])
     text = _read(r)
     leaks = re.findall(r"\[VERIFY|\[NUMBER\?", text)
     return skill_result([
         check("resume-md-present", True, r.name),
         check("resume-nontrivial", len(text.strip()) > 400, f"{len(text)} chars"),
         check("no-verify-leak", not leaks, f"{len(leaks)} leak(s)"),
-        check("contact-header-present", "madhok.kanu@gmail.com" in text),
+        check("contact-header-present", email in text),
     ])
 
 
-def check_pdf(clone: Path, pages, title_leak) -> dict:
-    checks = [check("resume-pdf-present", bool(list(clone.glob("Kanu Madhok Resume - *.pdf"))), "glob: *.pdf")]
+def check_pdf(clone: Path, pages, title_leak, prefix: str | None = None) -> dict:
+    prefix = prefix if prefix is not None else resume_glob_prefix()
+    checks = [check("resume-pdf-present", bool(list(clone.glob(f"{prefix}*.pdf"))), "glob: *.pdf")]
     if pages is not None:
         checks.append(check("pdf-one-page", pages == 1, f"PAGES={pages}", severity="warn"))
     if title_leak is not None:
@@ -283,13 +296,16 @@ def check_write_outreach(clone: Path, drafts, expected_recipient: str,
 
 def run_all(args) -> dict:
     clone = Path(args.clone)
+    profile = load_profile()
+    prefix = resume_glob_prefix(profile)
+    email = profile["user_email"]
     worklist_text = _read(Path(args.worklist_out)) if args.worklist_out else ""
     drafts = _load_drafts(args.draft_json)
     skills = {
         "interview-prep-intake": check_intake(clone),
         "classify": check_classify(clone),
-        "tailor-resume": check_tailor_resume(clone),
-        "pdf": check_pdf(clone, args.pages, args.title_leak),
+        "tailor-resume": check_tailor_resume(clone, prefix, email),
+        "pdf": check_pdf(clone, args.pages, args.title_leak, prefix),
         "apply-packet": check_packet(clone),
         "apply-gate": check_gate(worklist_text, args.company),
         "find-contacts": check_find_contacts(clone),

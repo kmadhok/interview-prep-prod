@@ -348,7 +348,7 @@ class RunTypeMapTests(unittest.TestCase):
         env["JD_TO_READY_LOG_DIR"] = str(root / "logs")
         existing = root / "Roles" / "Acme - Agent Builder"
         existing.mkdir(parents=True)
-        marker = existing / "Kanu Madhok Resume - Acme Agent Builder.md"
+        marker = existing / "Test User Resume - Acme Agent Builder.md"
         marker.write_text("prepped", encoding="utf-8")
 
         def run(*args):
