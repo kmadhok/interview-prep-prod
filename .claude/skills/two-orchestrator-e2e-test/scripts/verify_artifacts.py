@@ -10,7 +10,8 @@ from pathlib import Path
 # config.py lives in the repo-root scripts/ dir. This file sits at
 # .claude/skills/<skill>/scripts/, so the repo root is parents[4]. resolve()
 # follows the global symlink to the real repo, so profile resolves correctly
-# whether invoked here or via ~/.claude/skills/. Mirrors apply_packet.py.
+# whether invoked here or via ~/.claude/skills/. Same parents[4] pattern as
+# verify_postings.py / verify_emails.py.
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "scripts"))
 
 from config import load_profile, resume_glob_prefix
