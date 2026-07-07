@@ -1,0 +1,8 @@
+# Your profile — created by the /onboard skill. Flat key: value only.
+# Read by scripts/config.py and by skills at run time.
+user_name:
+user_email:
+user_linkedin:
+user_github:
+resume_filename_pattern: "{name} Resume - {company} {role}"
+timezone:
