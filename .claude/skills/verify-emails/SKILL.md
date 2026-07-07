@@ -7,9 +7,11 @@ description: Resolve and verify recruiter or contact emails for a role from its 
 
 A deterministic, stdlib-only workflow to resolve SMTP-verified recruiter emails for a role. The bundled script calls EmailFinder.dev's `/find-email/person` endpoint, where verified hits cost credits and 404 misses are free, then caches results so re-runs do not re-charge.
 
+`<repo root>` = the directory containing `profile.yaml`; workspace files live under `<repo root>/workspace/`.
+
 ## When to use
 
-Use this skill when Kanu wants to resolve or verify emails for contacts already captured in a role's contacts ledger, or when `jd-to-ready` reaches step 4c and needs `Verified Emails.md` written.
+Use this skill when the user wants to resolve or verify emails for contacts already captured in a role's contacts ledger, or when `jd-to-ready` reaches step 4c and needs `Verified Emails.md` written.
 
 Works in two modes:
 
@@ -18,10 +20,10 @@ Works in two modes:
 
 ## When NOT to use
 
-- Kanu needs recruiter or hiring-manager discovery -> use `find-contacts`.
-- Kanu wants cold email copy drafted -> use `write-outreach`.
-- Kanu wants to know whether job postings are still live -> use `verify-postings`.
-- Kanu needs broader interview prep materials -> use the normal role-folder prep workflow.
+- The user needs recruiter or hiring-manager discovery -> use `find-contacts`.
+- The user wants cold email copy drafted -> use `write-outreach`.
+- The user wants to know whether job postings are still live -> use `verify-postings`.
+- The user needs broader interview prep materials -> use the normal role-folder prep workflow.
 
 ## How it works
 
@@ -50,13 +52,13 @@ Works in two modes:
 Dry-run parse only, with zero credits:
 
 ```bash
-python3 "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/.claude/skills/verify-emails/scripts/verify_emails.py" --ledger "Roles/<Company - Role>/.contacts-ledger.md" --dry-run --json
+python3 "<repo root>/.claude/skills/verify-emails/scripts/verify_emails.py" --ledger "Roles/<Company - Role>/.contacts-ledger.md" --dry-run --json
 ```
 
 Pipeline step 4c:
 
 ```bash
-python3 "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/.claude/skills/verify-emails/scripts/verify_emails.py" --ledger "Roles/<Company - Role>/.contacts-ledger.md" --emails-md-default --max-credits 5 --json
+python3 "<repo root>/.claude/skills/verify-emails/scripts/verify_emails.py" --ledger "Roles/<Company - Role>/.contacts-ledger.md" --emails-md-default --max-credits 5 --json
 ```
 
 Flags:

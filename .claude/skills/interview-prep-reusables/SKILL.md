@@ -1,17 +1,19 @@
 ---
 name: interview-prep-reusables
-description: Use whenever Kanu Madhok wants to bootstrap, refresh, or extend the cross-role reusable files at the root of his Interview Prep workspace at /Users/kanumadhok/Documents/Claude/Projects/Interview Prep/ — Master Story Bank.md, Tell Me About Yourself - Master.md, Demo Portfolio.md, Outreach Templates.md, Resume Achievements Master.md. Trigger on explicit language ("update story bank", "refresh demo portfolio", "add outreach template", "rebuild TMAY master", "bootstrap reusables", "rebuild prep library") AND on bare mentions of new material for these files — a new project shipped, a new live demo URL, an outreach pattern that worked, a new role archetype, a new flagship story, a new resume bullet — or when these files are missing and he wants them seeded. Do NOT trigger for JD intake (use interview-prep-intake), cold outreach drafting (use job-outreach), or per-role prep edits inside a Company - Role folder. If ambiguous between cross-role and per-role, ask before invoking.
+description: Use whenever the user wants to bootstrap, refresh, or extend the cross-role reusable files at the root of their Interview Prep workspace at <repo root>/workspace/ — Master Story Bank.md, Tell Me About Yourself - Master.md, Demo Portfolio.md, Outreach Templates.md, Resume Achievements Master.md. Trigger on explicit language ("update story bank", "refresh demo portfolio", "add outreach template", "rebuild TMAY master", "bootstrap reusables", "rebuild prep library") AND on bare mentions of new material for these files — a new project shipped, a new live demo URL, an outreach pattern that worked, a new role archetype, a new flagship story, a new resume bullet — or when these files are missing and he wants them seeded. Do NOT trigger for JD intake (use interview-prep-intake), cold outreach drafting (use job-outreach), or per-role prep edits inside a Company - Role folder. If ambiguous between cross-role and per-role, ask before invoking.
 ---
 
 # Interview Prep — Cross-Role Reusables
 
-This skill bootstraps and maintains the five root-level reusable files in Kanu's Interview Prep workspace. These are the cross-role assets that role-specific prep folders pull from — when a new role enters the pipeline, the interview-answer drafting, TMAY tailoring, resume tailoring, and outreach drafting all start from these files instead of being rebuilt from scratch.
+`<repo root>` = the directory containing `profile.yaml`; the workspace files live under `<repo root>/workspace/`.
+
+This skill bootstraps and maintains the five root-level reusable files in the user's Interview Prep workspace. These are the cross-role assets that role-specific prep folders pull from — when a new role enters the pipeline, the interview-answer drafting, TMAY tailoring, resume tailoring, and outreach drafting all start from these files instead of being rebuilt from scratch.
 
 Read the root `AGENTS.md` (or `CLAUDE.md`) in the Interview Prep folder before you start — the workspace conventions there are the source of truth and may have evolved since this skill was written. The steps below describe the workflow as of when this skill shipped.
 
 ## Where things live
 
-- Workspace root: `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/`
+- Workspace root: `<repo root>/workspace/`
 - The five reusables, all at root:
   - `Resume Achievements Master.md` — canonical resume bullet library with phrasing variants, proof points, theme tags, and a theme→achievement index
   - `Master Story Bank.md` — STAR stories with beats, canonical lines, anticipated follow-ups, proof points, theme tags
@@ -129,7 +131,7 @@ If a reusable file doesn't exist yet, follow these structures. Each file should 
 ### `Master Story Bank.md`
 
 ```
-# Master Story Bank — Kanu Madhok
+# Master Story Bank — <user_name>
 
 [Purpose + How to use + Conventions]
 

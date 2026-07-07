@@ -7,7 +7,7 @@ description: Use this skill to run the full two-orchestrator end-to-end pipeline
 
 Runs one real role through all 8 pipeline skills, one sub-agent per skill, **sequentially**, in a throwaway clone. Real `Roles/` and `Pipeline.md` are never touched; the apply gate is simulated on a local fixture. The only real external side effects are unsent Gmail drafts and an upload to the `_test` Drive remote. Read root `AGENTS.md`/`CLAUDE.md` first; it overrides anything here.
 
-`<repo root>` = the Interview Prep workspace root (cwd). Use `python3` (Windows: `py -3`).
+`<repo root>` = the directory containing `profile.yaml` (cwd); the workspace files live under `<repo root>/workspace/`. Use `python3` (Windows: `py -3`).
 
 **Test steps are numbered T0–T8** — deliberately NOT the real skills' step numbers. Each step header names the real skill step it exercises, so cross-reference by that annotation, never by the T-number.
 
@@ -37,11 +37,11 @@ Launch a fresh `general-purpose` sub-agent per skill; wait for each, then run it
 
 - **T1 — intake** (real: `interview-prep-intake`) → writes `<clone>/Job Description.md`. (Tell it to skip the Pipeline row — the fixture already has it.)
 - **T2 — classify** (real: jd-to-ready Step 2) → writes `<clone>/.classification.json`. Give it the theme/archetype vocab from `.claude/skills/jd-to-ready/SKILL.md` Step 2.
-- **T3 — tailor-resume** (real: `tailor-resume`) → writes `<clone>/Kanu Madhok Resume - <Company> <Short Role>.md` (canonical-only).
+- **T3 — tailor-resume** (real: `tailor-resume`) → writes `<clone>/<user_name> Resume - <Company> <Short Role>.md` (user_name from profile.yaml; canonical-only).
 
 ## T4 — PDF (main loop; real: jd-to-ready Step 3.5)
 ```
-python3 "<repo root>/scripts/build_resume_pdf.py" "<clone>/Kanu Madhok Resume - <Company> <Short Role>.md"
+python3 "<repo root>/scripts/build_resume_pdf.py" "<clone>/<user_name> Resume - <Company> <Short Role>.md"
 ```
 Capture the `PAGES=<n> TITLE_LEAK=<0|1>` line. If the line is missing, still run the verifier without the `--pages`/`--title-leak` flags — it will surface the missing contract as a warn.
 

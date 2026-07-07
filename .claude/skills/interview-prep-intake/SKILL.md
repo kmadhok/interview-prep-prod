@@ -1,18 +1,20 @@
 ---
 name: interview-prep-intake
-description: Use this skill whenever Kanu Madhok pastes, links, attaches, or shares a job description (JD) he wants filed into his Interview Prep workspace at `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/`. The skill creates the `Company - Role` subfolder, writes `Job Description.md`, adds a row to root `Pipeline.md`, and updates the auto-memory `active_interview_pipeline.md`. Trigger on explicit intake language ("add this to my pipeline", "intake this JD", "track this role", "create a folder for this job", "save this JD", "file this role") AND on bare JD shares inside Interview Prep when intent looks like saving/tracking. Do NOT trigger when the user wants cold outreach drafting, recruiter lookup, or cold-email writing — that is the `job-outreach` skill. If both could apply and the user is ambiguous, ask whether they want to file, draft outreach, or both before invoking either skill.
+description: Use this skill whenever the user pastes, links, attaches, or shares a job description (JD) they want filed into their Interview Prep workspace at `<repo root>/workspace/`. The skill creates the `Company - Role` subfolder, writes `Job Description.md`, adds a row to root `Pipeline.md`, and updates the auto-memory `active_interview_pipeline.md`. Trigger on explicit intake language ("add this to my pipeline", "intake this JD", "track this role", "create a folder for this job", "save this JD", "file this role") AND on bare JD shares inside Interview Prep when intent looks like saving/tracking. Do NOT trigger when the user wants cold outreach drafting, recruiter lookup, or cold-email writing — that is the `job-outreach` skill. If both could apply and the user is ambiguous, ask whether they want to file, draft outreach, or both before invoking either skill.
 ---
 
 # Interview Prep — JD Intake
 
-This skill takes a job description Kanu has shared and files it into his Interview Prep workspace using the conventions documented in that workspace's `CLAUDE.md` / `AGENTS.md`. It is the boring-but-load-bearing first step before any deeper prep happens.
+`<repo root>` = the directory containing `profile.yaml`; the workspace files live under `<repo root>/workspace/`.
+
+This skill takes a job description the user has shared and files it into their Interview Prep workspace using the conventions documented in that workspace's `CLAUDE.md` / `AGENTS.md`. It is the boring-but-load-bearing first step before any deeper prep happens.
 
 Read the root `AGENTS.md` (or `CLAUDE.md`) in the Interview Prep folder before you start — the workspace conventions there are the source of truth and may have evolved since this skill was written. The steps below are the workflow as of when this skill shipped.
 
 ## Where things live
 
-- Workspace root: `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/`
-- Role folders: `<workspace root>/Roles/<Company - Role Title>/` (active/considering roles live under `Roles/`; closed roles in `_Archived/`)
+- Workspace root: `<repo root>/workspace/`
+- Role folders: `workspace/Roles/<Company - Role Title>/` (active/considering roles live under `workspace/Roles/`; closed roles in `workspace/_Archived/`)
 - Pipeline tracker: `<workspace root>/Pipeline.md` (rendered copy at `Pipeline.html`)
 - Auto-memory file for the active pipeline: `active_interview_pipeline.md`, in the memory directory listed in your system prompt (it lives under `Library/Application Support/Claude/.../spaces/<space-id>/memory/`). Don't hardcode the full path — read it from the system prompt for the current session, since the session-scoped part of the path can vary.
 

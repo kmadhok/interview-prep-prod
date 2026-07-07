@@ -1,6 +1,6 @@
 ---
 name: jd-to-ready
-description: Use this skill when Kanu Madhok shares a job description and wants to file it and get a tailored resume + PDF in one shot — the apply-ready prep half. Trigger language includes "full intake", "intake and prep", "do everything for this JD", "get me apply-ready", "paste this JD" (when intent is to prep, not just track), or sharing a JD with phrases like "I want to apply to this". Orchestrates the prep chain: `interview-prep-intake` (file the JD) → JD-classification (the one bit of logic it owns, writes `.classification.json`) → `tailor-resume(pipeline)` → resume PDF export + vision verification. Stops at the apply gate. Contact research + outreach drafting are handled by the `stage-outreach` skill, which auto-stages once the Pipeline row is marked Applied. Do NOT trigger when Kanu only wants to file the JD with no further prep (use `interview-prep-intake` alone) or only wants outreach for a JD already filed (use `stage-outreach` alone). If ambiguous, ask whether he wants the full prep pipeline or just one piece.
+description: Use this skill when the user shares a job description and wants to file it and get a tailored resume + PDF in one shot — the apply-ready prep half. Trigger language includes "full intake", "intake and prep", "do everything for this JD", "get me apply-ready", "paste this JD" (when intent is to prep, not just track), or sharing a JD with phrases like "I want to apply to this". Orchestrates the prep chain: `interview-prep-intake` (file the JD) → JD-classification (the one bit of logic it owns, writes `.classification.json`) → `tailor-resume(pipeline)` → resume PDF export + vision verification. Stops at the apply gate. Contact research + outreach drafting are handled by the `stage-outreach` skill, which auto-stages once the Pipeline row is marked Applied. Do NOT trigger when the user only wants to file the JD with no further prep (use `interview-prep-intake` alone) or only wants outreach for a JD already filed (use `stage-outreach` alone). If ambiguous, ask whether they want the full prep pipeline or just one piece.
 ---
 
 # JD → Apply-Ready (prep half: intake + classify + resume + PDF)
@@ -14,7 +14,7 @@ This skill is **near-pure orchestration** (the docker-compose model). It wires t
 | 3 | `tailor-resume` | `pipeline` | resume tailoring (canonical-only) |
 | 3.5 | `resume-export` (`build_resume_pdf.py` + vision verify) | — | one-page PDF render + gold-standard visual verification |
 | 3.7 | `apply-packet` (`apply_packet.py` + WebFetch) | — | true posted date, `Application Answers.md`, Drive upload |
-| 6 | `report-back` | — | the short actionable recap to Kanu |
+| 6 | `report-back` | — | the short actionable recap to the user |
 | 7 | `final-log` | — | global summary line + `finish-run` |
 
 > **Pipeline ends at the apply gate.** Steps 4 / 4b / 4c / 5 (contact research, enrichment, email verification, outreach drafting) have moved to the `stage-outreach` skill. `stage-outreach` reads `.classification.json` from this step's output to skip re-classifying.
@@ -23,14 +23,14 @@ This skill is **near-pure orchestration** (the docker-compose model). It wires t
 
 **Mode-name convention:** each primitive names its own heavy/light modes (`pipeline` is `tailor-resume`'s "heavy, orchestrated" mode; `standalone` is its light mode). They are deliberately NOT one shared word — pass each primitive its own mode name as shown above. Every primitive returns a `gaps[]` of `{source, kind, detail}` objects; the orchestrator merges them across steps for the step-6 report and step-7 log.
 
-Read the root `AGENTS.md` (or `CLAUDE.md`) at `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/` first. The workspace conventions there are the source of truth and override anything here if they conflict.
+`<repo root>` = the directory containing `profile.yaml`; all workspace files live under `<repo root>/workspace/`. Read the root `AGENTS.md` (or `CLAUDE.md`) at `<repo root>/` first. The workspace conventions there are the source of truth and override anything here if they conflict.
 
 ## What this skill produces
 
 By the end of one invocation, the role folder contains:
 
 1. `Job Description.md` — clean reading copy of the JD (from intake)
-2. `Kanu Madhok Resume - <Company> <Short Role>.md` — tailored resume pulling bullets from `Resume Achievements Master.md`, **plus a one-page `.pdf` rendered from it (BCG X gold-standard layout) and vision-verified** (step 3.5)
+2. `<user_name> Resume - <Company> <Short Role>.md` (user_name from profile.yaml) — tailored resume pulling bullets from `workspace/Resume Achievements Master.md`, **plus a one-page `.pdf` rendered from it (BCG X gold-standard layout) and vision-verified** (step 3.5)
 3. `.classification.json` — validated JD classification (themes + archetype + evidence) written at the end of step 2; the `stage-outreach` skill reads this to skip re-classifying
 4. `Application Answers.md` — copy-paste ATS answers drafted from root `Application Profile.md` (never invented)
 5. `.apply-packet.json` + the uploaded Drive packet (`Apply Queue/<posted-date> · <Company> - <Role>.pdf` + answers `.txt`) — the mobile-ready finish line
@@ -41,10 +41,10 @@ Plus: a new row in `Pipeline.md`, an updated `active_interview_pipeline.md` memo
 
 ## Workspace paths (resolved once, used throughout)
 
-- **Workspace root:** machine-dependent — Mac: `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/`; PC (drip-runner): `G:/projects/interview-prep/`. Resolve from the workspace's own `AGENTS.md`/`CLAUDE.md` first; Mac paths elsewhere in this file are examples, not gospel. On PC runs, the `active_interview_pipeline.md` memory update is a known no-op — record it as a `{source:"intake", kind:"memory-noop"}` gap and continue.
-- **Reusables to read** (every run): `Resume Achievements Master.md`, `Demo Portfolio.md`, `Pipeline.md`
+- **Workspace root:** `<repo root>/workspace/` (the directory holding the reusables and role folders; `<repo root>` contains `profile.yaml`). Resolve from the workspace's own `AGENTS.md`/`CLAUDE.md` first; paths elsewhere in this file are examples, not gospel. When a run cannot update the `active_interview_pipeline.md` memory (e.g. a headless drip-runner environment), that memory update is a known no-op — record it as a `{source:"intake", kind:"memory-noop"}` gap and continue.
+- **Reusables to read** (every run): `workspace/Resume Achievements Master.md`, `workspace/Demo Portfolio.md`, `workspace/Pipeline.md`
 - **Memory file:** `active_interview_pipeline.md` in the session memory directory (path from system prompt; do not hardcode)
-- **Role folder (to be created):** `<workspace root>/Roles/<Company - Role Title>/` (active/considering roles live under `Roles/`; closed roles in `_Archived/`)
+- **Role folder (to be created):** `workspace/Roles/<Company - Role Title>/` (active/considering roles live under `workspace/Roles/`; closed roles in `workspace/_Archived/`)
 - **Trace helper:** `~/.claude/skills/jd-to-ready/scripts/trace_step.py`
 - **Per-role trace:** `<role folder>/.jd-to-ready-trace.jsonl` (append-only step/tool/subagent events)
 - **Global summary log:** `~/.claude/logs/jd-to-ready.jsonl` (one compact final line per run)
@@ -52,7 +52,7 @@ Plus: a new row in `Pipeline.md`, an updated `active_interview_pipeline.md` memo
 
 ## Workflow
 
-Run steps 1 → 7 in order. Don't pepper Kanu with questions mid-flow — make sensible defaults and surface fixes in the step 6 report.
+Run steps 1 → 7 in order. Don't pepper the user with questions mid-flow — make sensible defaults and surface fixes in the step 6 report.
 
 ### Trace contract - mandatory for every run
 
@@ -110,7 +110,7 @@ Capture from the parsed JD for downstream steps:
 - Hard gates (citizenship, clearance, sponsorship, RTO, travel %) — flag for step 6 report
 - Role archetype (see step 2)
 
-If the folder already exists, stop and ask Kanu whether to refresh in place, write as a variant, or skip. Don't overwrite a folder he's already prepped.
+If the folder already exists, stop and ask the user whether to refresh in place, write as a variant, or skip. Don't overwrite a folder they've already prepped.
 
 ### Step 2 — Identify JD themes + role archetype (subagent classification)
 
@@ -190,7 +190,7 @@ Validation rules you must self-check before returning:
 4. Check theme count is 4–6. If <4 after filtering, accept what's valid and flag the gap; if >6, keep the 6 with the strongest evidence quotes.
 
 **Capture for downstream steps:**
-- `themes`: list of `{tag, evidence}` — pass `tag`s to step 3's library lookup; keep the evidence quotes for the step 6 report so Kanu can spot-check the classification.
+- `themes`: list of `{tag, evidence}` — pass `tag`s to step 3's library lookup; keep the evidence quotes for the step 6 report so the user can spot-check the classification.
 - `archetype`: drives bullet anchoring (step 3).
 - `notes`: surface in the step 6 report verbatim — this is where the subagent flags things the constrained schema can't capture (title mismatch, hidden hard gates, unusual team structure).
 
@@ -223,7 +223,7 @@ tailor-resume(
 )
 ```
 
-**Wire the output forward:** capture the returned `gaps[]` (cross-skill schema `{source: "resume", kind, detail}` objects, or `[]`) and merge it into the step-6 report and the step-7 log alongside the other steps' gaps — they all share the `source`-keyed schema. The primitive writes the resume to `<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md`; record that path for step 6.
+**Wire the output forward:** capture the returned `gaps[]` (cross-skill schema `{source: "resume", kind, detail}` objects, or `[]`) and merge it into the step-6 report and the step-7 log alongside the other steps' gaps — they all share the `source`-keyed schema. The primitive writes the resume to `<role folder>/<user_name> Resume - <Company> <Short Role>.md` (user_name from profile.yaml); record that path for step 6.
 
 ### Step 3.5 — Export the resume to PDF + visually verify
 
@@ -232,16 +232,16 @@ After `tailor-resume` writes the `.md`, render a polished **one-page PDF** next 
 ```bash
 python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step 3.5 --primitive resume-export --mode "" --prediction "a one-page PDF matching the BCG X gold standard is rendered from the tailored resume with no title leak and PASSes vision verification; overflow/defects/missing-tools are logged as gaps"
 
-python3 "<repo root>/scripts/build_resume_pdf.py" "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md"
+python3 "<repo root>/scripts/build_resume_pdf.py" "<role folder>/<user_name> Resume - <Company> <Short Role>.md"
 ```
 
-(Repo root is the Interview Prep workspace root: /Users/kanumadhok/Documents/Claude/Projects/Interview Prep)
+(`<repo root>` is the directory containing `profile.yaml`; the workspace lives at `<repo root>/workspace/`.)
 
-The script (`build_resume_pdf.py`, reportlab) renders a one-page PDF that matches the BCG X gold-standard layout, **auto-tightening font/margins through tiers down to a 9pt floor** until the content fits one US-Letter page, then prints the `PAGES=<n> TITLE_LEAK=<0|1>` contract. It writes a `.pdf` sibling only — no `.docx` (the docx-export path produced malformed layouts and is retired). A resume that won't fit even at the 9pt floor is a tailoring decision Kanu owns — never silently cut canonical bullets to win the page break.
+The script (`build_resume_pdf.py`, reportlab) renders a one-page PDF that matches the BCG X gold-standard layout, **auto-tightening font/margins through tiers down to a 9pt floor** until the content fits one US-Letter page, then prints the `PAGES=<n> TITLE_LEAK=<0|1>` contract. It writes a `.pdf` sibling only — no `.docx` (the docx-export path produced malformed layouts and is retired). A resume that won't fit even at the 9pt floor is a tailoring decision the user owns — never silently cut canonical bullets to win the page break.
 
 **Parse the export-quality contract.** On every exit the script prints exactly one machine-readable line to stdout: `PAGES=<n|NA> TITLE_LEAK=<0|1|NA>` (alongside its human `Wrote <path>` line). Grep stdout for that `PAGES=… TITLE_LEAK=…` line and parse the two values **tolerantly** — if the line is missing or either value won't parse, do NOT crash: record one gap `{source:"resume-export", kind:"export-quality-unknown", detail:"could not parse export contract"}` and treat the export quality as unknown.
 
-**Visually verify against the gold standard.** After the PDF is written and the contract parsed, run `python3 "<repo root>/scripts/verify_resume.py" "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.pdf"` — it rasterizes the PDF and the BCG X reference to PNG and writes a `verify.json` packet. Then dispatch a vision sub-agent (general-purpose Agent) that reads `page-1.png` and `reference-1.png` from the packet's out-dir and judges the resume against the 9 visual criteria in `verify.json`, returning PASS/FAIL with per-criterion reasons. **On FAIL** (e.g. title leak, wrapping dates, two-column defect, overflow), record the agent's specific defects as gaps `{source:"resume-export", kind:"pdf-formatting-defect", detail:"<agent reason>"}` and, when the defect is mechanically fixable (overflow/leak), re-render once and re-verify before moving on. The `.md` is always the source of truth, so this degrades gracefully — if Playwright/rasterization or the vision agent is unavailable, record `{source:"resume-export", kind:"export-quality-unknown", detail:"vision verify unavailable"}` and continue.
+**Visually verify against the gold standard.** After the PDF is written and the contract parsed, run `python3 "<repo root>/scripts/verify_resume.py" "<role folder>/<user_name> Resume - <Company> <Short Role>.pdf"` — it rasterizes the PDF and the BCG X reference to PNG and writes a `verify.json` packet. Then dispatch a vision sub-agent (general-purpose Agent) that reads `page-1.png` and `reference-1.png` from the packet's out-dir and judges the resume against the 9 visual criteria in `verify.json`, returning PASS/FAIL with per-criterion reasons. **On FAIL** (e.g. title leak, wrapping dates, two-column defect, overflow), record the agent's specific defects as gaps `{source:"resume-export", kind:"pdf-formatting-defect", detail:"<agent reason>"}` and, when the defect is mechanically fixable (overflow/leak), re-render once and re-verify before moving on. The `.md` is always the source of truth, so this degrades gracefully — if Playwright/rasterization or the vision agent is unavailable, record `{source:"resume-export", kind:"export-quality-unknown", detail:"vision verify unavailable"}` and continue.
 
 **Map the parsed values to gaps on the step-3.5 `end --gaps` array:**
 - `PAGES` > 1 → `{source:"resume-export", kind:"pdf-overflow", detail:"<n>-page PDF; trim a bullet to fit one page"}`
@@ -249,14 +249,14 @@ The script (`build_resume_pdf.py`, reportlab) renders a one-page PDF that matche
 - `PAGES` = `NA` (script printed `not found` or the render failed) → `{source:"resume-export", kind:"export-unavailable", detail:"<reason: reportlab missing or export failed>"}` (read the human error line for the reason). The `.md` is always the source of truth; the PDF is a convenience, so this degrades gracefully — continue.
 - clean (`PAGES=1`, `TITLE_LEAK=0`) → empty gaps `[]`, status `ok`.
 
-These gaps can stack (e.g. overflow + title leak). Surface any `pdf-overflow` in the step-6 report so Kanu can decide whether to trim a bullet.
+These gaps can stack (e.g. overflow + title leak). Surface any `pdf-overflow` in the step-6 report so the user can decide whether to trim a bullet.
 
 **Failure pattern.** Use `--failure-pattern "pdf-export-defect"` when the PDF has a real defect — a `pdf-overflow` or `pdf-formatting-defect` gap (title leak, wrapping dates, vision-verify FAIL). Leave `--failure-pattern ""` when the only gaps are environmental (`export-unavailable`, `export-quality-unknown` — the tooling couldn't run or couldn't judge; that's not a defect in the artifact).
 
 Close the step with the parsed status and gaps, e.g.:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.5 --primitive resume-export --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Kanu Madhok Resume - <Company> <Short Role>.pdf"]' --gaps '<gaps from the mapping above, or []>' --failure-pattern "<pdf-export-defect if a real defect gap was recorded, else empty>" --tokens "$UNKNOWN_TOKENS"
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.5 --primitive resume-export --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["<user_name> Resume - <Company> <Short Role>.pdf"]' --gaps '<gaps from the mapping above, or []>' --failure-pattern "<pdf-export-defect if a real defect gap was recorded, else empty>" --tokens "$UNKNOWN_TOKENS"
 ```
 
 Use `status: ok` when the clean case holds, `partial` when files were written but a defect/overflow was logged, `failed` when no files were produced (export-unavailable). Merge whatever gaps you recorded into the step-6 report and step-7 log alongside the other steps' gaps.
@@ -297,7 +297,7 @@ Parse the JSON line. If `repost` is true, record a gap `{source:"apply-packet", 
 - Phone / LinkedIn / GitHub: <from Application Profile.md, verbatim>
 
 ## Why <Company>
-<3-5 sentences drafted from the step-2 themes + JD evidence, Kanu's voice, no hype words>
+<3-5 sentences drafted from the step-2 themes + JD evidence, the user's voice, no hype words>
 
 ## Relevant project
 <the 1-2 walkthroughs from AI Build Walkthrough - Master.md matching the archetype, compressed to a form-field paragraph each>
@@ -325,11 +325,11 @@ python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.7 --prim
 Keep the recap short and actionable. Include:
 
 - **Folder created** + paths to the files written (use `computer://` links where possible)
-- **Hard gates flagged** — surface citizenship/clearance/sponsorship/travel/RTO blockers by name if present in the JD. Better one direct question than tailored work for a role he can't take.
-- **Classification** — archetype + top 3 themes with their JD evidence quotes (from the step 2 subagent) so Kanu can spot-check whether the resume angle is right. Include the subagent's `notes` field verbatim if non-empty.
+- **Hard gates flagged** — surface citizenship/clearance/sponsorship/travel/RTO blockers by name if present in the JD. Better one direct question than tailored work for a role they can't take.
+- **Classification** — archetype + top 3 themes with their JD evidence quotes (from the step 2 subagent) so the user can spot-check whether the resume angle is right. Include the subagent's `notes` field verbatim if non-empty.
 - **Gaps** — any `[NUMBER?]` placeholders in the resume, missing demo URL, PDF overflow or defects, anything else worth a second look
 - **Apply packet** — confirm the packet uploaded (Drive `Apply Queue/` filename with its posted-date prefix), flag `repost-detected` / `posted-date-unknown` / `upload-failed` gaps, and note Easy Apply availability
-- **`Pipeline.html` is now stale** — ask if he wants it regenerated
+- **`Pipeline.html` is now stale** — ask if they want it regenerated
 
 End with the obvious next step: apply on the ATS; once the Pipeline row is marked Applied, `stage-outreach` auto-stages the recruiter draft. Offer to regenerate the PDF or tweak a bullet if he wants the page tighter.
 
@@ -353,7 +353,7 @@ python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 7 --primit
 Then finish the run:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py finish-run --status "ok|partial|failed" --gaps '<merged gaps JSON array>' --files-written '["Job Description.md","Kanu Madhok Resume - <Company> <Short Role>.md",".classification.json","Application Answers.md",".apply-packet.json"]'
+python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py finish-run --status "ok|partial|failed" --gaps '<merged gaps JSON array>' --files-written '["Job Description.md","<user_name> Resume - <Company> <Short Role>.md",".classification.json","Application Answers.md",".apply-packet.json"]'
 ```
 
 `finish-run` computes the final status from the step results and rejects a mismatched `--status`; the argument is kept only as an explicit caller assertion. If the run is interrupted, close it with:
@@ -370,13 +370,13 @@ The final summary line contains this shape:
   "run_id": "jdtr-...",
   "company": "Cohere",
   "role": "Forward Deployed Engineer, Prompt Specialist",
-  "role_folder": "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Cohere - Forward Deployed Engineer Prompt Specialist",
-  "trace_file": "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Cohere - Forward Deployed Engineer Prompt Specialist/.jd-to-ready-trace.jsonl",
+  "role_folder": "<repo root>/workspace/Roles/Cohere - Forward Deployed Engineer Prompt Specialist",
+  "trace_file": "<repo root>/workspace/Roles/Cohere - Forward Deployed Engineer Prompt Specialist/.jd-to-ready-trace.jsonl",
   "status": "ok",
   "steps_closed": ["1", "2", "3", "3.5", "3.7", "6", "7"],
   "required_steps": ["1", "2", "3", "3.5", "3.7", "6", "7"],
   "gaps": [],
-  "files_written": ["Job Description.md", "Kanu Madhok Resume - Cohere FDE Prompt Specialist.md", ".classification.json", "Application Answers.md", ".apply-packet.json"],
+  "files_written": ["Job Description.md", "<user_name> Resume - Cohere FDE Prompt Specialist.md", ".classification.json", "Application Answers.md", ".apply-packet.json"],
   "steps": [{"event": "step_end", "...": "..."}]
 }
 ```
@@ -392,10 +392,10 @@ For coding agents changing this trace layer: keep `SKILL.md` operational, but tr
 ## Edge cases
 
 - **Folder already exists** → stop and ask. Don't overwrite.
-- **Multi-role JD** → file under the role Kanu names; ask if unclear.
-- **JD is for a role outside Kanu's focus** (data, AI, AI engineering, product engineering, AI strategy) → still run the full pipeline; judgment about fit is his.
-- **Internal mobility (Walmart Data Ventures role)** → still file it. Note in the report that `stage-outreach` is not needed (he can reach out internally).
-- **Role has a hard gate Kanu likely can't clear** (e.g., active TS/SCI clearance required) → run intake + resume, but flag prominently in step 6 before he applies.
+- **Multi-role JD** → file under the role the user names; ask if unclear.
+- **JD is for a role outside the user's focus** (data, AI, AI engineering, product engineering, AI strategy) → still run the full pipeline; judgment about fit is theirs.
+- **Internal mobility (current-employer role)** → still file it. Note in the report that `stage-outreach` is not needed (they can reach out internally).
+- **Role has a hard gate the user likely can't clear** (e.g., active TS/SCI clearance required) → run intake + resume, but flag prominently in step 6 before they apply.
 
 ## What this skill does NOT do
 

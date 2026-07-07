@@ -70,7 +70,7 @@ skill reproduces the gold email's signature paragraph-two move.
 ## Judge prompt (template)
 
 ```
-You are scoring a cold-recruiter email against a gold-standard email Kanu Madhok loves.
+You are scoring a cold-recruiter email against a gold-standard email <user_name> (from profile.yaml) loves.
 
 GOLD EMAIL (and why it's gold):
 <<< {{gold_email_file}} >>>

@@ -5,7 +5,7 @@
 
 # Write-Outreach Loop-Engineering Spec
 
-**Owner:** Kanu Madhok
+**Owner:** <user_name> (from profile.yaml)
 **Purpose.** Run the same task — *improve the `{{TARGET_SKILL}}` skill, then generate cold-recruiter emails with it* — across multiple provider models (Codex / Claude / Gemini), each in its own git worktree, and pick the model whose improved skill produces emails closest to a single **gold-standard email**.
 
 This is a benchmark, not a feature. The deliverable of a *winning run* is an improved `{{TARGET_SKILL}}` skill. The deliverable of *this folder* is the harness that decides which run won.

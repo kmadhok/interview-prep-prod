@@ -44,11 +44,11 @@ Hype: `leverage`, `leveraged`, `spearhead`, `spearheaded`, `synergize`, `synergy
 ### G7 canonical signature block
 ```
 Best,
-Kanu
+<user_first_name>
 
 ---
-Kanu Madhok
-madhok.kanu@gmail.com · linkedin.com/in/kanu-madhok · github.com/kmadhok
+<user_name> (from profile.yaml)
+<user_email from profile.yaml> · [LinkedIn URL] · [GitHub URL]
 Live demo: [URL from Demo Portfolio.md]
 ```
 The `Live demo:` URL must be a real URL from `Demo Portfolio.md` (not the literal placeholder).

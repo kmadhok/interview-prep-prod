@@ -1,11 +1,11 @@
 ---
 name: verify-postings
-description: Verify whether the not-yet-applied job postings in Kanu Madhok's `Pipeline.md` are still live, and grade each LIVE / DEAD / UNVERIFIED. Trigger whenever Kanu asks to check if his postings/jobs are still active, still open, still accepting applications, or "did these close" / "are these still live" / "verify my pipeline postings" / "which of these are dead". Runs a deterministic script for company ATS pages, then a sequential LinkedIn MCP worklist for LinkedIn-sourced roles. Do NOT trigger for filing a JD (interview-prep-intake), the apply-ready pipeline (jd-to-ready), or finding NEW jobs (find-fresh-jobs).
+description: Verify whether the not-yet-applied job postings in the user's `Pipeline.md` are still live, and grade each LIVE / DEAD / UNVERIFIED. Trigger whenever the user asks to check if their postings/jobs are still active, still open, still accepting applications, or "did these close" / "are these still live" / "verify my pipeline postings" / "which of these are dead". Runs a deterministic script for company ATS pages, then a sequential LinkedIn MCP worklist for LinkedIn-sourced roles. Do NOT trigger for filing a JD (interview-prep-intake), the apply-ready pipeline (jd-to-ready), or finding NEW jobs (find-fresh-jobs).
 ---
 
 # Verify Postings
 
-A repeatable workflow to check whether Kanu's not-yet-applied pipeline roles are still worth spending time on. The core insight: live roles are verified by finding them in a reliable source; dead roles are often verified by failing to find them against a live backdrop where the company is clearly still posting other roles.
+A repeatable workflow to check whether the user's not-yet-applied pipeline roles are still worth spending time on. The core insight: live roles are verified by finding them in a reliable source; dead roles are often verified by failing to find them against a live backdrop where the company is clearly still posting other roles.
 
 The bundled script handles the deterministic part: company ATS and job pages that can be fetched over HTTP. LinkedIn-sourced roles need authenticated LinkedIn MCP calls, so the script emits a stable, ordered worklist for those.
 

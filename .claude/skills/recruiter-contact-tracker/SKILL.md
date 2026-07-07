@@ -1,17 +1,19 @@
 ---
 name: recruiter-contact-tracker
-description: Mine Kanu Madhok's Gmail for recruiter, hiring manager, and internal referrer contacts and build or refresh a sortable, filterable HTML tracker at `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Recruiter Contacts.html`. Trigger whenever Kanu asks to build, refresh, update, expand, or audit his recruiter contact list/tracker/spreadsheet; asks "who has reached out to me about a role"; wants to surface recruiters, hiring managers, sourcers, or referrers from his inbox; or wants a list of people he can ping when applying to new roles. Also trigger on bare requests like "find my recruiters", "who can I reach out to", "make me a contact list", "build out a list of recruiters", or "search my email for hiring people" inside Interview Prep. Do NOT trigger when the user wants to draft an outreach email for a specific role (that's `job-outreach`), file a single JD into the pipeline (that's `interview-prep-intake`), or look up one specific person.
+description: Mine the user's Gmail for recruiter, hiring manager, and internal referrer contacts and build or refresh a sortable, filterable HTML tracker at `<repo root>/workspace/Recruiter Contacts.html`. Trigger whenever the user asks to build, refresh, update, expand, or audit their recruiter contact list/tracker/spreadsheet; asks "who has reached out to me about a role"; wants to surface recruiters, hiring managers, sourcers, or referrers from their inbox; or wants a list of people they can ping when applying to new roles. Also trigger on bare requests like "find my recruiters", "who can I reach out to", "make me a contact list", "build out a list of recruiters", or "search my email for hiring people" inside the workspace. Do NOT trigger when the user wants to draft an outreach email for a specific role (that's `job-outreach`), file a single JD into the pipeline (that's `interview-prep-intake`), or look up one specific person.
 ---
 
 # Recruiter Contact Tracker
 
-A repeatable workflow to mine Kanu's Gmail for everyone who could matter in a job search — recruiters, hiring managers, talent partners, internal referrers, and warm threads he's started himself — and assemble it into a single sortable HTML page he can keep updated.
+A repeatable workflow to mine the user's Gmail for everyone who could matter in a job search — recruiters, hiring managers, talent partners, internal referrers, and warm threads they've started themselves — and assemble it into a single sortable HTML page they can keep updated.
 
-The whole point: when Kanu's about to apply somewhere, he wants to be able to ctrl-F a real person to ping rather than firing applications into ATS black holes. This skill produces (and keeps fresh) that ctrl-F list.
+`<repo root>` = the directory containing `profile.yaml`; the workspace files live under `<repo root>/workspace/`.
+
+The whole point: when the user is about to apply somewhere, they want to be able to ctrl-F a real person to ping rather than firing applications into ATS black holes. This skill produces (and keeps fresh) that ctrl-F list.
 
 ## When this fires
 
-Use this skill any time Kanu wants the *contact list* itself produced or refreshed. If he's preparing for a specific role or drafting a single email, that's a different skill — see "Do NOT use when" below.
+Use this skill any time the user wants the *contact list* itself produced or refreshed. If they're preparing for a specific role or drafting a single email, that's a different skill — see "Do NOT use when" below.
 
 ## Workflow
 
@@ -22,19 +24,19 @@ Follow these steps in order. Each step assumes Gmail tools are connected (the co
 The defaults below work well; only ask if the request is contradictory or you don't have Gmail access yet.
 
 - Look-back window: **2 years** by default. Ask only if the user implies "all time", "this year only", or similar.
-- Output location: **`/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Recruiter Contacts.html`**. Don't relocate it.
-- Categories to include: **recruiters + hiring managers + referrers + warm cold-outbound threads Kanu started himself**. Skip if the user says "only external recruiters" or similar.
+- Output location: **`<repo root>/workspace/Recruiter Contacts.html`**. Don't relocate it.
+- Categories to include: **recruiters + hiring managers + referrers + warm cold-outbound threads the user started themselves**. Skip if the user says "only external recruiters" or similar.
 
 ### 2. Detect whether the tracker already exists
 
 ```bash
-ls "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Recruiter Contacts.html"
+ls "<repo root>/workspace/Recruiter Contacts.html"
 ```
 
-- **If it exists**, this is a *refresh*. Extract existing rows so you can merge new findings without clobbering Kanu's hand-edited notes or categories:
+- **If it exists**, this is a *refresh*. Extract existing rows so you can merge new findings without clobbering the user's hand-edited notes or categories:
   ```bash
   python3 <SKILL_DIR>/scripts/render_tracker.py extract \
-      "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Recruiter Contacts.html"
+      "<repo root>/workspace/Recruiter Contacts.html"
   ```
   This prints the rows as JSON. Keep this — you will merge into it later.
 
@@ -52,7 +54,7 @@ Run several targeted queries in parallel — the Gmail tool returns ~50 threads 
 4. **Recruiter language** — `subject:(recruiter OR recruiting OR "talent acquisition" OR "opportunity" OR "reaching out") after:<floor>`
 5. **Referral threads** — `("referred you" OR "referral" OR "got your name" OR "Googler") after:<floor>`
 6. **Company-domain sweep** for known target companies — `from:(@walmart.com OR @bcg.com OR @mckinsey.com OR @google.com OR @stripe.com OR @anthropic.com OR @openai.com OR @apple.com ...) after:<floor>`
-7. **Kanu's own outbound** to recruiter-like addresses — search Sent mail for `to:(@<company>.com) -to:noreply -to:no-reply` for each target company, OR a broad scan of Sent with subjects mentioning "recruiter" or job IDs.
+7. **The user's own outbound** to recruiter-like addresses — search Sent mail for `to:(@<company>.com) -to:noreply -to:no-reply` for each target company, OR a broad scan of Sent with subjects mentioning "recruiter" or job IDs.
 
 Don't fetch full thread bodies for every result — the search snippets + headers (sender, to, subject, date) contain almost everything you need. Only `get_thread` for threads where the snippet hides crucial info (e.g., a HackerRank invite where the actual interviewer/coordinator name is in the body).
 
@@ -64,8 +66,8 @@ For every thread, classify the sender(s) using the rubric in `references/categor
 |---|---|
 | **active** | Live pipeline in the last ~30 days, reciprocal messages, interview scheduled |
 | **warm** | Real human reply, you got past the application stage, relationship exists |
-| **referrer** | Internal employee referring Kanu (not an external recruiter) |
-| **cold** | Outbound Kanu sent, no human reply yet |
+| **referrer** | Internal employee referring the user (not an external recruiter) |
+| **cold** | Outbound the user sent, no human reply yet |
 | **stale** | >12 months silent, skill-mismatched (Oracle EPM body shops, etc.), or auto-rejection with no prior human contact |
 
 **Always skip** the noise: `jobalerts-noreply`, `hit-reply@linkedin.com` newsletter digests, `newsletters-noreply@linkedin.com`, `noreply@glassdoor.com`, `info@mail.joinleland.com`, `TheAthletic@…`, generic ATS confirmations (`no-reply@ashbyhq.com`, `expedia@myworkday.com`, etc.) UNLESS they expose a real recruiter's name in body text you care about.
@@ -97,21 +99,21 @@ Pass the merged rows to the bundled renderer:
 
 ```bash
 echo '<rows_json_here>' | python3 <SKILL_DIR>/scripts/render_tracker.py render \
-    "/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Recruiter Contacts.html"
+    "<repo root>/workspace/Recruiter Contacts.html"
 ```
 
 The renderer uses `assets/tracker_template.html`, which produces a single self-contained HTML page (no external deps): search box, category filter, click-to-sort columns, color-coded category tags, mailto links. The "generated on" date in the header is auto-filled with today's date.
 
 ### 7. Summarize what changed
 
-After the file is written, give Kanu a short summary in chat:
+After the file is written, give the user a short summary in chat:
 
 - Total contacts in the tracker (before vs. after, or just "N contacts" on a fresh build).
 - Notable adds — the 3-5 most strategically interesting new contacts (warm > active > referrer > cold).
 - Anything weird worth flagging: bounced addresses, OOO replies, recruiters who moved companies, contacts who haven't been touched in >12 months and could use a re-engagement ping.
-- A clickable `[View your recruiter contact list](computer:///Users/kanumadhok/Documents/Claude/Projects/Interview Prep/Recruiter Contacts.html)` link.
+- A clickable `[View your recruiter contact list](computer://<repo root>/workspace/Recruiter Contacts.html)` link.
 
-Keep the summary tight — Kanu wants the file, not a wall of text about the file.
+Keep the summary tight — the user wants the file, not a wall of text about the file.
 
 ## Do NOT use when
 

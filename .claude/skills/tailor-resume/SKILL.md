@@ -1,11 +1,13 @@
 ---
 name: tailor-resume
-description: Tailor Kanu's resume for a specific role. Use when he wants to customize bullets, reorder sections, or adjust emphasis for a particular JD. Pulls only from canonical Resume Achievements Master.md. Runs standalone or as a step inside jd-to-ready.
+description: Tailor the user's resume for a specific role. Use when they want to customize bullets, reorder sections, or adjust emphasis for a particular JD. Pulls only from canonical Resume Achievements Master.md. Runs standalone or as a step inside jd-to-ready.
 ---
 
 # Tailor Resume
 
-Customize Kanu's resume for a specific role and JD, pulling only from canonical, verified achievements. This is the single authoritative definition of resume tailoring — `jd-to-ready` calls this skill rather than reimplementing it.
+`<repo root>` = the directory containing `profile.yaml`; the reusables and role folders live under `<repo root>/workspace/`.
+
+Customize the user's resume for a specific role and JD, pulling only from canonical, verified achievements. This is the single authoritative definition of resume tailoring — `jd-to-ready` calls this skill rather than reimplementing it.
 
 ## Contract
 
@@ -23,17 +25,17 @@ Customize Kanu's resume for a specific role and JD, pulling only from canonical,
 **Outputs**
 | What | When | Where |
 |------|------|-------|
-| Tailored resume `.md` | always | `<role_folder>/Kanu Madhok Resume - <Company> <Short Role>.md` |
+| Tailored resume `.md` | always | `<role_folder>/<user_name> Resume - <Company> <Short Role>.md` (user_name from profile.yaml) |
 | `gaps[]` | always | **Returned to the caller** using the **cross-skill gap schema** (shared by all primitives): list of `{source: "resume", kind, detail}` objects — `kind` is `"no-canonical-match"` or `"needs-stronger-claim"`; `detail` carries the theme + the `[VERIFY: ...]` note, e.g. `{source: "resume", kind: "no-canonical-match", detail: "JD wants Kubernetes depth; not in master; [VERIFY: ...]"}`. The shared `source` field lets jd-to-ready merge resume-gaps + contact-gaps into one step-6 report / step-7 log. If no gaps, return `[]` explicitly. |
 
 **Standalone:** `tailor-resume(role_folder, jd, mode: standalone)`
 **Pipeline (from jd-to-ready):** `tailor-resume(role_folder, jd, themes[], archetype, mode: pipeline)`
 
-**"Short Role" derivation (for the filename):** the JD title trimmed of trailing qualifiers to ≤4 words — e.g. "AVP AI Engineer, Innovation" → "AVP AI Engineer"; "Product AI Engineer" → "Product AI Engineer". Match an existing `Kanu Madhok Resume - <Company> ...md` in the role folder if one is already there.
+**"Short Role" derivation (for the filename):** the JD title trimmed of trailing qualifiers to ≤4 words — e.g. "AVP AI Engineer, Innovation" → "AVP AI Engineer"; "Product AI Engineer" → "Product AI Engineer". Match an existing `<user_name> Resume - <Company> ...md` in the role folder if one is already there.
 
 ## Process
 
-**HARD RULE: canonical only.** `Resume Achievements Master.md` contains only resume-safe achievements. It is the only source for tailored resume claims. The separate `Resume Claims To Verify.md` file is a private verification queue, not source material. Until Kanu explicitly verifies a claim and it is promoted into `Resume Achievements Master.md`, it does not exist for resume purposes. If a JD theme appears to need something from the verification queue, do NOT silently substitute — lead with the closest canonical match and record the gap in `gaps[]`.
+**HARD RULE: canonical only.** `Resume Achievements Master.md` contains only resume-safe achievements. It is the only source for tailored resume claims. The separate `Resume Claims To Verify.md` file is a private verification queue, not source material. Until the user explicitly verifies a claim and it is promoted into `Resume Achievements Master.md`, it does not exist for resume purposes. If a JD theme appears to need something from the verification queue, do NOT silently substitute — lead with the closest canonical match and record the gap in `gaps[]`.
 
 1. **Get themes.**
    - `standalone` mode: read the JD and extract the top 5 themes/requirements; infer the role archetype.
@@ -53,20 +55,20 @@ Customize Kanu's resume for a specific role and JD, pulling only from canonical,
 - One page unless the JD signals otherwise.
 
 ## Format
-Match the Deloitte FDE GPS resume's structure (`# Kanu Madhok` header, `## PROFESSIONAL EXPERIENCE`, `## SELECTED PROJECT`, `## SKILLS`, `## EDUCATION`). Bullets, not paragraphs. Sub-headings for company + role + dates as in the Deloitte resume.
+Match the Deloitte FDE GPS resume's structure (`# <user_name>` header (user_name from profile.yaml), `## PROFESSIONAL EXPERIENCE`, `## SELECTED PROJECT`, `## SKILLS`, `## EDUCATION`). Bullets, not paragraphs. Sub-headings for company + role + dates as in the Deloitte resume.
 
-The rendered PDF must match the **BCG X gold-standard layout** (`Roles/BCG X - Senior AI Factory Product Builder/Kanu Madhok Resume - BCG X Senior AI Factory.pdf`): centered name with no 'Resume' title, two-column company/location-date headers, italic role line, tight bullets, bold inline Skills labels, and two-column Education. The PDF is produced deterministically by `scripts/build_resume_pdf.py` (reportlab), which auto-tightens font/margins through tiers down to a 9pt floor to fit one US-Letter page. Never hand-format the PDF or route it through a `.docx` export — the markdown is the source of truth and the script owns the layout.
+The rendered PDF must match the **BCG X gold-standard layout** (`workspace/Roles/BCG X - Senior AI Factory Product Builder/<user_name> Resume - BCG X Senior AI Factory.pdf`): centered name with no 'Resume' title, two-column company/location-date headers, italic role line, tight bullets, bold inline Skills labels, and two-column Education. The PDF is produced deterministically by `scripts/build_resume_pdf.py` (reportlab), which auto-tightens font/margins through tiers down to a 9pt floor to fit one US-Letter page. Never hand-format the PDF or route it through a `.docx` export — the markdown is the source of truth and the script owns the layout.
 
 **Canonical-only exception — fixed biographical blocks.** The contact/header block, the EDUCATION block (degrees + GPAs), and the dates/titles are stable biographical facts not stored as achievement entries in the master. Copy them from the master's `Header - Contact Block` where present, and from the gold Deloitte FDE GPS resume for Education. These fixed blocks are the ONE exception to "older resumes are outputs not evidence" — they are biographical constants, not claims. Everything else (every bullet, every skill) follows the canonical-only rule.
 
 ## Output filename
 
-`<role_folder>/Kanu Madhok Resume - <Company> <Short Role>.md` — match existing folders:
-- `Kanu Madhok Resume - Morningstar Product AI Engineer.md`
-- `Kanu Madhok Resume - Harrison Street AVP AI Engineer.md`
-- `Kanu Madhok Resume - Deloitte FDE GPS.md` (gold reference — match its format)
+`<role_folder>/<user_name> Resume - <Company> <Short Role>.md` (user_name from profile.yaml) — match existing folders:
+- `<user_name> Resume - Morningstar Product AI Engineer.md`
+- `<user_name> Resume - Harrison Street AVP AI Engineer.md`
+- `<user_name> Resume - Deloitte FDE GPS.md` (gold reference — match its format)
 
-In `standalone` mode this skill writes the `.md` only; the PDF is generated on request via `python3 scripts/build_resume_pdf.py "<role folder>/Kanu Madhok Resume - <Company> <Short Role>.md"`. (In `pipeline` mode, `jd-to-ready` step 3.5 renders + verifies the PDF automatically.) Do NOT generate a `.docx` — the `.docx` export path produced malformed layouts and has been retired.
+In `standalone` mode this skill writes the `.md` only; the PDF is generated on request via `python3 scripts/build_resume_pdf.py "<role folder>/<user_name> Resume - <Company> <Short Role>.md"`. (In `pipeline` mode, `jd-to-ready` step 3.5 renders + verifies the PDF automatically.) Do NOT generate a `.docx` — the `.docx` export path produced malformed layouts and has been retired.
 
 ## Self-check before declaring done
 - [ ] Every bullet derives from a canonical A/U/F/I entry, using only the master's allowed transformations (no new facts/numbers/status upgrades).
@@ -75,5 +77,5 @@ In `standalone` mode this skill writes the `.md` only; the PDF is generated on r
 - [ ] A1 is present and at least one of A3/A4/A5.
 - [ ] Fixed blocks (contact header, EDUCATION) copied per the canonical-only exception, not invented.
 - [ ] Every unmatched JD theme is captured in the returned `gaps[]` as a structured object (empty list `[]` if none).
-- [ ] Filename matches `Kanu Madhok Resume - <Company> <Short Role>.md` per the Short-Role rule.
+- [ ] Filename matches `<user_name> Resume - <Company> <Short Role>.md` per the Short-Role rule.
 - [ ] If a PDF was rendered, its `PAGES=… TITLE_LEAK=…` contract line shows `PAGES=1 TITLE_LEAK=0`; otherwise the overflow/leak is recorded as a gap (never auto-cut a canonical bullet to win the page).

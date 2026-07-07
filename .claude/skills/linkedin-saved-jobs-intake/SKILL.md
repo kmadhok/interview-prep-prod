@@ -1,9 +1,11 @@
 ---
 name: linkedin-saved-jobs-intake
-description: Use this skill when Kanu Madhok pastes a block of jobs copied from his LinkedIn "Saved Jobs" page (linkedin.com/my-items/saved-jobs/) into his Interview Prep workspace and wants them filed in bulk. Each pasted entry is typically `Title \n Company · Location \n Posted Xh/d ago`. This skill (1) searches each job via the LinkedIn MCP to recover the canonical LinkedIn job URL + ID, (2) appends a row per job to root `Saved Jobs Export.md`, (3) creates a `Company - Role` folder for each new job, (4) fetches the full JD via WebFetch on the LinkedIn URL and writes it to `Job Description.md`, and (5) adds a row per new job to the `Considering / not yet applied` section of `Pipeline.md` under a dated subsection. Trigger on language like "here are my saved jobs", "intake my saved jobs", "file all of these", "bulk import these jobs", "pulled my saved jobs list", or when Kanu pastes 3+ LinkedIn-formatted job entries at once. Do NOT trigger for a single JD share (use `interview-prep-intake`) or when intent is apply-ready prep for one role (use `jd-to-ready`). Defaults: APPEND to `Saved Jobs Export.md` (cumulative across runs), SKIP jobs whose folder already exists (do not overwrite prior prep work).
+description: Use this skill when the user pastes a block of jobs copied from their LinkedIn "Saved Jobs" page (linkedin.com/my-items/saved-jobs/) into their Interview Prep workspace and wants them filed in bulk. Each pasted entry is typically `Title \n Company · Location \n Posted Xh/d ago`. This skill (1) searches each job via the LinkedIn MCP to recover the canonical LinkedIn job URL + ID, (2) appends a row per job to root `Saved Jobs Export.md`, (3) creates a `Company - Role` folder for each new job, (4) fetches the full JD via WebFetch on the LinkedIn URL and writes it to `Job Description.md`, and (5) adds a row per new job to the `Considering / not yet applied` section of `Pipeline.md` under a dated subsection. Trigger on language like "here are my saved jobs", "intake my saved jobs", "file all of these", "bulk import these jobs", "pulled my saved jobs list", or when the user pastes 3+ LinkedIn-formatted job entries at once. Do NOT trigger for a single JD share (use `interview-prep-intake`) or when intent is apply-ready prep for one role (use `jd-to-ready`). Defaults: APPEND to `Saved Jobs Export.md` (cumulative across runs), SKIP jobs whose folder already exists (do not overwrite prior prep work).
 ---
 
 # LinkedIn Saved Jobs — Bulk Intake
+
+`<repo root>` = the directory containing `profile.yaml`; the workspace files live under `<repo root>/workspace/`.
 
 This skill is the "I just exported my saved jobs from LinkedIn, file all of them" workflow. It composes three lower-level operations — LinkedIn MCP search, WebFetch on the canonical URL, and the existing intake-row pattern from `interview-prep-intake` / `jd-to-ready` — into one sequential batch.
 
@@ -11,11 +13,11 @@ Read the root `AGENTS.md` (or `CLAUDE.md`) in the Interview Prep workspace befor
 
 ## Where things live
 
-- Workspace root: `/Users/kanumadhok/Documents/Claude/Projects/Interview Prep/`
-- Bulk export tracker: `<workspace root>/Saved Jobs Export.md` (created on first run, appended thereafter)
-- Role folders: `<workspace root>/Roles/<Company - Role Title>/` (active/considering roles live under `Roles/`; closed roles in `_Archived/`)
+- Workspace root: `<repo root>/workspace/`
+- Bulk export tracker: `workspace/Saved Jobs Export.md` (created on first run, appended thereafter)
+- Role folders: `workspace/Roles/<Company - Role Title>/` (active/considering roles live under `workspace/Roles/`; closed roles in `workspace/_Archived/`)
 - Per-role JD: `<role folder>/Job Description.md`
-- Pipeline tracker: `<workspace root>/Pipeline.md`
+- Pipeline tracker: `workspace/Pipeline.md`
 
 ## What "saved jobs paste" looks like
 
@@ -56,9 +58,9 @@ Walk the pasted text and extract a list of `{title, company, location_raw, work_
 - Split line 2 on ` · ` (middle-dot with spaces). Left = `company`. Right = `location_raw`.
 - If `location_raw` ends with `(Hybrid)`, `(Remote)`, or `(On-site)`, peel it into `work_mode` and strip from `location_raw`.
 - `posted_ago` = line 3 (e.g., "Reposted 12h ago", "Posted 6d ago"). Keep verbatim.
-- If parsing yields fewer than 3 jobs or any line is ambiguous, surface the parse table to Kanu before continuing — better to confirm than guess.
+- If parsing yields fewer than 3 jobs or any line is ambiguous, surface the parse table to the user before continuing — better to confirm than guess.
 
-Tell Kanu the count up front: "Parsed N jobs. Starting sequential LinkedIn MCP search."
+Tell the user the count up front: "Parsed N jobs. Starting sequential LinkedIn MCP search."
 
 ### 2. Sequential LinkedIn MCP search per job
 
@@ -109,7 +111,7 @@ Use `YYYY-MM-DD` from the current date. Per-batch coverage summary (matched / no
 For each parsed job:
 
 - Determine the folder name using the same rules as `interview-prep-intake` (Company - Role Title, drop punctuation that fights filesystems, shorten only when needed). Existing folders to match in style: `Walmart - Principal SWE Agent Builder`, `BCG X - Senior AI Factory Product Builder`, `Snorkel AI - Forward Deployed Engineer DaaS`, `Notion - Software Engineer AI Workflows`.
-- If the folder already exists: **skip**. Do not overwrite `Job Description.md` (Kanu may have prep work in there). Mark the row Status = `Skipped (folder exists)` in the export file. Do not add a Pipeline row.
+- If the folder already exists: **skip**. Do not overwrite `Job Description.md` (the user may have prep work in there). Mark the row Status = `Skipped (folder exists)` in the export file. Do not add a Pipeline row.
 - If the folder is new: create it. Write a `Job Description.md` stub (header only) immediately so the folder isn't empty if WebFetch fails in step 5.
 
 ### 5. WebFetch the full JD per new folder
@@ -152,7 +154,7 @@ For each NEW folder (not skipped), add a row with:
 
 - **Role**: `**<Company> — <Role Title> (<city or geo>)**`
 - **Stage**: `Filed only — bulk import`
-- **Next action**: Tactical note based on what WebFetch surfaced. Always include geography flag if the role is on-site somewhere Kanu isn't (Kanu is Chicago-based). For `[NOT FOUND]` rows, lead with **"URL not surfaced by MCP — paste from LinkedIn UI."**
+- **Next action**: Tactical note based on what WebFetch surfaced. Always include a geography flag if the role is on-site somewhere other than the user's home location (the user's timezone/region is in profile.yaml). For `[NOT FOUND]` rows, lead with **"URL not surfaced by MCP — paste from LinkedIn UI."**
 - **Date**: `Filed YYYY-MM-DD; <posted_ago>`
 - **Contacts**: `_TBD_`
 - **Folder**: `[[<folder name>]]`
@@ -166,7 +168,7 @@ End-of-run summary, one short paragraph + a one-line tally:
 - Which folders are new and have full JDs vs. which need manual URL pulls.
 - If any rows surfaced gates worth flagging at intake time (heavy travel, on-site-only geography, citizenship requirement), call them out — don't bury in the table.
 
-Do not auto-run `jd-to-ready` or any per-role tailoring. Bulk intake stops at "everything filed, ready for Kanu to pick which ones to deepen."
+Do not auto-run `jd-to-ready` or any per-role tailoring. Bulk intake stops at "everything filed, ready for the user to pick which ones to deepen."
 
 ## Rate-limit safety (read this)
 
@@ -182,21 +184,21 @@ The mitigations baked into this skill:
 3. **No `get_job_details` calls.** WebFetch on the canonical URL gets the same JD without burning Voyager API budget.
 4. **WebFetch is parallel-safe.** It hits LinkedIn's public HTML job pages, which has different (and looser) rate-limit behavior than the Voyager API.
 
-If you ever see a LinkedIn warning prompt surface through the MCP, stop immediately, report it to Kanu, and don't retry for at least an hour.
+If you ever see a LinkedIn warning prompt surface through the MCP, stop immediately, report it to the user, and don't retry for at least an hour.
 
 ## Edge cases and what to do
 
 - **Paste includes non-job header chrome** (`Saved · 34`, `Jobs / Connections / Notes`, pagination "Previous / 1 / 2 / 3 / Next", `Not seeing some jobs?`): strip during parse.
 - **Two jobs in the paste have the same `Company - Role Title`**: rare, but possible if a company has two reqs with identical titles in different cities. Disambiguate folder names with `(City)` suffix only when this collision happens. Don't add city suffixes preemptively.
 - **A LinkedIn search returns multiple plausible matches** (e.g., "Sr AI Engineer" and "Senior AI Engineer" at the same company): prefer the one whose listing text shows the exact saved-line title.
-- **WebFetch returns generic LinkedIn search results instead of a JD** (happens for expired/inactive req IDs — LinkedIn redirects stale URLs to a search page): treat that URL as `[NOT FOUND]`, downgrade the row, and write the stub JD with the URL placeholder. Do not retry. This usually means the req was closed between when Kanu saved it and when this skill ran.
+- **WebFetch returns generic LinkedIn search results instead of a JD** (happens for expired/inactive req IDs — LinkedIn redirects stale URLs to a search page): treat that URL as `[NOT FOUND]`, downgrade the row, and write the stub JD with the URL placeholder. Do not retry. This usually means the req was closed between when the user saved it and when this skill ran.
 - **The folder exists but is empty** (no `Job Description.md` inside): treat as new — write the JD, don't skip. Empty folder is leftover from an aborted run, not real prep work.
 - **A "company" name is actually a recruiting agency** (Singular Recruitment, Riviera Partners, etc.): keep the agency as `Company` in the folder name. If the underlying client is disclosed in the JD body, capture both in the JD header (`Company: <agency>` + `Client: <client name>`). Otherwise note "Client not disclosed."
-- **A pasted job is a duplicate of one already in the Pipeline's `Active` / `Applied` section** (Kanu re-saved a role he's already pursuing): treat as `Skipped (folder exists)`; do not add a Pipeline row; flag it in the report-back so Kanu knows he double-saved.
+- **A pasted job is a duplicate of one already in the Pipeline's `Active` / `Applied` section** (the user re-saved a role they're already pursuing): treat as `Skipped (folder exists)`; do not add a Pipeline row; flag it in the report-back so the user knows they double-saved.
 
 ## What this skill does NOT do
 
 - Does not run `jd-to-ready` on any role automatically. Bulk intake is filing, not prep.
-- Does not write `Cold Outreach.md`, tailored resumes, or contact research. Those are per-role decisions Kanu makes after triage.
+- Does not write `Cold Outreach.md`, tailored resumes, or contact research. Those are per-role decisions the user makes after triage.
 - Does not update `active_interview_pipeline.md` auto-memory unless a role moves out of `Filed only — bulk import` (and at that point the per-role intake / `jd-to-ready` skills handle it).
-- Does not regenerate `Pipeline.html`. Kanu regenerates that manually or via the `.claude/render_pipeline.py` script.
+- Does not regenerate `Pipeline.html`. The user regenerates that manually or via the `.claude/render_pipeline.py` script.
