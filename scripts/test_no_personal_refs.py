@@ -27,6 +27,8 @@ FORBIDDEN = [
     re.compile(r"/Users/[A-Za-z]"),          # absolute Mac home paths
     re.compile(r"G:[/\\]projects"),           # Kanu's PC drive layout
     re.compile(r"Documents/Claude/Projects"), # any form of the live workspace path
+    re.compile(r"kanu-madhok"),               # personal LinkedIn handle
+    re.compile(r"\bkmadhok\b"),               # personal GitHub handle
 ]
 
 

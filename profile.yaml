@@ -2,5 +2,7 @@
 # Flat key: value only. Created for each user by the /onboard skill.
 user_name: Kanu Madhok
 user_email: madhok.kanu@gmail.com
+user_linkedin: linkedin.com/in/kanu-madhok
+user_github: github.com/kmadhok
 resume_filename_pattern: "{name} Resume - {company} {role}"
 timezone: America/Chicago
