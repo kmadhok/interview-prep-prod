@@ -27,11 +27,24 @@ from config import resume_glob_prefix  # noqa: E402
 
 RESUME_PREFIX = resume_glob_prefix()
 
+# build_resume_pdf (reportlab-dependent) is imported lazily inside the
+# resume-export green-path test so a machine without reportlab skips that one
+# test instead of failing collection for the whole eval suite — the same
+# graceful degradation the resume-export step itself promises.
+
 ROLE_FOLDER = "Acme - Senior Agent Builder"
 PIPELINE_ROLE = "Acme — Senior Agent Builder"
 
 PIPELINE_HEADER = "| Role | Stage | Next action | Date | Contacts | Folder |"
 PIPELINE_SEP = "| --- | --- | --- | --- | --- | --- |"
+
+# Synthetic people used by the contacts-ledger / emails / outreach fixtures.
+# Kept consistent across builders so cross-skill references resolve.
+PEOPLE = {
+    "recruiter": ("Jordan Reyes", "jordan.reyes@acme.com"),
+    "hm": ("Morgan Patel", "morgan.patel@acme.com"),
+    "peer": ("Casey Singh", "casey.singh@acme.com"),
+}
 
 
 def _run_eval(args: list[str]) -> subprocess.CompletedProcess:
@@ -86,11 +99,17 @@ def _build_broken_intake_workspace(workspace: Path) -> None:
 # Test a: --list output contains both skills
 # ---------------------------------------------------------------------------
 
-def test_list_output_contains_skills():
+def test_list_output_contains_all_nine_skills():
     result = _run_eval(["--list"])
     assert result.returncode == 0, f"--list failed: {result.stderr}"
-    assert "interview-prep-intake" in result.stdout
-    assert "tailor-resume" in result.stdout
+    expected = {
+        "interview-prep-intake", "tailor-resume", "classify", "resume-export",
+        "apply-packet", "find-contacts", "enrich-contacts", "verify-emails",
+        "write-outreach",
+    }
+    listed = {ln.strip() for ln in result.stdout.splitlines() if ln.strip()}
+    missing = expected - listed
+    assert not missing, f"--list missing skills: {missing}; got:\n{result.stdout}"
 
 
 # ---------------------------------------------------------------------------
@@ -232,3 +251,326 @@ def test_tailor_resume_placeholder_leak_exits_one(tmp_path):
         f"stdout:\n{result.stdout}"
     )
     assert "tailor-resume-C3" in result.stdout
+
+
+# ===========================================================================
+# Task 2: builders + green-path tests for the remaining seven skills.
+# ===========================================================================
+
+def _role_dir(workspace: Path) -> Path:
+    """Create and return the Acme role folder in the workspace."""
+    role = workspace / "Roles" / ROLE_FOLDER
+    role.mkdir(parents=True, exist_ok=True)
+    return role
+
+
+def _write_ledger(role: Path, *, enrich_row: bool = False) -> None:
+    """Write a scored .contacts-ledger.md with the fixture column set.
+
+    If enrich_row is True, append a row whose Source cell is 'enrich' (so
+    enrich-contacts C2 passes when .eval-enriched exists).
+    """
+    recruiter_name, recruiter_email = PEOPLE["recruiter"]
+    hm_name, hm_email = PEOPLE["hm"]
+    peer_name, peer_email = PEOPLE["peer"]
+    header = (
+        "| Name | Category | Practice (0-3) | Practice evidence | Loc (0-2) | "
+        "Title (0-2) | Tenure (0-1) | Snr (0-1) | Total | Conn-degree | Source | "
+        "Provenance | Rank | Email (inferred) | Confidence |"
+    )
+    divider = "|" + "|".join(["------"] * 15) + "|"
+    rows = [
+        f"| {recruiter_name} | recruiter | 3 | \"Talent Acquisition\" | 2 | 2 | 1 | 1 | 9 | 2nd | search | | 1 | {recruiter_email} | Medium (inferred) |",
+        f"| {hm_name} | hiring manager | 3 | \"Head of AI Platform\" | 1 | 2 | 1 | 1 | 8 | 2nd | search | | 2 | {hm_email} | Medium (inferred) |",
+    ]
+    if enrich_row:
+        rows.append(
+            f"| {peer_name} | peer | 2 | \"Senior Agent Builder\" | 1 | 1 | 1 | 1 | 6 | 2nd | enrich | activity | 3 | {peer_email} | Medium (inferred) |"
+        )
+    body = "# Contacts Ledger — Acme\n\n" + "\n".join([header, divider, *rows]) + "\n"
+    (role / ".contacts-ledger.md").write_text(body, encoding="utf-8")
+
+
+def _write_verified_emails(role: Path) -> None:
+    """Write Verified Emails.md with one row per contact, each tagged inferred."""
+    rows = []
+    for _, (name, email) in sorted(PEOPLE.items()):
+        rows.append(f"| {name} | {email} | inferred |")
+    body = (
+        "# Verified Emails — Acme\n\n"
+        "| Name | Email | Status |\n"
+        "|------|-------|--------|\n"
+        + "\n".join(rows) + "\n"
+    )
+    (role / "Verified Emails.md").write_text(body, encoding="utf-8")
+
+
+_MINIMAL_RESUME_MD = """\
+Jordan Agent
+jordan.agent@example.com | (555) 123-4567 | linkedin.com/in/jordan-agent
+
+## PROFESSIONAL EXPERIENCE
+
+**Senior Agent Builder | Acme | 2023-Present**
+- Designed and shipped production LLM agents with tool-use orchestration.
+- Built RAG pipelines grounded in customer data; owned chunking and retrieval.
+
+**Agent Engineer | Beta Corp | 2021-2023**
+- Wrote evaluation suites that caught regressions before customers did.
+
+## SKILLS
+
+Python, LLM orchestration, RAG, MCP, evaluation harnesses
+
+## EDUCATION
+
+B.S. Computer Science — State University, 2021
+"""
+
+
+# ---------------------------------------------------------------------------
+# classify — green path
+# ---------------------------------------------------------------------------
+
+def _build_good_classify_workspace(workspace: Path) -> None:
+    role = _role_dir(workspace)
+    (role / ".classification.json").write_text(
+        json.dumps({
+            "themes": [
+                {"tag": "agents", "evidence": "design and ship production LLM agents"},
+                {"tag": "LLM-orchestration", "evidence": "prompt scaffolds and tool-use orchestration"},
+                {"tag": "RAG", "evidence": "build RAG pipelines grounded in customer data"},
+                {"tag": "evaluation", "evidence": "write evaluation suites that catch regressions"},
+            ],
+            "archetype": "agent-builder",
+            "archetype_rationale": "Hands-on agent design, build, and operation.",
+            "notes": "Hard gate: shipped a production LLM agent.",
+            "classified_ts": "2026-07-10",
+        }, indent=2),
+        encoding="utf-8",
+    )
+
+
+def test_classify_good_workspace_exits_zero(tmp_path):
+    workspace = tmp_path / "ws"
+    _build_good_classify_workspace(workspace)
+    result = _run_eval(["classify", "--workspace", str(workspace)])
+    assert result.returncode == 0, (
+        f"Expected exit 0 for good classify workspace; got {result.returncode}\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "PASS" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# classify — red path (bad theme, off-vocab)
+# ---------------------------------------------------------------------------
+
+def test_classify_bad_theme_exits_one_names_c3(tmp_path):
+    """An off-vocab theme must fail classify-C3 (themes within the vocab)."""
+    workspace = tmp_path / "ws"
+    role = _role_dir(workspace)
+    (role / ".classification.json").write_text(
+        json.dumps({
+            "themes": [
+                {"tag": "agents", "evidence": "design and ship production LLM agents"},
+                {"tag": "quantum-computing", "evidence": "not a real theme in the vocab"},
+            ],
+            "archetype": "agent-builder",
+            "classified_ts": "2026-07-10",
+        }, indent=2),
+        encoding="utf-8",
+    )
+    result = _run_eval(["classify", "--workspace", str(workspace)])
+    assert result.returncode == 1, (
+        f"Expected exit 1 for bad-theme classify; got {result.returncode}\n"
+        f"stdout:\n{result.stdout}"
+    )
+    assert "classify-C3" in result.stdout
+    assert "FAIL" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# resume-export — green path (PDF built via build_resume_pdf at test time)
+# ---------------------------------------------------------------------------
+
+def test_resume_export_good_workspace_exits_zero(tmp_path):
+    """Build a real one-page PDF via build_resume_pdf.py, then verify."""
+    pytest.importorskip("reportlab", reason="resume-export fixture needs reportlab")
+    import build_resume_pdf
+
+    workspace = tmp_path / "ws"
+    role = _role_dir(workspace)
+    resume_md = role / f"{RESUME_PREFIX}Acme Senior Agent Builder.md"
+    resume_md.write_text(_MINIMAL_RESUME_MD, encoding="utf-8")
+    pdf_path = resume_md.with_suffix(".pdf")
+    pages, title_leak, _ = build_resume_pdf.build_pdf(resume_md, pdf_path)
+    assert pages == 1, f"Fixture resume should be one page; got {pages}"
+
+    result = _run_eval(["resume-export", "--workspace", str(workspace)])
+    assert result.returncode == 0, (
+        f"Expected exit 0 for good resume-export workspace; got {result.returncode}\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "PASS" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# apply-packet — green path
+# ---------------------------------------------------------------------------
+
+def _build_good_apply_packet_workspace(workspace: Path) -> None:
+    role = _role_dir(workspace)
+    (role / "Application Answers.md").write_text(
+        "# Application Answers — Acme\n\n"
+        "## Salary expectation\n\n$X\n\n"
+        "## Work authorization\n\nauthorized, no sponsorship\n\n"
+        "## Notice period\n\n2 weeks\n",
+        encoding="utf-8",
+    )
+    (role / ".apply-packet.json").write_text(
+        json.dumps({
+            "state": "queued",
+            "remote_dir": "Apply Queue_test/acme",
+            "answers_md": "Application Answers.md",
+            "ts": "2026-07-10",
+        }, indent=2),
+        encoding="utf-8",
+    )
+
+
+def test_apply_packet_good_workspace_exits_zero(tmp_path):
+    workspace = tmp_path / "ws"
+    _build_good_apply_packet_workspace(workspace)
+    result = _run_eval(["apply-packet", "--workspace", str(workspace)])
+    assert result.returncode == 0, (
+        f"Expected exit 0 for good apply-packet workspace; got {result.returncode}\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "PASS" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# find-contacts — green path
+# ---------------------------------------------------------------------------
+
+def test_find_contacts_good_workspace_exits_zero(tmp_path):
+    workspace = tmp_path / "ws"
+    role = _role_dir(workspace)
+    _write_ledger(role)
+    result = _run_eval(["find-contacts", "--workspace", str(workspace)])
+    assert result.returncode == 0, (
+        f"Expected exit 0 for good find-contacts workspace; got {result.returncode}\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "PASS" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# enrich-contacts — green path
+# ---------------------------------------------------------------------------
+
+def test_enrich_contacts_good_workspace_exits_zero(tmp_path):
+    """Ledger with an enrich-sourced row + .eval-enriched marker + hooks
+    referencing ledger people → all three enrich-contacts clauses pass."""
+    workspace = tmp_path / "ws"
+    role = _role_dir(workspace)
+    _write_ledger(role, enrich_row=True)
+    (role / ".eval-enriched").write_text("", encoding="utf-8")
+    recruiter_name, _ = PEOPLE["recruiter"]
+    hm_name, _ = PEOPLE["hm"]
+    peer_name, _ = PEOPLE["peer"]
+    (role / ".contacts-ledger.md").write_text(
+        (role / ".contacts-ledger.md").read_text(encoding="utf-8")
+        + f"\n## hooks\n\n"
+          f"- {recruiter_name} — replied to intro, offered a chat next week.\n"
+          f"- {hm_name} — was referenced by {peer_name} in a thread.\n",
+        encoding="utf-8",
+    )
+    result = _run_eval(["enrich-contacts", "--workspace", str(workspace)])
+    assert result.returncode == 0, (
+        f"Expected exit 0 for good enrich-contacts workspace; got {result.returncode}\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "PASS" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# verify-emails — green path
+# ---------------------------------------------------------------------------
+
+def test_verify_emails_good_workspace_exits_zero(tmp_path):
+    workspace = tmp_path / "ws"
+    role = _role_dir(workspace)
+    _write_ledger(role)
+    _write_verified_emails(role)
+    result = _run_eval(["verify-emails", "--workspace", str(workspace)])
+    assert result.returncode == 0, (
+        f"Expected exit 0 for good verify-emails workspace; got {result.returncode}\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "PASS" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# write-outreach — green path
+# ---------------------------------------------------------------------------
+
+def _build_good_write_outreach_workspace(workspace: Path) -> None:
+    role = _role_dir(workspace)
+    _write_ledger(role)
+    _write_verified_emails(role)
+    recruiter_name, recruiter_email = PEOPLE["recruiter"]
+    hm_name, hm_email = PEOPLE["hm"]
+    (role / "Cold Outreach.md").write_text(
+        "# Cold Outreach — Acme\n\n"
+        f"## Intro — Recruiter\n\n"
+        f"To: {recruiter_email}\n\n"
+        f"Subject: Acme Senior Agent Builder — intro\n\n"
+        f"Hi {recruiter_name.split()[0]}, saw the Senior Agent Builder role.\n\n"
+        f"## Intro — Hiring Manager\n\n"
+        f"To: {hm_email}\n\n"
+        f"Subject: Acme Senior Agent Builder — building agents in production\n\n"
+        f"Hi {hm_name.split()[0]}, I build production LLM agents and saw your role.\n",
+        encoding="utf-8",
+    )
+
+
+def test_write_outreach_good_workspace_exits_zero(tmp_path):
+    workspace = tmp_path / "ws"
+    _build_good_write_outreach_workspace(workspace)
+    result = _run_eval(["write-outreach", "--workspace", str(workspace)])
+    assert result.returncode == 0, (
+        f"Expected exit 0 for good write-outreach workspace; got {result.returncode}\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "PASS" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# write-outreach — red path (placeholder leak)
+# ---------------------------------------------------------------------------
+
+def test_write_outreach_placeholder_leak_exits_one(tmp_path):
+    """A [NUMBER?] placeholder in Cold Outreach.md must fail write-outreach-C3."""
+    workspace = tmp_path / "ws"
+    role = _role_dir(workspace)
+    _write_ledger(role)
+    _write_verified_emails(role)
+    recruiter_name, recruiter_email = PEOPLE["recruiter"]
+    hm_name, hm_email = PEOPLE["hm"]
+    (role / "Cold Outreach.md").write_text(
+        "# Cold Outreach — Acme\n\n"
+        f"## Intro — Recruiter\n\nTo: {recruiter_email}\n\n"
+        f"Hi {recruiter_name.split()[0]}, improved throughput by [NUMBER?] percent.\n\n"
+        f"## Intro — Hiring Manager\n\nTo: {hm_email}\n\n"
+        f"Hi {hm_name.split()[0]}, saw your role.\n",
+        encoding="utf-8",
+    )
+    result = _run_eval(["write-outreach", "--workspace", str(workspace)])
+    assert result.returncode == 1, (
+        f"Expected exit 1 for placeholder leak; got {result.returncode}\n"
+        f"stdout:\n{result.stdout}"
+    )
+    assert "write-outreach-C3" in result.stdout
+    assert "FAIL" in result.stdout
