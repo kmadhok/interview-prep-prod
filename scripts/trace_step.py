@@ -27,6 +27,7 @@ RUN_TYPES = {
     "full": list(REQUIRED_STEPS),
     "jd-to-ready": ["1", "2", "3", "3.5", "3.7", "6", "7"],
     "stage-outreach": ["4", "4b", "4c", "5", "6", "7"],
+    "primitive": ["main"],
 }
 
 
@@ -110,6 +111,7 @@ def load_state() -> dict[str, Any] | None:
         return None
     state.setdefault("run_type", None)
     state.setdefault("required_steps", REQUIRED_STEPS)
+    state.setdefault("skill", state.get("run_type"))
     state.setdefault("closed_steps", [])
     state.setdefault("current_step", None)
     state.setdefault("next_seq", 1)
@@ -290,11 +292,18 @@ def cmd_start(args: argparse.Namespace) -> int:
         if error:
             return fail(error)
     run_type = args.run_type
+    if run_type == "primitive":
+        if not args.skill or not args.skill.strip():
+            return fail("skill is required when --run-type primitive")
+        skill = args.skill
+    else:
+        skill = run_type
     required = required_steps_for(run_type)
     run_dir_for(run_id).mkdir(parents=True, exist_ok=True)
     state = {
         "run_id": run_id,
         "run_type": run_type,
+        "skill": skill,
         "company": args.company,
         "role": args.role,
         "role_folder": role_folder,
@@ -311,8 +320,10 @@ def cmd_start(args: argparse.Namespace) -> int:
         state,
         {
             "event": "run_start",
+            "schema_version": 2,
             "company": args.company,
             "role": args.role,
+            "skill": skill,
             "required_steps": required,
             "run_type": run_type,
             "source": "jd-to-ready",
@@ -361,6 +372,15 @@ def cmd_begin(args: argparse.Namespace) -> int:
         return fail(f"Cannot begin step {step}; step {state['current_step']} is still open.")
     if step in [str(item) for item in state.get("closed_steps", [])]:
         return fail(f"Cannot begin step {step}; it is already closed.")
+    if not args.reason.strip():
+        return fail("reason is required and must be non-empty")
+    ok, sources, error = parse_json_strict(args.sources, "sources")
+    if not ok:
+        return fail(error or "invalid sources")
+    if error := validate_array(sources, "sources"):
+        return fail(error)
+    if not all(isinstance(item, str) for item in sources):
+        return fail("sources must be a JSON array of strings")
     ok, inputs_summary, error = parse_json_optional(args.inputs_summary, args.inputs_summary, "inputs_summary")
     if not ok:
         return fail(error or "invalid inputs_summary")
@@ -374,6 +394,8 @@ def cmd_begin(args: argparse.Namespace) -> int:
             "primitive": args.primitive,
             "mode": args.mode,
             "prediction": args.prediction,
+            "reason": args.reason,
+            "sources": sources,
             "inputs_summary": inputs_summary,
             "status": "running",
         },
@@ -610,6 +632,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--role")
     p.add_argument("--role-folder")
     p.add_argument("--test-run", action="store_true")
+    p.add_argument("--skill")
     # Fail closed on typos: an unknown run-type would silently inherit the
     # legacy 11-step contract and make the run unfinishable.
     p.add_argument("--run-type", default="jd-to-ready", choices=sorted(RUN_TYPES))
@@ -627,6 +650,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--primitive", required=True)
     p.add_argument("--mode")
     p.add_argument("--prediction", required=True)
+    p.add_argument("--reason", required=True)
+    p.add_argument("--sources", required=True)
     p.add_argument("--inputs-summary")
     p.set_defaults(func=cmd_begin)
 

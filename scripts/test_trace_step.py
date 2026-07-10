@@ -81,6 +81,10 @@ class TraceStepTests(unittest.TestCase):
             "",
             "--prediction",
             f"step {step} closes",
+            "--reason",
+            f"exercise step {step}",
+            "--sources",
+            "[]",
         )
         self.run_cmd(
             "end",
@@ -141,6 +145,122 @@ class TraceStepTests(unittest.TestCase):
         events = [json.loads(line) for line in trace.read_text(encoding="utf-8").splitlines()]
         self.assertEqual(events[0]["event"], "run_start")
         self.assertEqual(events[0]["run_id"], run_id)
+
+    def test_begin_requires_reason_and_sources(self) -> None:
+        self.start_and_bind()
+        result = self.run_cmd(
+            "begin",
+            "--step",
+            "1",
+            "--primitive",
+            "intake",
+            "--mode",
+            "",
+            "--prediction",
+            "intake closes",
+            ok=False,
+        )
+        self.assertIn("--reason", result.stderr)
+        self.assertIn("--sources", result.stderr)
+
+    def test_begin_records_reason_and_sources(self) -> None:
+        self.start_and_bind()
+        sources_json = '[".claude/skills/x/SKILL.md","workspace/Pipeline.md"]'
+        self.run_cmd(
+            "begin",
+            "--step",
+            "1",
+            "--primitive",
+            "intake",
+            "--mode",
+            "",
+            "--prediction",
+            "intake closes",
+            "--reason",
+            "why text",
+            "--sources",
+            sources_json,
+        )
+
+        events = self.read_trace()
+        begin = [event for event in events if event["event"] == "step_begin"][-1]
+        self.assertEqual(begin["reason"], "why text")
+        self.assertEqual(begin["sources"], json.loads(sources_json))
+
+    def test_begin_rejects_sources_that_are_not_valid_json(self) -> None:
+        self.start_and_bind()
+        result = self.run_cmd(
+            "begin",
+            "--step",
+            "1",
+            "--primitive",
+            "intake",
+            "--mode",
+            "",
+            "--prediction",
+            "intake closes",
+            "--reason",
+            "why text",
+            "--sources",
+            "not-json",
+            ok=False,
+        )
+        self.assertIn("sources", result.stderr)
+        self.assertIn("valid JSON", result.stderr)
+
+    def test_run_start_records_schema_version_two(self) -> None:
+        result = self.run_cmd(
+            "start-run",
+            "--run-id",
+            "run-schema-version",
+            "--run-type",
+            "full",
+            "--company",
+            "Acme",
+            "--role",
+            "Agent Builder",
+        )
+        run_id = result.stdout.strip()
+        events = [
+            json.loads(line)
+            for line in (self.runs_dir / run_id / "trace.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        self.assertEqual(events[0]["schema_version"], 2)
+
+    def test_primitive_run_type_uses_skill_and_main_step(self) -> None:
+        result = self.run_cmd(
+            "start-run",
+            "--run-id",
+            "run-primitive-tailor-resume",
+            "--run-type",
+            "primitive",
+            "--skill",
+            "tailor-resume",
+            "--company",
+            "Acme",
+            "--role",
+            "Agent Builder",
+        )
+        run_id = result.stdout.strip()
+        events = [
+            json.loads(line)
+            for line in (self.runs_dir / run_id / "trace.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        self.assertEqual(events[0]["required_steps"], ["main"])
+        self.assertEqual(events[0]["skill"], "tailor-resume")
+
+    def test_primitive_run_type_requires_skill(self) -> None:
+        result = self.run_cmd(
+            "start-run",
+            "--run-type",
+            "primitive",
+            "--company",
+            "Acme",
+            "--role",
+            "Agent Builder",
+            ok=False,
+        )
+        self.assertIn("skill", result.stderr)
 
     def test_trace_is_never_written_into_role_folder(self) -> None:
         self.role_folder.mkdir(parents=True)
@@ -263,6 +383,10 @@ class TraceStepTests(unittest.TestCase):
             "full",
             "--prediction",
             "contacts are found",
+            "--reason",
+            "test overlapping begin guard",
+            "--sources",
+            '["workspace/Pipeline.md"]',
         )
         result = self.run_cmd(
             "begin",
@@ -274,6 +398,10 @@ class TraceStepTests(unittest.TestCase):
             "",
             "--prediction",
             "contacts are enriched",
+            "--reason",
+            "test overlapping begin guard",
+            "--sources",
+            '["workspace/Pipeline.md"]',
             ok=False,
         )
         self.assertIn("step 4 is still open", result.stderr)
@@ -307,7 +435,21 @@ class TraceStepTests(unittest.TestCase):
     def test_abort_records_missing_steps_and_clears_state(self) -> None:
         self.start_and_bind()
         self.close_step("1")
-        self.run_cmd("begin", "--step", "2", "--primitive", "jd-classification", "--mode", "", "--prediction", "classifies")
+        self.run_cmd(
+            "begin",
+            "--step",
+            "2",
+            "--primitive",
+            "jd-classification",
+            "--mode",
+            "",
+            "--prediction",
+            "classifies",
+            "--reason",
+            "classification starts",
+            "--sources",
+            '["Job Description.md"]',
+        )
         self.run_cmd("abort-run", "--reason", "classification service unavailable", "--gaps", "[]")
 
         self.assertFalse((self.runs_dir / ".active-run.json").exists())
@@ -318,7 +460,21 @@ class TraceStepTests(unittest.TestCase):
 
     def test_missing_tokens_is_rejected(self) -> None:
         self.start_and_bind()
-        self.run_cmd("begin", "--step", "1", "--primitive", "intake", "--mode", "", "--prediction", "intake closes")
+        self.run_cmd(
+            "begin",
+            "--step",
+            "1",
+            "--primitive",
+            "intake",
+            "--mode",
+            "",
+            "--prediction",
+            "intake closes",
+            "--reason",
+            "intake starts",
+            "--sources",
+            "[]",
+        )
         result = self.run_cmd(
             "end",
             "--step",
@@ -376,7 +532,8 @@ class TraceStepTests(unittest.TestCase):
         for step, pattern in [("1", "pdf-export-defect"), ("2", "apply-packet-defect")]:
             self.run_cmd(
                 "begin", "--step", step, "--primitive", f"p{step}", "--mode", "",
-                "--prediction", "closes",
+                "--prediction", "closes", "--reason", f"exercise failure pattern {pattern}",
+                "--sources", "[]",
             )
             self.run_cmd(
                 "end", "--step", step, "--primitive", f"p{step}", "--mode", "",
@@ -397,6 +554,7 @@ class RunTypeMapTests(unittest.TestCase):
     def test_run_type_required_steps(self) -> None:
         self.assertEqual(self.mod.required_steps_for("jd-to-ready"), ["1", "2", "3", "3.5", "3.7", "6", "7"])
         self.assertEqual(self.mod.required_steps_for("stage-outreach"), ["4", "4b", "4c", "5", "6", "7"])
+        self.assertEqual(self.mod.required_steps_for("primitive"), ["main"])
 
     def test_unknown_run_type_falls_back_to_full(self) -> None:
         # Function-level fallback only: None / unknown → the legacy full list so
@@ -427,7 +585,8 @@ class RunTypeMapTests(unittest.TestCase):
                              "--company", "Acme", "--role", "Agent Builder").returncode, 0)
         for step in ["4", "4b", "4c", "5", "6", "7"]:
             self.assertEqual(run("begin", "--step", step, "--primitive", "p",
-                                 "--prediction", "x").returncode, 0, f"begin {step}")
+                                 "--prediction", "x", "--reason", f"exercise {step}",
+                                 "--sources", "[]").returncode, 0, f"begin {step}")
             self.assertEqual(run("end", "--step", step, "--primitive", "p",
                                  "--status", "ok", "--prediction-met", "true",
                                  "--tokens", TOKENS).returncode, 0, f"end {step}")

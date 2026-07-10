@@ -116,7 +116,8 @@ def _assert_ok(result: subprocess.CompletedProcess, label: str) -> None:
 
 def _close_step(step: str, env: dict) -> None:
     r = _run(["begin", "--step", step, "--primitive", f"p-{step}",
-              "--prediction", f"step {step} closes"], env)
+              "--prediction", f"step {step} closes",
+              "--reason", f"exercise step {step}", "--sources", "[]"], env)
     _assert_ok(r, f"begin {step}")
     r = _run(["end", "--step", step, "--primitive", f"p-{step}",
               "--status", "ok", "--prediction-met", "true",
