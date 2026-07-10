@@ -4,8 +4,8 @@ Historical note: this file describes the first traceability implementation pass.
 The active contract for future coding agents now lives in:
 
 - `TRACEABILITY.md`
-- `TRACE_SCHEMA.md`
-- `TOKEN_ACCOUNTING.md`
+- `docs/trace/TRACE_SCHEMA.md`
+- `docs/trace/TOKEN_ACCOUNTING.md`
 - `RUNBOOK.md`
 - `TRACE_TEST_PLAN.md`
 

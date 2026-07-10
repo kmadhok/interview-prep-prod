@@ -109,7 +109,7 @@ Token tracing is per step. This project is not trying to capture the literal
 generated token stream.
 
 Each `step_end` should include a `tokens` object. If counts are unavailable, use
-the explicit unknown shape from `TOKEN_ACCOUNTING.md` instead of omitting the
+the explicit unknown shape from `docs/trace/TOKEN_ACCOUNTING.md` instead of omitting the
 field.
 
 Token totals should be attributed to the step that caused the model work. Tool
@@ -134,8 +134,8 @@ makes this sequence fail in production.
 
 ## Related Docs
 
-- `TRACE_SCHEMA.md` - event shapes and validation rules
-- `TOKEN_ACCOUNTING.md` - per-step token accounting contract
+- `docs/trace/TRACE_SCHEMA.md` - event shapes and validation rules
+- `docs/trace/TOKEN_ACCOUNTING.md` - per-step token accounting contract
 - `RUNBOOK.md` - operator commands and recovery guidance
 - `TRACE_TEST_PLAN.md` - regression scenarios for hardening the trace helper
 - `TRACEABILITY_IMPLEMENTATION_SUMMARY.md` - historical context for the first

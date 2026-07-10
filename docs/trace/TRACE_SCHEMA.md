@@ -1,6 +1,11 @@
-# jd-to-ready Trace Schema
+# Trace Schema (v2 — all skills)
 
-This document defines the trace schema for `jd-to-ready`.
+This document defines the trace schema for every orchestrator and primitive
+skill run. The helper is `scripts/trace_step.py` at the repo root; traces live
+at `runs/<run-id>/trace.jsonl`, the active state at `runs/.active-run.json`,
+and the per-run summary at `runs/summary.jsonl`. `TRACE_RUNS_DIR` overrides
+the runs location for tests and harnesses. After `finish-run`, render the
+human report with `scripts/render_run_report.py <run-dir>`.
 
 The helper writes JSONL events and enforces the state transitions below for
 production runs.
@@ -30,11 +35,17 @@ Required fields:
 - `role`
 - `required_steps`
 - `source`
+- `skill` — the skill this run belongs to (for `--run-type primitive` it is the
+  required `--skill` value; for orchestrator run-types it defaults to the
+  run-type string)
+- `schema_version` — `2` for all new runs (v1 traces lack this field; the
+  report renderer tolerates them)
 
 `required_steps` is set per `--run-type` at `start-run` (see the `RUN_TYPES`
 map in `trace_step.py`). The CLI default is `jd-to-ready` →
 `["1", "2", "3", "3.5", "3.7", "6", "7"]`; `stage-outreach` →
-`["4", "4b", "4c", "5", "6", "7"]`. The full 11-step list
+`["4", "4b", "4c", "5", "6", "7"]`; `primitive` → `["main"]` (a standalone
+run of a single primitive skill — requires `--skill`). The full 11-step list
 (`["1", "2", "3", "3.5", "3.7", "4", "4b", "4c", "5", "6", "7"]`) is the
 legacy `full` contract, kept for old state files and the combined test
 harness. Unknown run-type strings are rejected at the CLI.
@@ -48,7 +59,8 @@ Required fields:
 - `role_folder`
 
 For active roles, `role_folder` must resolve under the workspace `Roles/`
-directory. Test harnesses must mark themselves explicitly as test runs before
+directory. The role folder is metadata on events — the trace itself always
+lives in the run directory, never in the role folder. Test harnesses must mark themselves explicitly as test runs before
 using a non-`Roles/` folder.
 
 ### `step_begin`
@@ -61,12 +73,19 @@ Required fields:
 - `prediction`
 - `inputs_summary`
 - `status`
+- `reason` — one line: why this step is running now (v2, mandatory)
+- `sources` — JSON array of the files whose content shapes this step's output
+  (the skill prompt plus static inputs). This is the debuggability chain: a
+  user walks from a bad output to the file to edit via this field. Never omit
+  or pad it (v2, mandatory)
 
 Rules:
 
 - `status` is always `running`.
 - `prediction` is a short, checkable claim.
 - Only one step can be open at a time.
+- `reason` must be non-empty; `sources` must be a JSON array of strings
+  (may be `[]` only when the step genuinely reads no files).
 
 ### `step_end`
 
