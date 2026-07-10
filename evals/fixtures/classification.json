@@ -1,0 +1,24 @@
+{
+  "themes": [
+    {
+      "tag": "agents",
+      "evidence": "design and ship production LLM agents with tool-use orchestration"
+    },
+    {
+      "tag": "LLM-orchestration",
+      "evidence": "prompt scaffolds, tool-use orchestration, and guardrails for agents"
+    },
+    {
+      "tag": "RAG",
+      "evidence": "build retrieval-augmented generation pipelines grounded in customer data"
+    },
+    {
+      "tag": "evaluation",
+      "evidence": "write and maintain evaluation suites that catch regressions"
+    }
+  ],
+  "archetype": "agent-builder",
+  "archetype_rationale": "Role is hands-on agent design, build, and operation with eval harnesses.",
+  "notes": "Hard gate: must have shipped a production LLM agent.",
+  "classified_ts": "2026-07-10"
+}
