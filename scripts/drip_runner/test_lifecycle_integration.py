@@ -85,10 +85,7 @@ def _pipeline(active_rows: list[str], considering_rows: list[str] | None = None,
 # TRACE helper — mirrors test_trace_step.py without importing from it
 # ---------------------------------------------------------------------------
 
-TRACE_SCRIPT = (
-    Path(__file__).parent.parent.parent
-    / ".claude" / "skills" / "jd-to-ready" / "scripts" / "trace_step.py"
-)
+TRACE_SCRIPT = Path(__file__).parent.parent / "trace_step.py"
 
 TOKENS_JSON = json.dumps({
     "input": None,
