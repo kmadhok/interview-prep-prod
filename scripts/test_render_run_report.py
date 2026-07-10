@@ -168,6 +168,31 @@ class RenderRunReportTests(unittest.TestCase):
 
         self.assertIn("—", report)
 
+    def test_aborted_run_report_shows_reason_and_terminal_gaps(self) -> None:
+        run_dir = self.root / "aborted-run"
+        run_dir.mkdir()
+        step_gap = {"source": "tailor-resume", "kind": "theme-unmatched", "detail": "no canonical theme"}
+        abort_only_gap = {"source": "intake", "kind": "thin-jd-stub", "detail": "JD had no body"}
+        events = [
+            {"event": "run_start", "run_id": "aborted-run", "company": "Acme",
+             "role": "Analyst", "schema_version": 2, "skill": "tailor-resume"},
+            {"event": "step_begin", "run_id": "aborted-run", "step": "main",
+             "status": "running", "reason": "r", "sources": []},
+            {"event": "step_end", "run_id": "aborted-run", "step": "main",
+             "status": "failed", "gaps": [step_gap]},
+            # abort-run receives the merged gaps array: step gap repeated + one new
+            {"event": "run_abort", "run_id": "aborted-run", "reason": "JD source vanished mid-run",
+             "gaps": [step_gap, abort_only_gap]},
+        ]
+        trace = run_dir / "trace.jsonl"
+        trace.write_text("\n".join(json.dumps(event) for event in events) + "\n", encoding="utf-8")
+
+        report = render_run_report.render(run_dir).read_text(encoding="utf-8")
+
+        self.assertIn("Abort reason: JD source vanished mid-run", report)
+        self.assertIn("thin-jd-stub", report)
+        self.assertEqual(report.count("theme-unmatched"), 1)  # deduped, not repeated
+
 
 if __name__ == "__main__":
     unittest.main()

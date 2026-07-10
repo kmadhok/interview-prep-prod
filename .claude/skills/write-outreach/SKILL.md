@@ -20,7 +20,7 @@ python3 "<repo root>/scripts/trace_step.py" begin --step main --primitive write-
 # ... do the work ...
 UNKNOWN_TOKENS='{"input":null,"output":null,"cache_read":null,"cache_write":null,"total":null,"source":null,"notes":"runtime did not expose token counts"}'
 python3 "<repo root>/scripts/trace_step.py" end --step main --primitive write-outreach --mode standalone --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["<files written>"]' --gaps '<gaps or []>' --failure-pattern "" --tokens "$UNKNOWN_TOKENS"
-python3 "<repo root>/scripts/trace_step.py" finish-run --status ok --gaps '[]' --files-written '["<files written>"]'
+python3 "<repo root>/scripts/trace_step.py" finish-run --status "<same status as the end event: ok|partial|failed>" --gaps '<gaps or []>' --files-written '["<files written>"]'
 python3 "<repo root>/scripts/render_run_report.py" "<repo root>/runs/<run-id>"
 ```
 

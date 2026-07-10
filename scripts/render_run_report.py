@@ -110,6 +110,8 @@ def render(run_dir: Path) -> Path:
     begins = [event for event in events if event.get("event") == "step_begin"]
     ends = _step_ends(events)
 
+    abort = _first_event(events, "run_abort")
+
     lines = [
         f"# Run report — {skill}",
         "",
@@ -118,6 +120,10 @@ def render(run_dir: Path) -> Path:
         f"- Company/role: {company} / {role}",
         f"- Schema version: {schema_version}",
         f"- Tool-call count: {tool_call_count}",
+    ]
+    if abort is not None:
+        lines.append(f"- Abort reason: {abort.get('reason') or DASH}")
+    lines += [
         "",
         "## Steps",
         "",
@@ -156,13 +162,24 @@ def render(run_dir: Path) -> Path:
 
     lines.extend(["", "## Gaps", ""])
 
+    # step_end gaps plus terminal run_abort gaps (deduped: abort-run receives the
+    # merged array, so most of its entries repeat step gaps)
     gaps: list[dict[str, Any]] = []
+    seen: set[tuple[Any, Any, Any]] = set()
     for event in events:
-        if event.get("event") != "step_end":
+        if event.get("event") not in ("step_end", "run_abort"):
             continue
         event_gaps = event.get("gaps")
-        if isinstance(event_gaps, list):
-            gaps.extend(gap for gap in event_gaps if isinstance(gap, dict))
+        if not isinstance(event_gaps, list):
+            continue
+        for gap in event_gaps:
+            if not isinstance(gap, dict):
+                continue
+            key = (gap.get("kind"), gap.get("source"), gap.get("detail"))
+            if key in seen:
+                continue
+            seen.add(key)
+            gaps.append(gap)
 
     if gaps:
         for gap in gaps:

@@ -17,7 +17,8 @@ from pathlib import Path
 from typing import Any
 
 
-TRACE = Path.home() / ".claude" / "skills" / "jd-to-ready" / "scripts" / "trace_step.py"
+# Repo-relative: hooks/<file> -> .claude/skills/jd-to-ready/hooks, repo root is parents[4].
+TRACE = Path(__file__).resolve().parents[4] / "scripts" / "trace_step.py"
 
 
 def read_stdin_payload() -> dict[str, Any]:
