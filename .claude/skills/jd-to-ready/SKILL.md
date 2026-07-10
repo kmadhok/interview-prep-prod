@@ -45,10 +45,11 @@ Plus: a new row in `Pipeline.md`, an updated `active_interview_pipeline.md` memo
 - **Reusables to read** (every run): `workspace/Resume Achievements Master.md`, `workspace/Demo Portfolio.md`, `workspace/Pipeline.md`
 - **Memory file:** `active_interview_pipeline.md` in the session memory directory (path from system prompt; do not hardcode)
 - **Role folder (to be created):** `workspace/Roles/<Company - Role Title>/` (active/considering roles live under `workspace/Roles/`; closed roles in `workspace/_Archived/`)
-- **Trace helper:** `~/.claude/skills/jd-to-ready/scripts/trace_step.py`
-- **Per-role trace:** `<role folder>/.jd-to-ready-trace.jsonl` (append-only step/tool/subagent events)
-- **Global summary log:** `~/.claude/logs/jd-to-ready.jsonl` (one compact final line per run)
-- **Trace docs for coding agents:** `TRACEABILITY.md`, `TRACE_SCHEMA.md`, `TOKEN_ACCOUNTING.md`, `RUNBOOK.md`, and `TRACE_TEST_PLAN.md` in this skill folder. Read these before editing trace behavior.
+- **Trace helper:** `<repo root>/scripts/trace_step.py` (shared by all skills)
+- **Run trace:** `<repo root>/runs/<run-id>/trace.jsonl` (append-only step/tool/subagent events; one directory per run)
+- **Run report:** `<repo root>/runs/<run-id>/report.md` — rendered after `finish-run` with `scripts/render_run_report.py`; this is the user's repair manual
+- **Global summary log:** `<repo root>/runs/summary.jsonl` (one compact final line per run)
+- **Trace docs for coding agents:** `docs/trace/TRACE_SCHEMA.md` and `docs/trace/TOKEN_ACCOUNTING.md` at the repo root, plus `TRACEABILITY.md`, `RUNBOOK.md`, and `TRACE_TEST_PLAN.md` in this skill folder. Read these before editing trace behavior.
 
 ## Workflow
 
@@ -61,22 +62,34 @@ Create a run trace before Step 1 and close each step as it finishes. This is the
 1. Start the run before intake:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py start-run --run-type jd-to-ready --company "<company if known>" --role "<role if known>"
+python3 "<repo root>/scripts/trace_step.py" start-run --run-type jd-to-ready --company "<company if known>" --role "<role if known>"
 ```
 
 2. After Step 1 creates or confirms the role folder, bind the run to the per-role trace:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py set-role-folder --role-folder "<absolute role folder>" --company "<company>" --role "<role title>"
+python3 "<repo root>/scripts/trace_step.py" set-role-folder --role-folder "<absolute role folder>" --company "<company>" --role "<role title>"
 ```
 
-3. Wrap every step with `begin` before work and `end` after work. The `prediction` must be a one-line, checkable claim stated before the step runs; `prediction_met` is scored after. Include a `tokens` object on each `end` event; if counts are unavailable, use the explicit unknown token shape from `TOKEN_ACCOUNTING.md`.
+3. Wrap every step with `begin` before work and `end` after work. The `prediction` must be a one-line, checkable claim stated before the step runs; `prediction_met` is scored after. Every `begin` MUST carry `--reason` (why this step is running now, one line) and `--sources` (the JSON array of files whose content shapes this step's output — the skill prompt plus static inputs; this is the debuggability chain, never omit or pad it). Include a `tokens` object on each `end` event; if counts are unavailable, use the explicit unknown token shape from `docs/trace/TOKEN_ACCOUNTING.md`.
 
 ```bash
 UNKNOWN_TOKENS='{"input":null,"output":null,"cache_read":null,"cache_write":null,"total":null,"source":null,"notes":"runtime did not expose token counts"}'
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --prediction "<checkable claim>"
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --status "ok|partial|failed|skipped" --prediction-met "true|false|partial|unknown" --produced '["file-or-artifact"]' --gaps '[]' --failure-pattern "<taxonomy-tag-or-empty>" --tokens "$UNKNOWN_TOKENS"
+python3 "<repo root>/scripts/trace_step.py" begin --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --prediction "<checkable claim>" --reason "<why this step runs now>" --sources '["<files whose content shapes this step — see the sources column below>"]'
+python3 "<repo root>/scripts/trace_step.py" end --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --status "ok|partial|failed|skipped" --prediction-met "true|false|partial|unknown" --produced '["file-or-artifact"]' --gaps '[]' --failure-pattern "<taxonomy-tag-or-empty>" --tokens "$UNKNOWN_TOKENS"
 ```
+
+Per-step `--sources` (adjust paths to the actual role folder; add any extra file the step genuinely read):
+
+| Step | Sources to declare |
+|---|---|
+| 1 | `.claude/skills/interview-prep-intake/SKILL.md`, `workspace/Pipeline.md` |
+| 2 | `.claude/skills/jd-to-ready/SKILL.md`, `<role folder>/Job Description.md` |
+| 3 | `.claude/skills/tailor-resume/SKILL.md`, `workspace/Resume Achievements Master.md`, `<role folder>/Job Description.md` |
+| 3.5 | `scripts/build_resume_pdf.py`, `scripts/verify_resume.py`, `<role folder>/<tailored resume .md>` |
+| 3.7 | `scripts/drip_runner/apply_packet.py`, `workspace/Application Profile.md`, `<role folder>/.classification.json` |
+| 6 | `.claude/skills/jd-to-ready/SKILL.md` |
+| 7 | `runs/<run-id>/trace.jsonl` |
 
 Required traced steps:
 
@@ -230,7 +243,7 @@ tailor-resume(
 After `tailor-resume` writes the `.md`, render a polished **one-page PDF** next to it. This is a traced step — wrap the export call in `begin`/`end` (no mode for this step) using the documented begin/end syntax:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step 3.5 --primitive resume-export --mode "" --prediction "a one-page PDF matching the BCG X gold standard is rendered from the tailored resume with no title leak and PASSes vision verification; overflow/defects/missing-tools are logged as gaps"
+python3 "<repo root>/scripts/trace_step.py" begin --step 3.5 --primitive resume-export --mode "" --prediction "a one-page PDF matching the BCG X gold standard is rendered from the tailored resume with no title leak and PASSes vision verification; overflow/defects/missing-tools are logged as gaps" --reason "tailored resume markdown is ready and needs its apply-ready PDF" --sources '["scripts/build_resume_pdf.py","scripts/verify_resume.py","<role folder>/<tailored resume .md>"]'
 
 python3 "<repo root>/scripts/build_resume_pdf.py" "<role folder>/<user_name> Resume - <Company> <Short Role>.md"
 ```
@@ -256,7 +269,7 @@ These gaps can stack (e.g. overflow + title leak). Surface any `pdf-overflow` in
 Close the step with the parsed status and gaps, e.g.:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.5 --primitive resume-export --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["<user_name> Resume - <Company> <Short Role>.pdf"]' --gaps '<gaps from the mapping above, or []>' --failure-pattern "<pdf-export-defect if a real defect gap was recorded, else empty>" --tokens "$UNKNOWN_TOKENS"
+python3 "<repo root>/scripts/trace_step.py" end --step 3.5 --primitive resume-export --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["<user_name> Resume - <Company> <Short Role>.pdf"]' --gaps '<gaps from the mapping above, or []>' --failure-pattern "<pdf-export-defect if a real defect gap was recorded, else empty>" --tokens "$UNKNOWN_TOKENS"
 ```
 
 Use `status: ok` when the clean case holds, `partial` when files were written but a defect/overflow was logged, `failed` when no files were produced (export-unavailable). Merge whatever gaps you recorded into the step-6 report and step-7 log alongside the other steps' gaps.
@@ -268,7 +281,7 @@ The prep finish line is not "PDF in the repo" — it is "packet on the phone" (`
 Begin the trace:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step 3.7 --primitive apply-packet --mode "" --prediction "canonical ATS URL + posted date resolved, Application Answers.md drafted from Application Profile.md with zero invented facts, packet uploaded to the Apply Queue with a date-prefixed filename, .apply-packet.json written"
+python3 "<repo root>/scripts/trace_step.py" begin --step 3.7 --primitive apply-packet --mode "" --prediction "canonical ATS URL + posted date resolved, Application Answers.md drafted from Application Profile.md with zero invented facts, packet uploaded to the Apply Queue with a date-prefixed filename, .apply-packet.json written" --reason "PDF is verified; the packet makes the role one-click applyable from anywhere" --sources '["scripts/drip_runner/apply_packet.py","workspace/Application Profile.md","<role folder>/.classification.json"]'
 ```
 
 **3.7a — Resolve the canonical posting + true posted date.** LinkedIn's "posted X days ago" is gamed by reposts; the ATS timestamp is the honest one. From the JD source (the LinkedIn posting's outbound apply link, or a search for `<company> greenhouse|ashby|lever <role>`), find the employer's own posting. Greenhouse (`boards-api.greenhouse.io/v1/boards/<org>/jobs`), Ashby (`api.ashbyhq.com/posting-api/job-board/<org>`), and Lever (`api.lever.co/v0/postings/<org>`) expose public JSON with real `updated_at`/`publishedDate`/`createdAt` fields — WebFetch the posting or the board JSON and extract the date. If no canonical source is found after ~3 fetches, set `posted_date: null` and record a gap `{source:"apply-packet", kind:"posted-date-unknown", detail:"no canonical ATS posting found"}` — do NOT trust the LinkedIn relative date. Also note whether the LinkedIn posting offers **Easy Apply** (`easy_apply`: true/false/null if unknown).
@@ -317,7 +330,7 @@ Honor `APPLY_PACKET_REMOTE_DIR` if the environment sets it (the e2e test does). 
 Close the step (gaps from 3.7a/b/e). Use `--failure-pattern "apply-packet-defect"` when the packet itself is defective — an `upload-failed` or `repost-detected` gap. Leave it `""` when the only gap is environmental (`posted-date-unknown` — no canonical source existed to find):
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 3.7 --primitive apply-packet --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Application Answers.md",".apply-packet.json"]' --gaps '<gaps or []>' --failure-pattern "<apply-packet-defect if upload-failed/repost-detected, else empty>" --tokens "$UNKNOWN_TOKENS"
+python3 "<repo root>/scripts/trace_step.py" end --step 3.7 --primitive apply-packet --mode "" --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["Application Answers.md",".apply-packet.json"]' --gaps '<gaps or []>' --failure-pattern "<apply-packet-defect if upload-failed/repost-detected, else empty>" --tokens "$UNKNOWN_TOKENS"
 ```
 
 ### Step 6 — Report back
@@ -335,31 +348,37 @@ End with the obvious next step: apply on the ATS; once the Pipeline row is marke
 
 ### Step 7 — Log the run
 
-Close the trace by wrapping this step and then calling `finish-run`. This appends one compact summary line to `~/.claude/logs/jd-to-ready.jsonl`, links that summary to `<role folder>/.jd-to-ready-trace.jsonl`, and clears the active-run state used by hooks. Before calling `finish-run`, confirm that steps `1`, `2`, `3`, `3.5`, `3.7`, `6`, and `7` all have `step_end` events. See `RUNBOOK.md` for inspection commands.
+Close the trace by wrapping this step and then calling `finish-run`. This appends one compact summary line to `<repo root>/runs/summary.jsonl`, records the run's trace at `<repo root>/runs/<run-id>/trace.jsonl`, and clears the active-run state used by hooks. Before calling `finish-run`, confirm that steps `1`, `2`, `3`, `3.5`, `3.7`, `6`, and `7` all have `step_end` events. See `RUNBOOK.md` for inspection commands.
 
 Begin Step 7:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step 7 --primitive final-log --mode "" --prediction "global jd-to-ready summary is appended and active run state is cleared"
+python3 "<repo root>/scripts/trace_step.py" begin --step 7 --primitive final-log --mode "" --prediction "global jd-to-ready summary is appended and active run state is cleared" --reason "all prep steps are closed; the run needs its permanent summary line" --sources '["runs/<run-id>/trace.jsonl"]'
 ```
 
 End Step 7 before `finish-run`:
 
 ```bash
 UNKNOWN_TOKENS='{"input":null,"output":null,"cache_read":null,"cache_write":null,"total":null,"source":null,"notes":"runtime did not expose token counts"}'
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step 7 --primitive final-log --mode "" --status "ok|partial|failed|skipped" --prediction-met "true|false|partial|unknown" --produced '["~/.claude/logs/jd-to-ready.jsonl"]' --gaps '<merged gaps JSON array>' --failure-pattern "<taxonomy-tag-or-empty>" --tokens "$UNKNOWN_TOKENS"
+python3 "<repo root>/scripts/trace_step.py" end --step 7 --primitive final-log --mode "" --status "ok|partial|failed|skipped" --prediction-met "true|false|partial|unknown" --produced '["runs/summary.jsonl"]' --gaps '<merged gaps JSON array>' --failure-pattern "<taxonomy-tag-or-empty>" --tokens "$UNKNOWN_TOKENS"
 ```
 
 Then finish the run:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py finish-run --status "ok|partial|failed" --gaps '<merged gaps JSON array>' --files-written '["Job Description.md","<user_name> Resume - <Company> <Short Role>.md",".classification.json","Application Answers.md",".apply-packet.json"]'
+python3 "<repo root>/scripts/trace_step.py" finish-run --status "ok|partial|failed" --gaps '<merged gaps JSON array>' --files-written '["Job Description.md","<user_name> Resume - <Company> <Short Role>.md",".classification.json","Application Answers.md",".apply-packet.json"]'
+```
+
+After `finish-run` succeeds, render the human run report and include its path in the step-6 summary:
+
+```bash
+python3 "<repo root>/scripts/render_run_report.py" "<repo root>/runs/<run-id>"
 ```
 
 `finish-run` computes the final status from the step results and rejects a mismatched `--status`; the argument is kept only as an explicit caller assertion. If the run is interrupted, close it with:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py abort-run --reason "<why the run cannot continue>" --gaps '<merged gaps JSON array>'
+python3 "<repo root>/scripts/trace_step.py" abort-run --reason "<why the run cannot continue>" --gaps '<merged gaps JSON array>'
 ```
 
 The final summary line contains this shape:
@@ -371,7 +390,7 @@ The final summary line contains this shape:
   "company": "Cohere",
   "role": "Forward Deployed Engineer, Prompt Specialist",
   "role_folder": "<repo root>/workspace/Roles/Cohere - Forward Deployed Engineer Prompt Specialist",
-  "trace_file": "<repo root>/workspace/Roles/Cohere - Forward Deployed Engineer Prompt Specialist/.jd-to-ready-trace.jsonl",
+  "trace_file": "<repo root>/runs/<run-id>/trace.jsonl",
   "status": "ok",
   "steps_closed": ["1", "2", "3", "3.5", "3.7", "6", "7"],
   "required_steps": ["1", "2", "3", "3.5", "3.7", "6", "7"],
@@ -381,9 +400,9 @@ The final summary line contains this shape:
 }
 ```
 
-If any field is unknown for a run, set it to `null` rather than omitting the key. Keep JSON valid and one line per event. The per-role trace is the audit trail for "why did the skill classify the JD this way" and "what resume bullets were selected" questions. When a run's output looks off, read `<role folder>/.jd-to-ready-trace.jsonl` first; the answer should be visible there before re-running anything.
+If any field is unknown for a run, set it to `null` rather than omitting the key. Keep JSON valid and one line per event. The run trace is the audit trail for "why did the skill classify the JD this way" and "what resume bullets were selected" questions. When a run's output looks off, read `runs/<run-id>/report.md` first (or the raw `trace.jsonl`); the answer — including which source file to edit — should be visible there before re-running anything.
 
-For coding agents changing this trace layer: keep `SKILL.md` operational, but treat `TRACEABILITY.md`, `TRACE_SCHEMA.md`, and `TOKEN_ACCOUNTING.md` as the implementation contract, with `TRACE_TEST_PLAN.md` as the regression plan. The implemented baseline is fail-closed production logging with per-step token accounting, one active step at a time, monotonic event sequence numbers, and an explicit abort path for interrupted runs.
+For coding agents changing this trace layer: keep `SKILL.md` operational, but treat `TRACEABILITY.md`, `docs/trace/TRACE_SCHEMA.md`, and `docs/trace/TOKEN_ACCOUNTING.md` as the implementation contract, with `TRACE_TEST_PLAN.md` as the regression plan. The implemented baseline is fail-closed production logging with per-step token accounting, one active step at a time, monotonic event sequence numbers, and an explicit abort path for interrupted runs.
 
 **Regression discipline.** Self-predicted regressions are unreliable (per the AHE source: ~11% precision). Don't trust a step's own forecast of what it'll break — keep a **golden set** of already-prepped roles (Morningstar, BCG X) and, after any primitive edit, re-run and diff against the known-good output before trusting the change. The primitive-upgrade git history (`~/.claude/skills` repo) makes a bad edit one `git revert` away.
 

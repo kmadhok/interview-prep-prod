@@ -28,11 +28,11 @@ why those artifacts were produced.
 
 ## Current Trace Surfaces
 
-- Per-role event log: `<role folder>/.jd-to-ready-trace.jsonl`
-- Global summary log: `~/.claude/logs/jd-to-ready.jsonl`
-- Active run state: `~/.claude/logs/jd-to-ready-active.json`
+- Per-role event log: `<repo root>/runs/<run-id>/trace.jsonl`
+- Global summary log: `<repo root>/runs/summary.jsonl`
+- Active run state: `<repo root>/runs/.active-run.json`
 - Fallback trace before a role folder is bound:
-  `~/.claude/logs/jd-to-ready-runs/<run_id>.jsonl`
+  `<repo root>/runs/<run_id>/trace.jsonl`
 
 Do not log full JD text, private email bodies, or full outreach bodies in trace
 events. Log paths, short summaries, counts, and structured gaps.

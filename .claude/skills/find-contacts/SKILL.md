@@ -11,6 +11,23 @@ Identify the right people to contact at a target company — **and specifically 
 
 **LinkedIn discipline:** call `mcp__linkedin__*` tools directly, one at a time — sequential, never parallel (the scraper is not concurrency-safe). No caps, no delays. See `linkedin-mcp-operations` for the transport invariant and the per-op reference. If a call errors, follow that skill (sleep 3, retry once, then stop and diagnose).
 
+
+## Standalone trace (mandatory when invoked directly)
+
+When this skill runs **standalone** (not as a step inside `jd-to-ready` or `stage-outreach`), it must trace itself. When it runs **inside an orchestrator, skip this section entirely** — the orchestrator's run owns the step events (never open a second run).
+
+```bash
+python3 "<repo root>/scripts/trace_step.py" start-run --run-type primitive --skill find-contacts --company "<company>" --role "<role>"
+python3 "<repo root>/scripts/trace_step.py" begin --step main --primitive find-contacts --mode standalone --prediction "<one-line checkable claim>" --reason "<why the user invoked this now>" --sources '[".claude/skills/find-contacts/SKILL.md", "<role folder>/Job Description.md"]'
+# ... do the work ...
+UNKNOWN_TOKENS='{"input":null,"output":null,"cache_read":null,"cache_write":null,"total":null,"source":null,"notes":"runtime did not expose token counts"}'
+python3 "<repo root>/scripts/trace_step.py" end --step main --primitive find-contacts --mode standalone --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["<files written>"]' --gaps '<gaps or []>' --failure-pattern "" --tokens "$UNKNOWN_TOKENS"
+python3 "<repo root>/scripts/trace_step.py" finish-run --status ok --gaps '[]' --files-written '["<files written>"]'
+python3 "<repo root>/scripts/render_run_report.py" "<repo root>/runs/<run-id>"
+```
+
+Adjust `--sources` to the files actually read this run; the ones above are this skill's canonical inputs. Mention the rendered report path in your summary.
+
 ## Contract
 
 **Modes:** `shortlist` (default) | `full`

@@ -7,25 +7,25 @@ Use this runbook when inspecting or repairing `jd-to-ready` trace behavior.
 Global summary:
 
 ```bash
-tail -n 20 ~/.claude/logs/jd-to-ready.jsonl
+tail -n 20 <repo root>/runs/summary.jsonl
 ```
 
 Per-role trace:
 
 ```bash
-ls "Roles/<Company - Role>/.jd-to-ready-trace.jsonl"
+ls "<repo root>/runs/<run-id>/trace.jsonl"
 ```
 
 Fallback trace before a role folder was bound:
 
 ```bash
-ls ~/.claude/logs/jd-to-ready-runs
+ls <repo root>/runs
 ```
 
 Active run state:
 
 ```bash
-ls ~/.claude/logs/jd-to-ready-active.json
+ls <repo root>/runs/.active-run.json
 ```
 
 ## Inspect A Run
@@ -34,21 +34,21 @@ Show step endings:
 
 ```bash
 jq -r 'select(.event=="step_end") | [.timestamp,.step,.primitive,.status,.prediction_met,((.gaps//[])|length),(.tokens.total//"tokens?")] | @tsv' \
-  "Roles/<Company - Role>/.jd-to-ready-trace.jsonl"
+  "<repo root>/runs/<run-id>/trace.jsonl"
 ```
 
 Show finish or abort events:
 
 ```bash
 jq -r 'select(.event=="run_finish" or .event=="run_abort")' \
-  "Roles/<Company - Role>/.jd-to-ready-trace.jsonl"
+  "<repo root>/runs/<run-id>/trace.jsonl"
 ```
 
 Check global summaries:
 
 ```bash
 jq -r '[.timestamp,.company,.role,.status,((.steps_closed//[])|join(",")),((.gaps//[])|length)] | @tsv' \
-  ~/.claude/logs/jd-to-ready.jsonl
+  <repo root>/runs/summary.jsonl
 ```
 
 ## Healthy Run Criteria
@@ -95,7 +95,7 @@ the open step and close it normally.
 If the run cannot continue, use:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py abort-run --reason "<why the run cannot continue>"
+python3 "<repo root>/scripts/trace_step.py" abort-run --reason "<why the run cannot continue>"
 ```
 
 Do not append fake `step_end` events. The abort event is the audit trail for an

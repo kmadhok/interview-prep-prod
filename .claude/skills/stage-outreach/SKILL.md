@@ -36,35 +36,35 @@ The `.classification.json` written by jd-to-ready has this schema (read `archety
 This skill opens a **second, independent run** from jd-to-ready's run — the fail-closed trace cannot straddle the multi-day apply gate, so two runs is the only honest model. Start the run before step 4:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py start-run --run-type stage-outreach --company "<company>" --role "<role>"
+python3 "<repo root>/scripts/trace_step.py" start-run --run-type stage-outreach --company "<company>" --role "<role>"
 ```
 
 Then bind the run to the existing role folder (this BINDS the folder jd-to-ready already created — it must not create it):
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py set-role-folder --role-folder "<absolute existing role folder>" --company "<company>" --role "<role>"
+python3 "<repo root>/scripts/trace_step.py" set-role-folder --role-folder "<absolute existing role folder>" --company "<company>" --role "<role>"
 ```
 
-Required steps for run-type `stage-outreach` are `{4, 4b, 4c, 5, 6, 7}`; `finish-run` fails closed until all are closed. The trace helper lives at `~/.claude/skills/jd-to-ready/scripts/trace_step.py` (shared script; this skill uses run-type `stage-outreach`).
+Required steps for run-type `stage-outreach` are `{4, 4b, 4c, 5, 6, 7}`; `finish-run` fails closed until all are closed. The trace helper lives at `<repo root>/scripts/trace_step.py` (shared script; this skill uses run-type `stage-outreach`). The trace is written to `<repo root>/runs/<run-id>/trace.jsonl`; after `finish-run`, render the human report with `python3 "<repo root>/scripts/render_run_report.py" "<repo root>/runs/<run-id>"` and include the report path in the step-6 summary.
 
-Wrap every step with `begin` before work and `end` after work. The `prediction` must be a one-line, checkable claim stated before the step runs; `prediction_met` is scored after. Include a `tokens` object on each `end` event; if counts are unavailable, use the explicit unknown token shape:
+Wrap every step with `begin` before work and `end` after work. The `prediction` must be a one-line, checkable claim stated before the step runs; `prediction_met` is scored after. Every `begin` MUST carry `--reason` (why this step is running now, one line) and `--sources` (JSON array of the files whose content shapes this step's output — the skill prompt plus static inputs; this is the debuggability chain, never omit or pad it). Include a `tokens` object on each `end` event; if counts are unavailable, use the explicit unknown token shape:
 
 ```bash
 UNKNOWN_TOKENS='{"input":null,"output":null,"cache_read":null,"cache_write":null,"total":null,"source":null,"notes":"runtime did not expose token counts"}'
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py begin --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --prediction "<checkable claim>"
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py end --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --status "ok|partial|failed|skipped" --prediction-met "true|false|partial|unknown" --produced '["file-or-artifact"]' --gaps '[]' --failure-pattern "<taxonomy-tag-or-empty>" --tokens "$UNKNOWN_TOKENS"
+python3 "<repo root>/scripts/trace_step.py" begin --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --prediction "<checkable claim>" --reason "<why this step runs now>" --sources '["<files per the sources column below>"]'
+python3 "<repo root>/scripts/trace_step.py" end --step "<step>" --primitive "<primitive>" --mode "<mode-or-empty>" --status "ok|partial|failed|skipped" --prediction-met "true|false|partial|unknown" --produced '["file-or-artifact"]' --gaps '[]' --failure-pattern "<taxonomy-tag-or-empty>" --tokens "$UNKNOWN_TOKENS"
 ```
 
 Required traced steps for this run-type:
 
-| Step | Primitive | Prediction to record before the step |
-|---|---|---|
-| 4 | `find-contacts` | `5 recruiter and 5 HM/peer-IC candidates are attempted, .contacts-ledger.md is written, and low-confidence emails are flagged` |
-| 4b | `enrich-contacts` | `recruiter activity is checked when available, hooks are captured, and any new people are scored into .contacts-ledger.md` |
-| 4c | `verify-emails` | `top 3 recruiters' emails are SMTP-verified via EmailFinder (cached), Verified Emails.md is written, and misses degrade to inferred/flagged` |
-| 5 | `write-outreach` | `Cold Outreach.md is drafted with real contacts/hooks only and no fabricated urgency` |
-| 6 | `report-back` | `report includes paths, hard gates, contacts, gaps, and Gmail draft recipient` |
-| 7 | `final-log` | `stage-outreach summary is appended and active run state is cleared` |
+| Step | Primitive | Sources to declare on `begin` | Prediction to record before the step |
+|---|---|---|---|
+| 4 | `find-contacts` | `.claude/skills/find-contacts/SKILL.md`, `<role folder>/Job Description.md`, `<role folder>/.classification.json` | `5 recruiter and 5 HM/peer-IC candidates are attempted, .contacts-ledger.md is written, and low-confidence emails are flagged` |
+| 4b | `enrich-contacts` | `.claude/skills/enrich-contacts/SKILL.md`, `<role folder>/.contacts-ledger.md` | `recruiter activity is checked when available, hooks are captured, and any new people are scored into .contacts-ledger.md` |
+| 4c | `verify-emails` | `.claude/skills/verify-emails/SKILL.md`, `<role folder>/.contacts-ledger.md` | `top 3 recruiters' emails are SMTP-verified via EmailFinder (cached), Verified Emails.md is written, and misses degrade to inferred/flagged` |
+| 5 | `write-outreach` | `.claude/skills/write-outreach/SKILL.md`, `workspace/Outreach Templates.md`, `<role folder>/Verified Emails.md`, `<role folder>/.contacts-ledger.md` | `Cold Outreach.md is drafted with real contacts/hooks only and no fabricated urgency` |
+| 6 | `report-back` | `.claude/skills/stage-outreach/SKILL.md` | `report includes paths, hard gates, contacts, gaps, and Gmail draft recipient` |
+| 7 | `final-log` | `runs/<run-id>/trace.jsonl` | `stage-outreach summary is appended and active run state is cleared` |
 
 Use only these `failure_pattern` values unless the value is `null`: `generic-resume-language`, `verify-placeholder-leak`, `non-decision-maker-contact`, `low-confidence-emails`, `fabricated-hook`, `thin-jd-stub`, `theme-unmatched`, `thin-results`.
 
@@ -174,7 +174,7 @@ Keep the report brief; surface only what Kanu needs to act on or review before h
 Wrap this step in begin/end. Append a one-line summary to the global log (same discipline as jd-to-ready's step 7). Confirm steps `4`, `4b`, `4c`, `5`, `6`, `7` all have `step_end` events. Then call finish-run:
 
 ```bash
-python3 ~/.claude/skills/jd-to-ready/scripts/trace_step.py finish-run --status "ok|partial|failed" --gaps '<merged gaps JSON array from steps 4/4b/4c/5>' --files-written '[".contacts-ledger.md","Verified Emails.md","Cold Outreach.md"]'
+python3 "<repo root>/scripts/trace_step.py" finish-run --status "ok|partial|failed" --gaps '<merged gaps JSON array from steps 4/4b/4c/5>' --files-written '[".contacts-ledger.md","Verified Emails.md","Cold Outreach.md"]'
 ```
 
 `finish-run` fails closed if any required step is missing a `step_end` event — fix before calling it. Use `abort-run --reason "<reason>"` if the run cannot complete.

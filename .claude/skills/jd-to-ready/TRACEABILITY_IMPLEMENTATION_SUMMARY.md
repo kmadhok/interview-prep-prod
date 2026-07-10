@@ -28,12 +28,12 @@ Implemented a traceability harness for the `jd-to-ready` skill so every apply-re
 
 Each run now has two trace surfaces:
 
-- `<role folder>/.jd-to-ready-trace.jsonl` — full append-only event log for the specific role.
-- `~/.claude/logs/jd-to-ready.jsonl` — compact global summary line per completed run.
+- `<repo root>/runs/<run-id>/trace.jsonl` — full append-only event log for the specific role.
+- `<repo root>/runs/summary.jsonl` — compact global summary line per completed run.
 
 The helper also uses:
 
-- `~/.claude/logs/jd-to-ready-active.json` — active-run state used by hooks. This is cleared by `finish-run`.
+- `<repo root>/runs/.active-run.json` — active-run state used by hooks. This is cleared by `finish-run`.
 
 ## How It Tracks Actions
 

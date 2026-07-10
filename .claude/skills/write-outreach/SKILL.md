@@ -9,6 +9,23 @@ Draft targeted, voice-locked cold outreach. This is the one *executor* for outre
 
 **Source of truth — don't restate it here.** The voice, the 5-beat body, the 50–125 word range, the subject-line formula, the body-prose em-dash gate, and the banned-phrase lists all live in **`Outreach Templates.md`** (sections 1 = cold recruiter intro; section 4 = cold HM/peer-IC intro). The follow-up cadence (sections 1a/4a — FU1/FU2/Hail Mary) is **archived/manual-only**: pipeline mode does NOT emit it. The research rationale lives in `Cold Outreach Emails Best Practices.md`. This skill executes: it picks the right template section, finds the hook, fills the beats from canonical facts, and writes the output. **`Outreach Templates.md` wins on any conflict** — there is no competing inline spec.
 
+
+## Standalone trace (mandatory when invoked directly)
+
+When this skill runs **standalone** (not as a step inside `jd-to-ready` or `stage-outreach`), it must trace itself. When it runs **inside an orchestrator, skip this section entirely** — the orchestrator's run owns the step events (never open a second run).
+
+```bash
+python3 "<repo root>/scripts/trace_step.py" start-run --run-type primitive --skill write-outreach --company "<company>" --role "<role>"
+python3 "<repo root>/scripts/trace_step.py" begin --step main --primitive write-outreach --mode standalone --prediction "<one-line checkable claim>" --reason "<why the user invoked this now>" --sources '[".claude/skills/write-outreach/SKILL.md", "workspace/Outreach Templates.md", "<role folder>/Verified Emails.md"]'
+# ... do the work ...
+UNKNOWN_TOKENS='{"input":null,"output":null,"cache_read":null,"cache_write":null,"total":null,"source":null,"notes":"runtime did not expose token counts"}'
+python3 "<repo root>/scripts/trace_step.py" end --step main --primitive write-outreach --mode standalone --status "ok|partial|failed" --prediction-met "true|false|partial|unknown" --produced '["<files written>"]' --gaps '<gaps or []>' --failure-pattern "" --tokens "$UNKNOWN_TOKENS"
+python3 "<repo root>/scripts/trace_step.py" finish-run --status ok --gaps '[]' --files-written '["<files written>"]'
+python3 "<repo root>/scripts/render_run_report.py" "<repo root>/runs/<run-id>"
+```
+
+Adjust `--sources` to the files actually read this run; the ones above are this skill's canonical inputs. Mention the rendered report path in your summary.
+
 ## Contract
 
 **Modes:** `single` (default) | `drip` (pipeline)
