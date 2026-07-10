@@ -17,3 +17,6 @@ __pycache__/
 
 # Trace output — one dir per run, instance data, never committed
 runs/
+
+# codex-cli AGENTS.md compatibility mirror — tool artifact, never repo content
+.agents/
