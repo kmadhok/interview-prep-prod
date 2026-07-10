@@ -19,7 +19,6 @@ from pathlib import Path
 from typing import Any
 
 
-TRACE_NAME = ".jd-to-ready-trace.jsonl"
 REQUIRED_STEPS = ["1", "2", "3", "3.5", "3.7", "4", "4b", "4c", "5", "6", "7"]
 
 # Per-run-type required-steps. REQUIRED_STEPS above stays the legacy "full"
@@ -62,20 +61,24 @@ UNKNOWN_TOKENS = {
 }
 
 
-def log_dir() -> Path:
-    return Path(os.environ.get("JD_TO_READY_LOG_DIR", str(Path.home() / ".claude" / "logs")))
+def runs_dir() -> Path:
+    """Repo-local run store. TRACE_RUNS_DIR overrides for tests/harnesses."""
+    override = os.environ.get("TRACE_RUNS_DIR")
+    if override:
+        return Path(override)
+    return Path(__file__).resolve().parents[1] / "runs"
 
 
 def active_state_path() -> Path:
-    return log_dir() / "jd-to-ready-active.json"
+    return runs_dir() / ".active-run.json"
 
 
-def global_run_dir() -> Path:
-    return log_dir() / "jd-to-ready-runs"
+def run_dir_for(run_id: str) -> Path:
+    return runs_dir() / run_id
 
 
 def global_summary_path() -> Path:
-    return log_dir() / "jd-to-ready.jsonl"
+    return runs_dir() / "summary.jsonl"
 
 
 def now_iso() -> str:
@@ -94,8 +97,7 @@ def current_session() -> str | None:
 
 
 def ensure_dirs() -> None:
-    log_dir().mkdir(parents=True, exist_ok=True)
-    global_run_dir().mkdir(parents=True, exist_ok=True)
+    runs_dir().mkdir(parents=True, exist_ok=True)
 
 
 def load_state() -> dict[str, Any] | None:
@@ -122,10 +124,7 @@ def save_state(state: dict[str, Any]) -> None:
 
 
 def trace_path(state: dict[str, Any]) -> Path:
-    role_folder = state.get("role_folder")
-    if role_folder:
-        return Path(role_folder) / TRACE_NAME
-    return Path(state["fallback_trace"])
+    return run_dir_for(state["run_id"]) / "trace.jsonl"
 
 
 def fail(message: str) -> int:
@@ -223,16 +222,6 @@ def append_event(state: dict[str, Any], event: dict[str, Any]) -> None:
     save_state(state)
 
 
-def migrate_fallback_trace(state: dict[str, Any]) -> None:
-    fallback = Path(state["fallback_trace"])
-    target = trace_path(state)
-    if not fallback.exists() or fallback == target:
-        return
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if not target.exists():
-        target.write_text(fallback.read_text(encoding="utf-8"), encoding="utf-8")
-
-
 def read_events(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
@@ -302,6 +291,7 @@ def cmd_start(args: argparse.Namespace) -> int:
             return fail(error)
     run_type = args.run_type
     required = required_steps_for(run_type)
+    run_dir_for(run_id).mkdir(parents=True, exist_ok=True)
     state = {
         "run_id": run_id,
         "run_type": run_type,
@@ -310,7 +300,6 @@ def cmd_start(args: argparse.Namespace) -> int:
         "role_folder": role_folder,
         "owner_session": current_session(),
         "started_at": now_iso(),
-        "fallback_trace": str(global_run_dir() / f"{run_id}.jsonl"),
         "required_steps": required,
         "closed_steps": [],
         "current_step": None,
@@ -348,7 +337,6 @@ def cmd_set_role_folder(args: argparse.Namespace) -> int:
         state["company"] = args.company
     if args.role:
         state["role"] = args.role
-    migrate_fallback_trace(state)
     save_state(state)
     append_event(
         state,

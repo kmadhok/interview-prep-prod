@@ -345,7 +345,7 @@ def test_classification_json_roundtrip(tmp_path):
 
 def test_full_trace_lifecycle_both_runtypes(tmp_path):
     """Drive the REAL trace_step.py CLI via subprocess against an isolated
-    JD_TO_READY_LOG_DIR and temp Roles/ folder.
+    TRACE_RUNS_DIR and temp Roles/ folder.
 
     This proves:
     - jd-to-ready (steps 1,2,3,3.5,6,7) produces a summary with run_type='jd-to-ready'
@@ -355,7 +355,7 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     - set-role-folder binds the already-prepped folder without clobbering it.
     - The two skills trace as SEPARATE runs (the whole reason for the split).
     """
-    log_dir = tmp_path / "logs"
+    runs_dir = tmp_path / "runs"
     role_folder = tmp_path / "Roles" / "Acme - Agent Builder"
     role_folder.mkdir(parents=True)
 
@@ -364,9 +364,9 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     resume_path.write_text("# Tailored resume\n", encoding="utf-8")
 
     env = os.environ.copy()
-    env["JD_TO_READY_LOG_DIR"] = str(log_dir)
+    env["TRACE_RUNS_DIR"] = str(runs_dir)
 
-    summary_path = log_dir / "jd-to-ready.jsonl"
+    summary_path = runs_dir / "summary.jsonl"
 
     # ------------------------------------------------------------------
     # RUN A — jd-to-ready (prep half, steps 1,2,3,3.5,6,7)
@@ -376,6 +376,7 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     r = _run(["start-run", "--run-type", "jd-to-ready",
               "--company", "Acme", "--role", "Agent Builder"], env)
     _assert_ok(r, "jd-to-ready start-run")
+    run_id_a = r.stdout.strip()
 
     r = _run(["set-role-folder", "--role-folder", str(role_folder),
               "--company", "Acme", "--role", "Agent Builder"], env)
@@ -391,7 +392,7 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     _assert_ok(r, "jd-to-ready finish-run")
 
     # --- ASSERT: summary line exists with correct steps_closed and required_steps
-    assert summary_path.exists(), "jd-to-ready.jsonl must exist after finish-run"
+    assert summary_path.exists(), "summary.jsonl must exist after finish-run"
     lines_a = [l for l in summary_path.read_text(encoding="utf-8").splitlines() if l.strip()]
     assert len(lines_a) == 1, f"Expected exactly 1 summary line after jd-to-ready run; got {len(lines_a)}"
 
@@ -410,12 +411,12 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     )
     assert summary_a["status"] == "ok"
 
-    # run_type IS in the per-role trace run_start event
-    trace_a = role_folder / ".jd-to-ready-trace.jsonl"
-    assert trace_a.exists(), "Per-role trace file must exist after jd-to-ready run"
+    # run_type IS in the run trace's run_start event
+    trace_a = runs_dir / run_id_a / "trace.jsonl"
+    assert trace_a.exists(), "Run trace file must exist after jd-to-ready run"
     trace_events_a = [json.loads(l) for l in trace_a.read_text(encoding="utf-8").splitlines() if l.strip()]
     run_start_a = next((e for e in trace_events_a if e.get("event") == "run_start"), None)
-    assert run_start_a is not None, "run_start event must exist in per-role trace"
+    assert run_start_a is not None, "run_start event must exist in run trace"
     assert run_start_a.get("run_type") == "jd-to-ready", (
         f"run_start event must carry run_type='jd-to-ready'; got {run_start_a.get('run_type')!r}"
     )
@@ -439,6 +440,7 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     r = _run(["start-run", "--run-type", "stage-outreach",
               "--company", "Acme", "--role", "Agent Builder"], env)
     _assert_ok(r, "stage-outreach start-run")
+    run_id_b = r.stdout.strip()
 
     # Bind the existing prepped folder (simulates stage-outreach reading it from Pipeline.md)
     r = _run(["set-role-folder", "--role-folder", str(role_folder),
@@ -466,22 +468,16 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     assert summary_b["required_steps"] == STAGE_STEPS, (
         f"required_steps must be stage-outreach's set {STAGE_STEPS}; got {summary_b.get('required_steps')}"
     )
-    # steps_closed for stage-outreach includes ALL steps ever closed in the per-role trace
-    # (append-only across runs), so just check the stage-outreach required steps are there.
-    assert all(s in summary_b["steps_closed"] for s in STAGE_STEPS), (
-        f"stage-outreach steps_closed must contain all of {STAGE_STEPS}; got {summary_b.get('steps_closed')}"
+    assert summary_b["steps_closed"] == STAGE_STEPS, (
+        f"stage-outreach steps_closed mismatch; expected {STAGE_STEPS}, got {summary_b.get('steps_closed')}"
     )
     assert summary_b["status"] == "ok"
 
-    # run_type for stage-outreach is in the fallback trace (the per-role trace already
-    # existed from the jd-to-ready run, so migrate_fallback_trace is a no-op for Runs B).
-    # The stage-outreach run_start event lands in logs/jd-to-ready-runs/<run_id>.jsonl.
-    run_id_b = summary_b["run_id"]
-    fallback_b = log_dir / "jd-to-ready-runs" / f"{run_id_b}.jsonl"
-    assert fallback_b.exists(), f"stage-outreach fallback trace must exist at {fallback_b}"
-    fallback_events = [json.loads(l) for l in fallback_b.read_text(encoding="utf-8").splitlines() if l.strip()]
-    run_start_b = next((e for e in fallback_events if e.get("event") == "run_start"), None)
-    assert run_start_b is not None, "stage-outreach run_start event must exist in fallback trace"
+    trace_b = runs_dir / run_id_b / "trace.jsonl"
+    assert trace_b.exists(), f"stage-outreach run trace must exist at {trace_b}"
+    trace_events_b = [json.loads(l) for l in trace_b.read_text(encoding="utf-8").splitlines() if l.strip()]
+    run_start_b = next((e for e in trace_events_b if e.get("event") == "run_start"), None)
+    assert run_start_b is not None, "stage-outreach run_start event must exist in run trace"
     assert run_start_b.get("run_type") == "stage-outreach", (
         f"stage-outreach run_start must carry run_type='stage-outreach'; got {run_start_b.get('run_type')!r}"
     )

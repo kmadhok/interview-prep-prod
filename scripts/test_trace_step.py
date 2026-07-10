@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Regression tests for jd-to-ready trace_step.py.
 
-The tests run the CLI against an isolated temporary JD_TO_READY_LOG_DIR so real
-Claude logs are never touched.
+The tests run the CLI against an isolated temporary TRACE_RUNS_DIR so real
+run logs are never touched.
 """
 
 from __future__ import annotations
@@ -34,10 +34,11 @@ class TraceStepTests(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
-        self.log_dir = self.root / "logs"
+        self.runs_dir = self.root / "runs"
         self.role_folder = self.root / "Roles" / "Acme - Agent Builder"
+        self.run_id: str | None = None
         self.env = os.environ.copy()
-        self.env["JD_TO_READY_LOG_DIR"] = str(self.log_dir)
+        self.env["TRACE_RUNS_DIR"] = str(self.runs_dir)
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
@@ -57,7 +58,8 @@ class TraceStepTests(unittest.TestCase):
         return result
 
     def start_and_bind(self) -> None:
-        self.run_cmd("start-run", "--run-type", "full", "--company", "Acme", "--role", "Agent Builder")
+        result = self.run_cmd("start-run", "--run-type", "full", "--company", "Acme", "--role", "Agent Builder")
+        self.run_id = result.stdout.strip()
         self.run_cmd(
             "set-role-folder",
             "--role-folder",
@@ -103,7 +105,8 @@ class TraceStepTests(unittest.TestCase):
         )
 
     def read_trace(self) -> list[dict]:
-        trace = self.role_folder / ".jd-to-ready-trace.jsonl"
+        self.assertIsNotNone(self.run_id)
+        trace = self.runs_dir / str(self.run_id) / "trace.jsonl"
         return [json.loads(line) for line in trace.read_text(encoding="utf-8").splitlines()]
 
     def test_happy_path_finishes_ok(self) -> None:
@@ -112,11 +115,102 @@ class TraceStepTests(unittest.TestCase):
             self.close_step(step)
         self.run_cmd("finish-run", "--status", "ok", "--gaps", "[]", "--files-written", "[]")
 
-        summary = json.loads((self.log_dir / "jd-to-ready.jsonl").read_text(encoding="utf-8").splitlines()[-1])
+        summary = json.loads((self.runs_dir / "summary.jsonl").read_text(encoding="utf-8").splitlines()[-1])
         self.assertEqual(summary["status"], "ok")
         self.assertEqual(summary["steps_closed"], ["1", "2", "3", "3.5", "3.7", "4", "4b", "4c", "5", "6", "7"])
         events = self.read_trace()
         self.assertEqual([event["seq"] for event in events], list(range(1, len(events) + 1)))
+
+    def test_start_run_creates_run_directory_trace_with_start_event(self) -> None:
+        result = self.run_cmd(
+            "start-run",
+            "--run-id",
+            "run-layout-start",
+            "--run-type",
+            "full",
+            "--company",
+            "Acme",
+            "--role",
+            "Agent Builder",
+        )
+        run_id = result.stdout.strip()
+        trace = self.runs_dir / run_id / "trace.jsonl"
+
+        self.assertTrue((self.runs_dir / run_id).is_dir())
+        self.assertTrue(trace.exists())
+        events = [json.loads(line) for line in trace.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(events[0]["event"], "run_start")
+        self.assertEqual(events[0]["run_id"], run_id)
+
+    def test_trace_is_never_written_into_role_folder(self) -> None:
+        self.role_folder.mkdir(parents=True)
+        self.run_cmd(
+            "start-run",
+            "--run-id",
+            "run-layout-role",
+            "--run-type",
+            "full",
+            "--company",
+            "Acme",
+            "--role",
+            "Agent Builder",
+        )
+        self.run_cmd(
+            "set-role-folder",
+            "--role-folder",
+            str(self.role_folder),
+            "--company",
+            "Acme",
+            "--role",
+            "Agent Builder",
+        )
+        self.close_step("1")
+
+        role_jsonl = [path for path in self.role_folder.iterdir() if path.suffix == ".jsonl"]
+        self.assertEqual(role_jsonl, [])
+        trace = self.runs_dir / "run-layout-role" / "trace.jsonl"
+        events = [json.loads(line) for line in trace.read_text(encoding="utf-8").splitlines()]
+        bound_events = [event for event in events if event["event"] != "run_start"]
+        self.assertTrue(bound_events)
+        self.assertTrue(all(event["role_folder"] == str(self.role_folder) for event in bound_events))
+
+    def test_active_state_file_lives_under_runs_dir(self) -> None:
+        self.run_cmd(
+            "start-run",
+            "--run-id",
+            "run-layout-active",
+            "--run-type",
+            "full",
+            "--company",
+            "Acme",
+            "--role",
+            "Agent Builder",
+        )
+
+        active_path = self.runs_dir / ".active-run.json"
+        self.assertTrue(active_path.exists())
+        self.assertEqual(json.loads(active_path.read_text(encoding="utf-8"))["run_id"], "run-layout-active")
+
+    def test_finish_run_appends_summary_line_under_runs_dir(self) -> None:
+        self.run_cmd(
+            "start-run",
+            "--run-id",
+            "run-layout-summary",
+            "--run-type",
+            "jd-to-ready",
+            "--company",
+            "Acme",
+            "--role",
+            "Agent Builder",
+        )
+        for step in ["1", "2", "3", "3.5", "3.7", "6", "7"]:
+            self.close_step(step)
+        self.run_cmd("finish-run", "--status", "ok", "--gaps", "[]", "--files-written", "[]")
+
+        summary = self.runs_dir / "summary.jsonl"
+        lines = summary.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(json.loads(lines[0])["run_id"], "run-layout-summary")
 
     def test_finish_refuses_missing_steps(self) -> None:
         self.start_and_bind()
@@ -149,7 +243,7 @@ class TraceStepTests(unittest.TestCase):
             self.close_step(step)
         self.run_cmd("finish-run", "--status", "ok", "--gaps", "[]", "--files-written", "[]")
 
-        summary = json.loads((self.log_dir / "jd-to-ready.jsonl").read_text(encoding="utf-8").splitlines()[-1])
+        summary = json.loads((self.runs_dir / "summary.jsonl").read_text(encoding="utf-8").splitlines()[-1])
         closed = summary["steps_closed"]
         self.assertEqual(closed.index("3.5"), closed.index("3") + 1)
         self.assertEqual(closed.index("3.7"), closed.index("3.5") + 1)
@@ -216,8 +310,8 @@ class TraceStepTests(unittest.TestCase):
         self.run_cmd("begin", "--step", "2", "--primitive", "jd-classification", "--mode", "", "--prediction", "classifies")
         self.run_cmd("abort-run", "--reason", "classification service unavailable", "--gaps", "[]")
 
-        self.assertFalse((self.log_dir / "jd-to-ready-active.json").exists())
-        summary = json.loads((self.log_dir / "jd-to-ready.jsonl").read_text(encoding="utf-8").splitlines()[-1])
+        self.assertFalse((self.runs_dir / ".active-run.json").exists())
+        summary = json.loads((self.runs_dir / "summary.jsonl").read_text(encoding="utf-8").splitlines()[-1])
         self.assertEqual(summary["status"], "aborted")
         self.assertEqual(summary["open_step"], "2")
         self.assertIn("2", summary["missing_steps"])
@@ -315,11 +409,11 @@ class RunTypeMapTests(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
-        log_dir = root / "logs"
+        runs_dir = root / "runs"
         role_folder = root / "Roles" / "Acme - Agent Builder"
         role_folder.mkdir(parents=True)
         env = os.environ.copy()
-        env["JD_TO_READY_LOG_DIR"] = str(log_dir)
+        env["TRACE_RUNS_DIR"] = str(runs_dir)
 
         def run(*args):
             return subprocess.run(
@@ -345,7 +439,7 @@ class RunTypeMapTests(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
         env = os.environ.copy()
-        env["JD_TO_READY_LOG_DIR"] = str(root / "logs")
+        env["TRACE_RUNS_DIR"] = str(root / "runs")
         existing = root / "Roles" / "Acme - Agent Builder"
         existing.mkdir(parents=True)
         marker = existing / "Test User Resume - Acme Agent Builder.md"
@@ -370,11 +464,11 @@ class SessionScopeTests(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.log_dir = Path(self.tmp.name) / "logs"
+        self.runs_dir = Path(self.tmp.name) / "runs"
 
     def _run(self, *args: str, session: str | None = "__keep__") -> subprocess.CompletedProcess[str]:
         env = os.environ.copy()
-        env["JD_TO_READY_LOG_DIR"] = str(self.log_dir)
+        env["TRACE_RUNS_DIR"] = str(self.runs_dir)
         if session is None:
             env.pop("CLAUDE_CODE_SESSION_ID", None)
         elif session != "__keep__":
