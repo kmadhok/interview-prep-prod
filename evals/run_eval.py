@@ -77,7 +77,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: workspace does not exist: {workspace}", file=sys.stderr)
         return 2
 
-    results = run_verifier(args.skill, workspace)
+    try:
+        results = run_verifier(args.skill, workspace)
+    except Exception as exc:  # a crashed verifier must be unmistakable vs a clause failure
+        print(f"error: verifier for '{args.skill}' crashed: {type(exc).__name__}: {exc}",
+              file=sys.stderr)
+        return 4
 
     if args.as_json:
         print(json.dumps([r.as_dict() for r in results], indent=2))

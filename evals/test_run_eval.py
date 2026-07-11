@@ -574,3 +574,23 @@ def test_write_outreach_placeholder_leak_exits_one(tmp_path):
     )
     assert "write-outreach-C3" in result.stdout
     assert "FAIL" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# runner robustness — a crashing verifier is exit 4, not a fake clause failure
+# ---------------------------------------------------------------------------
+
+def test_crashing_verifier_exits_4_with_clean_message(tmp_path):
+    crash_dir = EVALS_DIR / "zz-crash-fixture"
+    crash_dir.mkdir()
+    try:
+        (crash_dir / "verify.py").write_text(
+            'def verify(workspace):\n    raise RuntimeError("boom")\n', encoding="utf-8"
+        )
+        result = _run_eval(["zz-crash-fixture", "--workspace", str(tmp_path)])
+        assert result.returncode == 4
+        assert "crashed" in result.stderr
+        assert "Traceback" not in result.stderr
+    finally:
+        import shutil
+        shutil.rmtree(crash_dir, ignore_errors=True)
