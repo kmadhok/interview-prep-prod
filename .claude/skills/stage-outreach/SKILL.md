@@ -181,11 +181,17 @@ python3 "<repo root>/scripts/trace_step.py" finish-run --status "ok|partial|fail
 
 ## Outputs
 
-Folder gains `.contacts-ledger.md`, `Verified Emails.md`, `Cold Outreach.md`, and **two Gmail drafts** — one to the #1 recruiter, one to the HM/peer-IC lead (in Drafts, never sent; the same-company double-send guard suppresses a duplicate when both resolve to the same address). On success, write `STAGED in Gmail <YYYY-MM-DD>` to the folder AND the Pipeline row — that marker is the terminal state the poll keys off, so a role carrying it is never re-staged. (Kanu reviews each draft, attaches the resume — `create_draft` can't attach files — and hits Send.)
+Folder gains `.contacts-ledger.md`, `Verified Emails.md`, `Cold Outreach.md`, and **two Gmail drafts** — one to the #1 recruiter, one to the HM/peer-IC lead (in Drafts, never sent; the same-company double-send guard suppresses a duplicate when both resolve to the same address). On success, write `STAGED in Gmail <YYYY-MM-DD>` to the folder AND — via the deterministic tool, never by hand — the Pipeline row:
+
+```bash
+python3 "<repo root>/scripts/pipeline_row.py" append-staged --pipeline "<repo root>/workspace/Pipeline.md" --company "<Company>" --role "<Role>" --date <YYYY-MM-DD>
+```
+
+The tool OWNS the STAGED invariant: it refuses (exit 3) unless the row is Active and marked Applied — if it refuses, something upstream is wrong; STOP and report rather than editing the table manually. Exit 4 = marker already present (never re-stage). That marker is the terminal state the poll keys off. (The user reviews each draft, attaches the resume — `create_draft` can't attach files — and hits Send.)
 
 ## State (file markers — no ledger)
 
-On success write `STAGED in Gmail <date>` to folder + Pipeline row = terminal. No role_state.json. The worklist (`outreach_worklist.py`) keys off Pipeline `Applied` + absence of the `STAGED in Gmail` marker.
+On success write `STAGED in Gmail <date>` to folder + Pipeline row (row via `pipeline_row.py append-staged` only) = terminal. No role_state.json. The worklist (`outreach_worklist.py`) keys off Pipeline `Applied` + absence of the `STAGED in Gmail` marker.
 
 ## Degradation & edge cases
 

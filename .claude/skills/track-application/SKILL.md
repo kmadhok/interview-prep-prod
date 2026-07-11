@@ -35,9 +35,14 @@ Callable by other skills the same way (e.g. after an application is submitted).
 
 ## Process
 1. Read current `workspace/Pipeline.md`.
-2. Find the matching row and update status + notes in place.
-3. If the role doesn't exist yet, add a new row (trigger `interview-prep-intake` if a full folder setup is needed).
-4. Save format intel to project memory so it survives across sessions.
+2. **Applied transition:** use the deterministic tool — it moves the row Considering → Active and composes the stage cell (do not hand-edit for this case):
+   ```bash
+   python3 "<repo root>/scripts/pipeline_row.py" mark-applied --pipeline "<repo root>/workspace/Pipeline.md" --company "<Company>" --role "<Role>" --date <YYYY-MM-DD> --via "<ATS/referral/etc>"
+   ```
+   Exit 3 = no Considering row (add one first or hand-place directly in Active); exit 4 = already Applied (report, don't force).
+3. **All other status changes** (Recruiter Screen, Technical, Offer, Closed…): find the matching row and update status + notes in place by hand — these carry free-form notes the tool doesn't model.
+4. If the role doesn't exist yet, add a new row (trigger `interview-prep-intake` if a full folder setup is needed).
+5. Save format intel to project memory so it survives across sessions.
 
 ## Status values
 - `Considering` — identified but not yet applied

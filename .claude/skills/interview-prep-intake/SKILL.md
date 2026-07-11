@@ -78,10 +78,15 @@ Pattern: `Company - Role Title`. Keep it readable; shorten the role only if it w
 - `Snorkel AI - Forward Deployed Engineer DaaS` (shortened from "Forward Deployed Engineer - Data as a Service")
 
 Rules:
-- Drop punctuation that fights filesystems (commas, slashes, parens).
 - Use clean abbreviations only where they're obvious in context ("SWE" for Software Engineer, "DaaS" for Data as a Service). When in doubt, keep the long form.
 - Don't include location, salary, or req IDs in the folder name.
-- If a folder with that name already exists, do NOT overwrite — see edge cases below.
+- Then CREATE the folder with the deterministic tool (it owns sanitization and collision detection — do not `mkdir` by hand):
+
+```bash
+python3 "<repo root>/scripts/role_folder.py" ensure --workspace "<repo root>/workspace" --company "<Company>" --role "<Role Title as decided above>"
+```
+
+`CREATED`/`EXISTS` → proceed with the printed path. `ARCHIVED` (exit 3) → the role was previously closed; see edge cases below before reopening. If a folder already exists, do NOT overwrite its contents.
 
 ### 3. Write `Job Description.md` inside the new folder
 
@@ -141,19 +146,13 @@ Read the current `Pipeline.md`. The sections are:
 
 **Default placement: `Considering / not yet applied`.** Only put a new row directly into **Active** if Kanu has clearly said he's already applied, is in a recruiter screen, or has an interview booked.
 
-Row format (match the existing rows — column order matters because `Pipeline.html` is rendered from this):
+Add the row with the deterministic tool (it owns the 6-column format, placement, and duplicate refusal — do not hand-edit the table for the standard case):
 
+```bash
+python3 "<repo root>/scripts/pipeline_row.py" add-considering --pipeline "<repo root>/workspace/Pipeline.md" --company "<Company>" --role "<Role>" --folder "<Company - Role Title>" --next-action "Decide whether to apply; if yes, tailor resume + draft cold outreach" --contacts "_TBD — recruiter/HM lookup pending_"
 ```
-| **<Company> — <Role>** | <Stage> | <Next action> | <Date> | <Contacts> | [[<Folder name>]] |
-```
 
-Sensible defaults for a new `Considering` row:
-
-- **Stage:** `Considering — JD reviewed, not yet applied`
-- **Next action:** `Decide whether to apply; if yes, tailor resume + draft cold outreach (try job-outreach skill)`
-- **Date:** `Posted role; no deadline captured` — unless a deadline is in the JD
-- **Contacts:** `_TBD — recruiter/HM lookup pending_`
-- **Folder:** `[[<Company - Role Title>]]` (Obsidian wiki-link; must match the folder name exactly)
+Exit 3 = a row for this role already exists somewhere — check which section (`pipeline_row.py get`) and see edge cases; never add a duplicate. Hand-edit only for non-standard placements (the rare direct-to-Active case when the user has clearly already applied — then match the existing row format exactly: `| **<Company> — <Role>** | <Stage> | <Next action> | <Date> | <Contacts> | [[<Folder name>]] |`).
 
 Also update the `_Last updated: YYYY-MM-DD_` line near the top of `Pipeline.md` to today's date.
 
