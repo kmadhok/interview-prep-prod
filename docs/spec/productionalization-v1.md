@@ -89,7 +89,8 @@ phase); any change to the live system on `main`.
 
 ```
 Run helper unit tests:   python3 -m pytest scripts/ -v
-Run a skill eval:        python3 evals/run_eval.py <skill> [--fixture <name>]   (new)
+Run a skill eval:        python3 evals/run_eval.py <skill> --workspace <dir> [--json]
+List eval'd skills:      python3 evals/run_eval.py --list
 Run full pipeline eval:  two-orchestrator-e2e-test skill (isolated clone)
 Trace a step:            python3 scripts/trace_step.py <run-id> <event> [...]
 Render run report:       python3 scripts/render_run_report.py <run-dir>        (new)
