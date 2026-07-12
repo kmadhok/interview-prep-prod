@@ -6,6 +6,7 @@ find-contacts) so the two verifiers never duplicate ledger parsing.
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import sys
 from pathlib import Path
@@ -13,9 +14,7 @@ from pathlib import Path
 EVALS_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(EVALS_DIR))
 
-from common import ClauseResult  # noqa: E402
-
-ROLE_FOLDER = "Acme - Senior Agent Builder"
+from common import ClauseResult, EvalContext  # noqa: E402
 
 
 def _load_ledger_parser():
@@ -47,11 +46,30 @@ def _hooks_section(text: str) -> list[str]:
     return body
 
 
-def verify(workspace: Path) -> list[ClauseResult]:
-    workspace = Path(workspace)
-    role = workspace / "Roles" / ROLE_FOLDER
+def _has_no_hook_gap(context: EvalContext) -> bool:
+    roots = [context.workspace / "runs", context.role / "runs"]
+    for root in roots:
+        if not root.is_dir():
+            continue
+        for trace in root.glob("*/trace.jsonl"):
+            for line in _read(trace).splitlines():
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    continue
+                for gap in event.get("gaps", []) if isinstance(event, dict) else []:
+                    if (
+                        isinstance(gap, dict)
+                        and gap.get("kind") in {"no-activity", "no-hook"}
+                        and all(str(gap.get(field, "")).strip() for field in ("source", "detail"))
+                    ):
+                        return True
+    return False
+
+
+def verify(context: EvalContext) -> list[ClauseResult]:
+    role = context.role
     ledger_path = role / ".contacts-ledger.md"
-    enriched_marker = role / ".eval-enriched"
     ledger = _load_ledger_parser()
     parsed = ledger.read_ledger(ledger_path)
 
@@ -64,17 +82,13 @@ def verify(workspace: Path) -> list[ClauseResult]:
     )
 
     # C2 — >=1 row marked with an activity source when enriched
-    if enriched_marker.exists():
-        enrich_rows = [r for r in parsed["rows"]
-                       if "enrich" in str(r.get("source", "")).lower()]
-        c2_passed = len(enrich_rows) >= 1
-        c2_detail = "" if c2_passed else "no rows with source containing 'enrich'"
-    else:
-        c2_passed = True
-        c2_detail = ".eval-enriched absent — vacuous pass"
+    enrich_rows = [r for r in parsed["rows"]
+                   if "enrich" in str(r.get("source", "")).lower()]
+    c2_passed = len(enrich_rows) >= 1
+    c2_detail = "" if c2_passed else "no rows with source containing 'enrich'"
     c2 = ClauseResult(
         id="enrich-contacts-C2",
-        description=">=1 row marked with an activity source when .eval-enriched exists",
+        description=">=1 row records enrichment provenance",
         passed=c2_passed,
         detail=c2_detail,
     )
@@ -84,8 +98,10 @@ def verify(workspace: Path) -> list[ClauseResult]:
              if str(r.get("name", "")).strip()]
     hooks = _hooks_section(_read(ledger_path))
     if not hooks:
-        c3_passed = True
-        c3_detail = "no hooks section — vacuous pass"
+        c3_passed = _has_no_hook_gap(context)
+        c3_detail = "" if c3_passed else (
+            "hooks section missing and no structured no-activity/no-hook trace gap found"
+        )
     else:
         bad = []
         for line in hooks:
@@ -102,4 +118,11 @@ def verify(workspace: Path) -> list[ClauseResult]:
         detail=c3_detail,
     )
 
-    return [c1, c2, c3]
+    c4 = ClauseResult(
+        id="enrich-contacts-C4",
+        description="Live LinkedIn activity evidence resolves",
+        status="NOT_RUN" if context.live else "BLOCKED",
+        tier="live",
+        detail="LinkedIn MCP unavailable; live clause was not executed",
+    )
+    return [c1, c2, c3, c4]

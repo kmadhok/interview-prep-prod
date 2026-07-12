@@ -7,8 +7,7 @@ This contract pins the observable end-state of a completed verify-emails run.
 
 ### verify-emails-C1: Verified Emails.md exists
 
-`workspace/Roles/Acme - Senior Agent Builder/Verified Emails.md` exists in
-the eval workspace.
+`Verified Emails.md` exists in the selected role.
 
 **How checked:** `Path(role / "Verified Emails.md").exists()`.
 
@@ -32,4 +31,15 @@ domain is already present in the ledger, and the row must carry the
 **How checked:** Collect every email address from Verified Emails.md and
 every email/domain from the ledger; for each verified-emails address, assert
 it appears in the ledger address set OR its domain (the part after `@`)
-appears in the ledger domain set.
+appears in the ledger domain set and that derived address is tagged `inferred`.
+
+### verify-emails-C4: Degraded inference is explicit in row statuses
+
+Every fixture address has an allowed status. An all-`inferred` result is an
+explicit degraded fixture outcome, not indistinguishable from verification.
+
+### verify-emails-C5: Live EmailFinder verification evidence
+
+**Tier: live-only.** External verification evidence is available for addresses
+claimed as verified. If the service is unavailable this clause is `BLOCKED`
+or `NOT_RUN`; local provenance and degradation clauses still execute.

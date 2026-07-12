@@ -6,7 +6,6 @@ the same stdlib page-count technique build_resume_pdf._count_pdf_pages uses
 """
 from __future__ import annotations
 
-import importlib.util
 import re
 import sys
 from pathlib import Path
@@ -16,22 +15,8 @@ REPO_SCRIPTS = Path(__file__).resolve().parents[2] / "scripts"
 sys.path.insert(0, str(REPO_SCRIPTS))
 # Bootstrap evals/ parent for `from common import ClauseResult`.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-# Bootstrap the e2e scripts dir for verify_artifacts.
-E2E_SCRIPTS = Path(__file__).resolve().parents[2] / ".claude/skills/two-orchestrator-e2e-test/scripts"
-
-from common import ClauseResult  # noqa: E402
-from config import resume_glob_prefix  # noqa: E402
-
-ROLE_FOLDER = "Acme - Senior Agent Builder"
-
-
-def _load_verify_artifacts():
-    va_path = E2E_SCRIPTS / "verify_artifacts.py"
-    spec = importlib.util.spec_from_file_location("_eval_verify_artifacts_re", va_path)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules["_eval_verify_artifacts_re"] = mod
-    spec.loader.exec_module(mod)
-    return mod
+from common import ClauseResult, EvalContext  # noqa: E402
+from config import load_profile, resume_glob_prefix  # noqa: E402
 
 
 def _read(path: Path) -> str:
@@ -61,17 +46,17 @@ def _detect_title_leak(md_text: str) -> int:
     return 1 if saw_resume_title else 0
 
 
-def verify(workspace: Path) -> list[ClauseResult]:
-    workspace = Path(workspace)
-    role = workspace / "Roles" / ROLE_FOLDER
-    prefix = resume_glob_prefix()
-    va = _load_verify_artifacts()
+def verify(context: EvalContext) -> list[ClauseResult]:
+    role = context.role
+    prefix = resume_glob_prefix(load_profile(context.profile) if context.profile else None)
 
-    # C1 — PDF exists next to the resume md (reuse check_pdf's present check)
-    pdf_result = va.check_pdf(role, pages=None, title_leak=None, prefix=prefix)
-    pdf_present = any(c.get("name") == "resume-pdf-present" and c.get("ok")
-                      for c in pdf_result.get("checks", []))
+    # C1 — PDF exists next to a matching resume md.
     pdfs = sorted(role.glob(f"{prefix}*.pdf")) if role.is_dir() else []
+    mds = sorted(role.glob(f"{prefix}*.md")) if role.is_dir() else []
+    if not pdfs and not mds and context.profile is None and role.is_dir():
+        pdfs = sorted(role.glob("* Resume - *.pdf"))
+        mds = sorted(role.glob("* Resume - *.md"))
+    pdf_present = bool(pdfs) and any(pdf.with_suffix(".md") in mds for pdf in pdfs)
     c1 = ClauseResult(
         id="resume-export-C1",
         description="PDF exists next to the resume md",
@@ -97,7 +82,6 @@ def verify(workspace: Path) -> list[ClauseResult]:
     )
 
     # C3 — no title leak (on the backing resume md)
-    mds = sorted(role.glob(f"{prefix}*.md")) if role.is_dir() else []
     c3_passed = False
     c3_detail = "no resume md to check"
     if mds:

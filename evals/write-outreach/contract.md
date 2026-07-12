@@ -3,15 +3,15 @@
 The write-outreach step drafts `Cold Outreach.md` with two intro sections
 (one per recipient), addresses drawn from `Verified Emails.md`, and no
 placeholder leaks. This contract pins the observable end-state of a
-completed write-outreach run. (The never-sent Gmail invariant is live-tier
-only — Decision 6 — and is out of per-skill scope.)
+completed write-outreach run. Fixture draft records test the never-send
+invariant without Gmail side effects; live Gmail evidence remains live-only.
 
 ## Clauses
 
 ### write-outreach-C1: Cold Outreach.md exists with two intro sections
 
-`workspace/Roles/Acme - Senior Agent Builder/Cold Outreach.md` exists and
-contains at least two intro/recipient sections. A section is a heading at
+The selected role's `Cold Outreach.md` exists and contains at least two
+intro/recipient sections. A section is a heading at
 `#` or `##` level that introduces a distinct outreach target (e.g.
 "## Intro — Recruiter", "## Intro — Hiring Manager").
 
@@ -34,3 +34,15 @@ verified set.
 unfinished drafting: `[NUMBER?]`, `<user_`, `{name}`, `[slot`, `TBD`.
 
 **How checked:** Read the file; assert none of those five strings appear.
+
+### write-outreach-C4: Fixture draft artifacts are present and unsent
+
+The runtime fixture artifact `.drafts.json` contains at least one draft with a
+non-empty id and every draft has `sent == false`. This is not an eval sidecar:
+it is the normalized output boundary consumed by the E2E verifier.
+
+### write-outreach-C5: Live Gmail Drafts and Sent-state evidence
+
+**Tier: live-only.** Draft IDs resolve in Gmail Drafts and a Sent search is
+empty. With external execution disabled this clause is `BLOCKED`, never
+passed. C1–C4 still run locally.

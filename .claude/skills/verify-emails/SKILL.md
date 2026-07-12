@@ -103,3 +103,9 @@ Flags:
 - `.claude/skills/verify-emails/scripts/verify_emails.py` — stdlib-only resolver and writer.
 - `.claude/skills/verify-emails/.email-cache.json` — local cache keyed by `name|company`.
 - EmailFinder.dev API reference — uses env var `Email_Finder_Dev`; never print the key value.
+
+## Behavior contract
+
+`evals/verify-emails/contract.md` is authoritative. Declare its clause IDs at
+trace begin and record verifier-produced results at trace end. Local inferred
+degradation remains testable when live verification is `BLOCKED`/`NOT_RUN`.

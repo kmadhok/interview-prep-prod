@@ -6,15 +6,14 @@ address is in Verified Emails.md; C3 checks zero placeholder leaks.
 from __future__ import annotations
 
 import re
+import json
 import sys
 from pathlib import Path
 
 EVALS_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(EVALS_DIR))
 
-from common import ClauseResult  # noqa: E402
-
-ROLE_FOLDER = "Acme - Senior Agent Builder"
+from common import ClauseResult, EvalContext  # noqa: E402
 PLACEHOLDER_LEAKS = ["[NUMBER?]", "<user_", "{name}", "[slot", "TBD"]
 _EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
 _INTRO_HEADING_RE = re.compile(r"^#{1,2}\s+.*intro", re.IGNORECASE)
@@ -32,9 +31,8 @@ def _verified_emails(role: Path) -> set[str]:
     return {e.lower() for e in _EMAIL_RE.findall(_read(verified_path))}
 
 
-def verify(workspace: Path) -> list[ClauseResult]:
-    workspace = Path(workspace)
-    role = workspace / "Roles" / ROLE_FOLDER
+def verify(context: EvalContext) -> list[ClauseResult]:
+    role = context.role
     outreach_path = role / "Cold Outreach.md"
 
     # C1 — Cold Outreach.md exists with two intro sections
@@ -96,4 +94,32 @@ def verify(workspace: Path) -> list[ClauseResult]:
         detail=c3_detail,
     )
 
-    return [c1, c2, c3]
+    drafts_path = next(
+        (path for path in (role / ".drafts.json", role / "_draft.json") if path.exists()),
+        role / ".drafts.json",
+    )
+    drafts = []
+    if drafts_path.exists():
+        try:
+            value = json.loads(_read(drafts_path))
+            drafts = value if isinstance(value, list) else [value]
+        except ValueError:
+            drafts = []
+    c4_passed = bool(drafts) and all(
+        isinstance(draft, dict) and draft.get("id") and not draft.get("sent", False)
+        for draft in drafts
+    )
+    c4 = ClauseResult(
+        id="write-outreach-C4",
+        description="Fixture draft artifacts are present and unsent",
+        passed=c4_passed,
+        detail="" if c4_passed else "missing/invalid .drafts.json or a draft is marked sent",
+    )
+    c5 = ClauseResult(
+        id="write-outreach-C5",
+        description="Live Gmail Drafts and Sent-state evidence",
+        status="NOT_RUN" if context.live else "BLOCKED",
+        tier="live",
+        detail="external Gmail execution disabled; fixture never-send clause evaluated",
+    )
+    return [c1, c2, c3, c4, c5]

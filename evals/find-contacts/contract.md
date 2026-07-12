@@ -8,17 +8,16 @@ pins the observable end-state of a completed find-contacts run.
 
 ### find-contacts-C1: .contacts-ledger.md exists with >=1 scored row
 
-`workspace/Roles/Acme - Senior Agent Builder/.contacts-ledger.md` exists
-and its table has at least one scored contact row (a data row, not just a
-header/divider).
+The selected role's `.contacts-ledger.md` exists and has at least one scored
+contact row (not just a header/divider).
 
 **How checked:** Parse the ledger table via the shared ledger parser
 (`evals/_ledger.py`); assert `rows` is non-empty.
 
-### find-contacts-C2: Table parses with the fixture columns
+### find-contacts-C2: Table parses with the required ledger schema
 
-The ledger table parses and its header row contains the columns the fixture
-ledger uses: at minimum `name`, `email`, and `confidence`.
+The ledger table parses and its header contains the required downstream
+columns: at minimum `name`, an `email` column, and `confidence`.
 
 **How checked:** Parse the ledger; assert the header is non-null and contains
 `name`, `email` (or `email (inferred)`), and `confidence`.
@@ -31,3 +30,15 @@ Every row's email cell carries a confidence tag — one of `verified`,
 
 **How checked:** For each parsed row, read the `confidence` cell; assert it
 contains one of `verified`, `inferred`, or `flagged` (case-insensitive).
+
+### find-contacts-C4: Every ledger contact has source provenance
+
+Every parsed contact row has a non-empty `source` cell. This deterministic
+fixture clause prevents provenance-free contacts from entering later stages.
+
+### find-contacts-C5: Live LinkedIn identity and employer evidence
+
+**Tier: live-only.** The selected people resolve to current LinkedIn profiles
+and the target employer/role evidence is visible. When LinkedIn MCP is absent,
+this clause is `BLOCKED`, never `PASS`; `--live` without supplied evidence is
+`NOT_RUN`. Local clauses C1–C4 still execute.

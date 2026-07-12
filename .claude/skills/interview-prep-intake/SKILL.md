@@ -206,3 +206,8 @@ These files are for future-you and future-Kanu to scan in seconds. Be specific a
 - Good: "FDE role at Snorkel AI's DaaS org; Python/SQL + LLM eval + synthetic data + HITL pipelines; $172–300K OTE; positioned as founding member of technical DaaS team."
 
 Quantified comp, distinctive tech-stack hooks, and the "why this role is special" framing carry the load.
+
+## Behavior contract
+
+`evals/interview-prep-intake/contract.md` is authoritative. Trace `step_begin`
+with its clause IDs and close `step_end` with verifier-produced clause results.

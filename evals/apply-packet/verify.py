@@ -7,7 +7,6 @@ recorded remote_dir contains "_test".
 """
 from __future__ import annotations
 
-import importlib.util
 import json
 import re
 import sys
@@ -15,12 +14,7 @@ from pathlib import Path
 
 # Bootstrap evals/ parent for `from common import ClauseResult`.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-# Bootstrap the e2e scripts dir for verify_artifacts.
-E2E_SCRIPTS = Path(__file__).resolve().parents[2] / ".claude/skills/two-orchestrator-e2e-test/scripts"
-
-from common import ClauseResult  # noqa: E402
-
-ROLE_FOLDER = "Acme - Senior Agent Builder"
+from common import ClauseResult, EvalContext  # noqa: E402
 EVALS_DIR = Path(__file__).resolve().parents[1]
 PROFILE_FIXTURE = EVALS_DIR / "fixtures" / "application-profile.md"
 
@@ -29,32 +23,22 @@ _AMOUNT_RE = re.compile(r"\$[\d,]+(?:\.\d+)?[kK]?")
 _DIGIT_RE = re.compile(r"\d+")
 
 
-def _load_verify_artifacts():
-    va_path = E2E_SCRIPTS / "verify_artifacts.py"
-    spec = importlib.util.spec_from_file_location("_eval_verify_artifacts_ap", va_path)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules["_eval_verify_artifacts_ap"] = mod
-    spec.loader.exec_module(mod)
-    return mod
-
-
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig", errors="ignore") if path.exists() else ""
 
 
-def verify(workspace: Path) -> list[ClauseResult]:
-    workspace = Path(workspace)
-    role = workspace / "Roles" / ROLE_FOLDER
+def verify(context: EvalContext) -> list[ClauseResult]:
+    role = context.role
     answers_path = role / "Application Answers.md"
     packet_path = role / ".apply-packet.json"
-    va = _load_verify_artifacts()
+    profile_fixture = context.profile or PROFILE_FIXTURE
 
     # C1 — Application Answers.md exists + answers traceable to the profile fixture
     c1_passed = False
     c1_detail = "Application Answers.md missing"
     if answers_path.exists():
         answers_text = _read(answers_path)
-        profile_text = _read(PROFILE_FIXTURE)
+        profile_text = _read(profile_fixture)
         if not answers_text.strip():
             c1_detail = "Application Answers.md is empty"
         else:
@@ -82,19 +66,23 @@ def verify(workspace: Path) -> list[ClauseResult]:
         detail=c1_detail,
     )
 
-    # C2 — .apply-packet.json valid per verify_artifacts.check_packet
+    # C2 — runtime packet record is complete and queued.
     c2_passed = False
-    c2_detail = "check_packet returned no checks"
-    if role.is_dir():
-        result = va.check_packet(role)
-        checks = result.get("checks", [])
-        failed = [c for c in checks if not c.get("ok")]
-        c2_passed = len(failed) == 0 and len(checks) > 0
-        c2_detail = "" if c2_passed else "; ".join(
-            f"{c.get('name')}: {c.get('detail')}" for c in failed)
+    c2_detail = ".apply-packet.json missing or invalid"
+    if packet_path.exists():
+        try:
+            rec = json.loads(_read(packet_path))
+            c2_passed = (
+                rec.get("state") == "queued"
+                and answers_path.exists()
+                and bool(str(rec.get("remote_dir", "")).strip())
+            )
+            c2_detail = "" if c2_passed else f"incomplete packet record: {rec}"
+        except ValueError as exc:
+            c2_detail = f"parse error: {exc}"
     c2 = ClauseResult(
         id="apply-packet-C2",
-        description=".apply-packet.json valid per verify_artifacts.check_packet",
+        description=".apply-packet.json is complete and queued",
         passed=c2_passed,
         detail=c2_detail,
     )

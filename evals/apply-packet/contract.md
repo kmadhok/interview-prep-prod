@@ -10,8 +10,8 @@ apply-packet run.
 
 ### apply-packet-C1: Application Answers.md exists + answers traceable
 
-`workspace/Roles/Acme - Senior Agent Builder/Application Answers.md` exists
-and every answer line is traceable to the fixture `Application Profile.md`.
+`Application Answers.md` exists in the selected role and every numeric answer
+is traceable to the profile supplied with `--profile` (default: fixture).
 
 Traceability is checked as a pragmatic proxy: no digits or dollar amounts
 appear in the answers file that do not also appear in the profile fixture.
@@ -23,14 +23,10 @@ so it is not mistaken for full provenance checking.
 amount from the answers file; assert each one appears verbatim in the profile
 fixture text.
 
-### apply-packet-C2: .apply-packet.json valid per verify_artifacts
+### apply-packet-C2: .apply-packet.json is complete and queued
 
-`workspace/Roles/Acme - Senior Agent Builder/.apply-packet.json` parses and
-passes `verify_artifacts.check_packet` — the same schema check the e2e
-verifier runs (state == queued, answers-md-present, etc.).
-
-**How checked:** Import `check_packet` from verify_artifacts; call it with
-the role folder; assert every check has `ok=True`.
+The runtime record parses, has `state == "queued"`, a non-empty `remote_dir`,
+and the referenced answers artifact exists.
 
 ### apply-packet-C3: Recorded remote dir contains "_test"
 

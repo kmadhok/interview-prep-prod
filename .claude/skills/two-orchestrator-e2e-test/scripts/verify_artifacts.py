@@ -12,21 +12,14 @@ from pathlib import Path
 # follows the global symlink to the real repo, so profile resolves correctly
 # whether invoked here or via ~/.claude/skills/. Same parents[4] pattern as
 # verify_postings.py / verify_emails.py.
-sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "scripts"))
+REPO_ROOT = Path(__file__).resolve().parents[4]
+CONTRACT_PROFILE = REPO_ROOT / "profile.yaml"
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
+sys.path.insert(0, str(REPO_ROOT / "evals"))
 
 from config import load_profile, resume_glob_prefix
-
-# Classification vocab — must match jd-to-ready/SKILL.md (themes ~line 115, archetypes ~118).
-THEME_VOCAB = {
-    "agents", "RAG", "NL→SQL", "MCP", "LLM-orchestration", "ML-pipeline", "platform",
-    "business-translation", "end-to-end", "RPA", "experimentation", "dashboards",
-    "consulting", "simplification", "leverage", "cross-functional", "engineering-rigor", "evaluation",
-}
-ARCHETYPE_VOCAB = {
-    "agent-builder", "FDE / client-facing", "consulting / product-builder",
-    "platform / ML engineering", "data-engineering / analytics",
-}
-
+from common import ARCHETYPE_VOCAB, THEME_VOCAB, run_verifier
+from verify_behavior_traces import audit_runs
 
 def check(name: str, ok: bool, detail: str = "", severity: str = "fail") -> dict:
     return {"name": name, "ok": bool(ok), "detail": detail, "severity": severity}
@@ -47,6 +40,28 @@ def skill_result(checks: list[dict], notes: str = "") -> dict:
 
 def blocked_result(note: str = "") -> dict:
     return {"status": "blocked", "checks": [], "notes": note}
+
+
+def contract_result(skill: str, clone: Path) -> dict:
+    """Adapt authoritative per-behavior clause results to the legacy E2E JSON."""
+    results = run_verifier(skill, clone, role=clone, profile=CONTRACT_PROFILE)
+    checks = [
+        {
+            "name": result.id,
+            "ok": result.verdict != "FAIL",
+            "detail": result.detail,
+            "severity": "blocked" if result.verdict in {"BLOCKED", "NOT_RUN"} else "fail",
+            "status": result.verdict.lower(),
+        }
+        for result in results
+    ]
+    if any(result.verdict == "FAIL" for result in results):
+        status = "fail"
+    elif any(result.verdict in {"BLOCKED", "NOT_RUN"} for result in results):
+        status = "blocked"
+    else:
+        status = "pass"
+    return {"status": status, "checks": checks, "notes": "delegated to evals/<behavior>/contract.md"}
 
 
 def _read(path: Path) -> str:
@@ -297,25 +312,33 @@ def check_write_outreach(clone: Path, drafts, expected_recipient: str,
 
 def run_all(args) -> dict:
     clone = Path(args.clone)
-    profile = load_profile()
-    prefix = resume_glob_prefix(profile)
-    email = profile["user_email"]
     worklist_text = _read(Path(args.worklist_out)) if args.worklist_out else ""
     drafts = _load_drafts(args.draft_json)
     skills = {
-        "interview-prep-intake": check_intake(clone),
-        "classify": check_classify(clone),
-        "tailor-resume": check_tailor_resume(clone, prefix, email),
-        "pdf": check_pdf(clone, args.pages, args.title_leak, prefix),
-        "apply-packet": check_packet(clone),
+        "interview-prep-intake": contract_result("interview-prep-intake", clone),
+        "classify": contract_result("classify", clone),
+        "tailor-resume": contract_result("tailor-resume", clone),
+        "pdf": contract_result("resume-export", clone),
+        "apply-packet": contract_result("apply-packet", clone),
         "apply-gate": check_gate(worklist_text, args.company),
-        "find-contacts": check_find_contacts(clone),
-        "enrich-contacts": check_enrich_contacts(clone),
-        "verify-emails": check_verify_emails(clone),
-        "write-outreach": check_write_outreach(
-            clone, drafts, args.expected_recipient or "",
-            getattr(args, "expected_lead_recipient", "") or ""),
+        "find-contacts": contract_result("find-contacts", clone),
+        "enrich-contacts": contract_result("enrich-contacts", clone),
+        "verify-emails": contract_result("verify-emails", clone),
+        "write-outreach": contract_result("write-outreach", clone),
     }
+    # Legacy capture values remain diagnostic only. Contract clauses above own
+    # pass/fail semantics, so these checks cannot override the PDF verdict.
+    if args.pages is not None:
+        skills["pdf"]["checks"].append(
+            check("legacy-pages-capture", args.pages == 1, f"PAGES={args.pages}", severity="info")
+        )
+    if args.title_leak is not None:
+        skills["pdf"]["checks"].append(
+            check(
+                "legacy-title-leak-capture", args.title_leak == 0,
+                f"TITLE_LEAK={args.title_leak}", severity="info",
+            )
+        )
     # Ordering signal (invariant 2): the gate writes _worklist.txt; the apply side's
     # first artifact is the ledger. A ledger older than the worklist suggests LinkedIn
     # was spent before the apply gate — warn, don't fail (mtimes are edit-sensitive).
@@ -333,6 +356,17 @@ def run_all(args) -> dict:
         note = "apply side not run (LinkedIn daemon down at preflight)"
         for name in ("find-contacts", "enrich-contacts", "verify-emails", "write-outreach"):
             skills[name] = blocked_result(note)
+    trace_runs_dir = getattr(args, "trace_runs_dir", "")
+    if trace_runs_dir:
+        trace_results = audit_runs(Path(trace_runs_dir))
+        trace_checks = [
+            check(result.behavior, result.passed, result.detail)
+            for result in trace_results
+        ]
+        skills["behavior-traces"] = skill_result(
+            trace_checks,
+            notes="all nine closed primitive behavior traces are required",
+        )
     statuses = [s["status"] for s in skills.values()]
     if "fail" in statuses:
         overall = "fail"
@@ -364,6 +398,10 @@ def build_parser() -> argparse.ArgumentParser:
                    help="HM/peer-IC lead draft recipient email (drip mode drafts two)")
     p.add_argument("--blocked-apply", action="store_true",
                    help="LinkedIn was down at preflight; mark apply-side skills blocked and exclude from fail/warn rollup")
+    p.add_argument(
+        "--trace-runs-dir", default="",
+        help="audit all nine closed primitive traces; omitted for legacy runs",
+    )
     return p
 
 

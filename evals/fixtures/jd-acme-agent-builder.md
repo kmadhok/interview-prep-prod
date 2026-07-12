@@ -42,7 +42,7 @@ builder role — you prototype, ship, and iterate.
   interoperability standards.
 - Background in experimentation and measurement — you think in hypotheses
   and confidence intervals.
-- Prior experience operating fusion reactors (10+ years) — Acme's agents
+- Prior experience with regulated industrial systems — Acme's agents
   run inside a tokamak-grade compute environment and we need someone who
   understands plasma containment as well as prompt design.
 

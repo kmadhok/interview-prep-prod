@@ -121,3 +121,10 @@ Check every draft against `Outreach Templates.md` before returning it. This is a
 - **No fabricated personalization or urgency.** If a hook or a competing process isn't real, omit it or ask.
 - One clear ask / CTA per message.
 - **Draft, never send — universal across channels.** This skill may create Gmail DRAFTS only (`mcp__claude_ai_Gmail__create_draft`, which saves to Drafts and sends nothing) and must never call any send tool. Same invariant as LinkedIn: confirm with Kanu before any `mcp__linkedin__send_message`. Across both channels this skill drafts; it doesn't send.
+
+## Behavior contract
+
+`evals/write-outreach/contract.md` is authoritative. Declare its clause IDs at
+trace begin and record verifier-produced results at trace end. Local normalized
+draft artifacts prove never-send behavior; live Gmail evidence may remain
+`BLOCKED`/`NOT_RUN`.

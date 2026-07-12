@@ -14,24 +14,24 @@ enrichment — enrichment appended to the table, it did not corrupt it.
 **How checked:** Parse the ledger via the shared parser
 (`evals/_ledger.py`); assert `header` is non-null and `rows` is non-empty.
 
-### enrich-contacts-C2: >=1 row marked with an activity source when enriched
+### enrich-contacts-C2: At least one row records enrichment provenance
 
-When the fixture-run marker file `.eval-enriched` exists (the convention that
-signals an enrichment run completed), at least one ledger row is marked with
-an activity source — i.e. the `source` cell references "enrich" (or an
-activity marker) rather than only "search". If `.eval-enriched` is absent,
-this clause passes vacuously (enrichment was not expected).
+At least one ledger row has a `source` cell containing `enrich`. The ledger is
+the runtime artifact; eval-only marker sidecars are forbidden.
 
-**How checked:** If `.eval-enriched` exists in the role folder, assert at
-least one parsed row has a `source` cell containing "enrich" (lowercased).
-Otherwise vacuous pass.
+**How checked:** Require one parsed row whose source contains `enrich`.
 
 ### enrich-contacts-C3: Every hook line references a person already in the table
 
-Every line under a `## hooks` (or similar) section references a person who
-already appears in the ledger's `name` column — enrichment hooks never
-invent new people.
+The ledger has a `## hooks` section whose lines reference people already in
+the ledger, OR the enrichment trace contains a structured `no-activity` or
+`no-hook` gap with non-empty source/detail.
 
-**How checked:** Find the `## hooks` section; for each non-empty line in it,
-assert at least one ledger name appears in the line. If there is no hooks
-section, the clause passes vacuously (enrichment may not always add hooks).
+**How checked:** Validate each hook line against ledger names. If no hooks
+exist, scan real `runs/*/trace.jsonl` gap arrays for the explicit degradation
+record. Absence of both is a failure.
+
+### enrich-contacts-C4: Live LinkedIn activity evidence resolves
+
+**Tier: live-only.** Activity hooks resolve to visible LinkedIn evidence.
+Without LinkedIn MCP this clause is `BLOCKED`, not passed; local C1–C3 run.

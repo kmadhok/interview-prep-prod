@@ -7,25 +7,80 @@ stay standalone modules. format_table renders the human-readable summary.
 from __future__ import annotations
 
 import importlib.util
+import inspect
+import re
 import sys
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
 EVALS_DIR = Path(__file__).resolve().parent
+THEME_VOCAB = {
+    "agents", "RAG", "NL→SQL", "MCP", "LLM-orchestration", "ML-pipeline", "platform",
+    "business-translation", "end-to-end", "RPA", "experimentation", "dashboards",
+    "consulting", "simplification", "leverage", "cross-functional",
+    "engineering-rigor", "evaluation",
+}
+ARCHETYPE_VOCAB = {
+    "agent-builder", "FDE / client-facing", "consulting / product-builder",
+    "platform / ML engineering", "data-engineering / analytics",
+}
 
 
 @dataclass
 class ClauseResult:
     id: str
     description: str
-    passed: bool
+    passed: bool = False
     detail: str = ""
+    status: str = ""
+    tier: str = "local"
 
     def as_dict(self) -> dict:
-        return asdict(self)
+        data = asdict(self)
+        data["status"] = self.verdict
+        return data
+
+    @property
+    def verdict(self) -> str:
+        return self.status.upper() if self.status else ("PASS" if self.passed else "FAIL")
 
 
-def run_verifier(skill: str, workspace: Path) -> list[ClauseResult]:
+@dataclass(frozen=True)
+class EvalContext:
+    workspace: Path
+    role: Path
+    profile: Path | None = None
+    live: bool = False
+
+
+def resolve_role(workspace: Path, role: str | Path | None = None) -> Path:
+    """Resolve an explicit role or the sole role in an isolated fixture."""
+    workspace = Path(workspace)
+    if role:
+        candidate = Path(role)
+        if not candidate.is_absolute():
+            candidate = workspace / candidate
+        return candidate.resolve()
+    roles = workspace / "Roles"
+    found = sorted(path for path in roles.iterdir() if path.is_dir()) if roles.is_dir() else []
+    if len(found) != 1:
+        raise ValueError(f"expected exactly one fixture role under {roles}; found {len(found)}")
+    return found[0]
+
+
+def contract_clause_ids(skill: str) -> list[str]:
+    text = (EVALS_DIR / skill / "contract.md").read_text(encoding="utf-8")
+    return re.findall(r"^###\s+([A-Za-z0-9._-]+):", text, re.MULTILINE)
+
+
+def run_verifier(
+    skill: str,
+    workspace: Path,
+    *,
+    role: str | Path | None = None,
+    profile: str | Path | None = None,
+    live: bool = False,
+) -> list[ClauseResult]:
     """Import evals/<skill>/verify.py by path and call its verify(workspace).
 
     Raises FileNotFoundError if the skill has no verify.py.
@@ -45,7 +100,19 @@ def run_verifier(skill: str, workspace: Path) -> list[ClauseResult]:
 
     if not hasattr(mod, "verify"):
         raise AttributeError(f"{verify_path} has no verify(workspace) function")
-    return mod.verify(Path(workspace))
+    context = EvalContext(
+        workspace=Path(workspace),
+        role=resolve_role(Path(workspace), role),
+        profile=Path(profile).resolve() if profile else None,
+        live=live,
+    )
+    verify = mod.verify
+    results = verify(context) if "context" in inspect.signature(verify).parameters else verify(Path(workspace))
+    expected = contract_clause_ids(skill)
+    actual = [result.id for result in results]
+    if expected != actual:
+        raise ValueError(f"{skill} verifier clauses {actual} do not match authoritative contract {expected}")
+    return results
 
 
 def discover_skills() -> list[str]:
@@ -59,7 +126,7 @@ def discover_skills() -> list[str]:
 
 def format_table(results: list[ClauseResult]) -> str:
     """Aligned text table: STATUS | id | description | detail (detail shown on fail)."""
-    status_w = 6
+    status_w = 8
     id_w = max((len(r.id) for r in results), default=2)
     id_w = max(id_w, 2)
     desc_w = max((len(r.description) for r in results), default=11)
@@ -69,7 +136,7 @@ def format_table(results: list[ClauseResult]) -> str:
     sep = f"{'-' * status_w}  {'-' * id_w}  {'-' * desc_w}  {'-' * 6}"
     lines = [header, sep]
     for r in results:
-        status = "PASS" if r.passed else "FAIL"
-        detail = r.detail if not r.passed else ""
+        status = r.verdict
+        detail = r.detail if status != "PASS" else ""
         lines.append(f"{status:<{status_w}}  {r.id:<{id_w}}  {r.description:<{desc_w}}  {detail}")
     return "\n".join(lines)

@@ -96,3 +96,9 @@ In `standalone` mode this skill writes the `.md` only; the PDF is generated on r
 - [ ] Every unmatched JD theme is captured in the returned `gaps[]` as a structured object (empty list `[]` if none).
 - [ ] Filename matches `<user_name> Resume - <Company> <Short Role>.md` per the Short-Role rule.
 - [ ] If a PDF was rendered, its `PAGES=… TITLE_LEAK=…` contract line shows `PAGES=1 TITLE_LEAK=0`; otherwise the overflow/leak is recorded as a gap (never auto-cut a canonical bullet to win the page).
+
+## Behavior contract
+
+`evals/tailor-resume/contract.md` is authoritative. Declare its clause IDs at
+trace begin and record verifier-produced clause results at trace end. Returned
+`gaps[]` belong in `step_end.gaps`; do not mutate `.classification.json`.

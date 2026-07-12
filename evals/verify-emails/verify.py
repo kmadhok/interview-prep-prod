@@ -14,9 +14,7 @@ from pathlib import Path
 EVALS_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(EVALS_DIR))
 
-from common import ClauseResult  # noqa: E402
-
-ROLE_FOLDER = "Acme - Senior Agent Builder"
+from common import ClauseResult, EvalContext  # noqa: E402
 STATUSES = ("verified", "inferred", "flagged")
 _EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
 
@@ -42,9 +40,8 @@ def _row_emails_and_status(line: str) -> tuple[list[str], str]:
     return emails, status
 
 
-def verify(workspace: Path) -> list[ClauseResult]:
-    workspace = Path(workspace)
-    role = workspace / "Roles" / ROLE_FOLDER
+def verify(context: EvalContext) -> list[ClauseResult]:
+    role = context.role
     verified_path = role / "Verified Emails.md"
     ledger_path = role / ".contacts-ledger.md"
     ledger = _load_ledger_parser()
@@ -106,15 +103,15 @@ def verify(workspace: Path) -> list[ClauseResult]:
     c3_passed = True
     c3_detail = ""
     for line in entry_lines:
-        emails, _ = _row_emails_and_status(line)
+        emails, status = _row_emails_and_status(line)
         for e in emails:
             el = e.lower()
             in_ledger = el in ledger_emails
             domain = el.split("@", 1)[1] if "@" in el else ""
             domain_ok = domain in ledger_domains
-            if not (in_ledger or domain_ok):
+            if not (in_ledger or (domain_ok and status == "inferred")):
                 c3_passed = False
-                c3_detail = f"{e} not in ledger and domain {domain!r} not in ledger"
+                c3_detail = f"{e} lacks exact ledger provenance or inferred same-domain status"
                 break
         if not c3_passed:
             break
@@ -128,4 +125,18 @@ def verify(workspace: Path) -> list[ClauseResult]:
         detail=c3_detail,
     )
 
-    return [c1, c2, c3]
+    statuses = [_row_emails_and_status(line)[1] for line in entry_lines]
+    c4 = ClauseResult(
+        id="verify-emails-C4",
+        description="Degraded inference is explicit in row statuses",
+        passed=bool(statuses) and all(status in STATUSES for status in statuses),
+        detail="all addresses inferred (degraded fixture mode)" if statuses and set(statuses) == {"inferred"} else "",
+    )
+    c5 = ClauseResult(
+        id="verify-emails-C5",
+        description="Live EmailFinder verification evidence",
+        status="NOT_RUN" if context.live else "BLOCKED",
+        tier="live",
+        detail="live verifier unavailable; fixture provenance clauses still evaluated",
+    )
+    return [c1, c2, c3, c4, c5]

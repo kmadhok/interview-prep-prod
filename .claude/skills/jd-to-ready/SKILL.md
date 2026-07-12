@@ -423,3 +423,10 @@ For coding agents changing this trace layer: keep `SKILL.md` operational, but tr
 - `tailor-resume` in its `standalone` mode does NOT auto-render the `.pdf` (and never a `.docx`) — but this skill always calls it in `pipeline` mode, so step 3.5 renders + vision-verifies the PDF. (`scripts/build_resume_pdf.py` is the manual fallback.)
 - It does NOT build out the full prep artifact set (Question Bank, Interview Answers, TMAY cue card, mock rubric, prep schedule). That's for after an interview is scheduled — not at apply time.
 - It does NOT modify `Resume Achievements Master.md` or any other reusable. If the JD surfaces a gap in those, mention it in the report — that's the `interview-prep-reusables` skill's job, not this one's.
+
+## Behavior contracts
+
+The embedded classify, resume-export, and apply-packet steps are governed by
+`evals/classify/contract.md`, `evals/resume-export/contract.md`, and
+`evals/apply-packet/contract.md`. Put their clause IDs on trace `step_begin`
+and verifier-produced clause results on the matching `step_end`.

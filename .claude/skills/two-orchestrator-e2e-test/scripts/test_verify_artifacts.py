@@ -5,14 +5,45 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent))
 import verify_artifacts as va
+from common import contract_clause_ids
+from verify_behavior_traces import BEHAVIORS, prediction_from_clauses
+
+CONTRACT_PROFILE = va.load_profile(va.CONTRACT_PROFILE)
+CONTRACT_PREFIX = va.resume_glob_prefix(CONTRACT_PROFILE)
+CONTRACT_EMAIL = CONTRACT_PROFILE["user_email"]
 
 
 def _clone_with(files: dict) -> Path:
-    d = Path(tempfile.mkdtemp())
+    d = Path(tempfile.mkdtemp()) / "Snowflake - Forward Deployed Analytics Engineer"
+    d.mkdir()
     for name, content in files.items():
         p = d / name
         p.write_text(content, encoding="utf-8")
     return d
+
+
+def _write_behavior_traces(runs: Path, *, omit: str = "") -> None:
+    for behavior in BEHAVIORS:
+        if behavior == omit:
+            continue
+        ids = contract_clause_ids(behavior)
+        clauses = [{"id": clause_id, "status": "PASS"} for clause_id in ids]
+        run_id = f"trace-{behavior}"
+        target = runs / run_id
+        target.mkdir(parents=True)
+        events = [
+            {"event": "run_start", "run_id": run_id, "skill": behavior,
+             "schema_version": 3, "run_type": "primitive", "required_steps": ["main"]},
+            {"event": "step_begin", "run_id": run_id, "step": "main",
+             "reason": "contract audit", "sources": [], "contract_clauses": ids},
+            {"event": "step_end", "run_id": run_id, "step": "main",
+             "clause_results": clauses, "prediction_met": prediction_from_clauses(clauses),
+             "produced": [], "gaps": []},
+            {"event": "run_finish", "run_id": run_id, "status": "ok"},
+        ]
+        (target / "trace.jsonl").write_text(
+            "\n".join(json.dumps(event) for event in events) + "\n", encoding="utf-8"
+        )
 
 
 def test_rollup_severities():
@@ -43,7 +74,12 @@ _GOOD_CLASS = json.dumps({
     "archetype_rationale": "embeds with customers",
     "notes": "",
     "classified_ts": "2026-06-28",
+    "gaps": [],
 })
+_GOOD_JD = (
+    "# Role\n\nExpose tables to natural language. Data agents need to reason. "
+    "Own source ingestion to semantic layer. Translate business requirements."
+)
 
 
 def test_classify_pass():
@@ -66,6 +102,7 @@ def test_classify_missing_file_fails():
 
 _RESUME_OK = ("# Test User\n\ntest.user@example.com\n\n" +
               "## EXPERIENCE\n- Built a registry-governed semantic layer over 67 tables.\n" * 6)
+_CONTRACT_RESUME_OK = _RESUME_OK.replace("test.user@example.com", CONTRACT_EMAIL)
 
 
 def test_tailor_resume_pass():
@@ -86,7 +123,7 @@ def test_tailor_resume_missing_fails():
 
 
 def test_pdf_clean_and_overflow():
-    clone = _clone_with({"Test User Resume - Snowflake FDE.pdf": "%PDF-1.4"})
+    clone = _clone_with({"Test User Resume - Snowflake FDE.pdf": "%PDF-1.4\n/Type /Page \n"})
     assert va.check_pdf(clone, pages=1, title_leak=0)["status"] == "pass"
     # 2 pages = warn (pass-with-gap), not fail
     assert va.check_pdf(clone, pages=2, title_leak=0)["status"] == "warn"
@@ -97,10 +134,26 @@ def test_pdf_clean_and_overflow():
 def test_pdf_missing_contract_warns():
     # PAGES/TITLE_LEAK not captured -> the skipped checks must surface as a warn,
     # not read as a clean pass.
-    clone = _clone_with({"Test User Resume - Snowflake FDE.pdf": "%PDF-1.4"})
+    clone = _clone_with({"Test User Resume - Snowflake FDE.pdf": "%PDF-1.4\n/Type /Page \n"})
     res = va.check_pdf(clone, pages=None, title_leak=None)
     assert res["status"] == "warn", res
     assert any(c["name"] == "pdf-contract-provided" and not c["ok"] for c in res["checks"])
+
+
+def test_run_all_pdf_uses_authoritative_contract_legacy_args_are_diagnostic():
+    clone = _clone_with({
+        f"{CONTRACT_PREFIX}Snowflake FDE.md": _CONTRACT_RESUME_OK,
+        f"{CONTRACT_PREFIX}Snowflake FDE.pdf": "%PDF-1.4\n/Type /Page \n",
+    })
+    args = va.build_parser().parse_args([
+        "--clone", str(clone), "--pages", "9", "--title-leak", "1",
+    ])
+    pdf = va.run_all(args)["skills"]["pdf"]
+    assert pdf["status"] == "pass"
+    assert {check["name"] for check in pdf["checks"]} >= {
+        "resume-export-C1", "resume-export-C2", "resume-export-C3",
+        "legacy-pages-capture", "legacy-title-leak-capture",
+    }
 
 
 def test_gate_surfaces_role():
@@ -112,22 +165,22 @@ def test_gate_surfaces_role():
 _LEDGER = "\n".join([
     "# Contacts Ledger",
     "## Recruiters (ranked)",
-    "| Rank | Name | Practice | Email (inferred) | Source (search/enrich) |",
-    "|------|------|----------|------------------|------------------------|",
-    "| 1 | Brad Mallmann | GTM | brad.mallmann@snowflake.com | search |",
-    "| 2 | Diane Nguyen | Cortex | diane.nguyen@snowflake.com | search |",
-    "| 3 | Kaitlyn Ryu | Cortex | kaitlyn.ryu@snowflake.com | enrich |",
+    "| Rank | Name | Practice | Email (inferred) | Source | Confidence |",
+    "|------|------|----------|------------------|--------|------------|",
+    "| 1 | Brad Mallmann | GTM | brad.mallmann@snowflake.com | search | Medium (inferred) |",
+    "| 2 | Diane Nguyen | Cortex | diane.nguyen@snowflake.com | search | Medium (inferred) |",
+    "| 3 | Kaitlyn Ryu | Cortex | kaitlyn.ryu@snowflake.com | enrich | Medium (inferred) |",
     "## hooks[]",
-    "- Brad: posted about data-foundation governance.",
+    "- Brad Mallmann: posted about data-foundation governance.",
 ])
 
 # Pre-enrich shape: no hooks section, no enrich rows (what find-contacts alone writes).
 _LEDGER_PRE_ENRICH = "\n".join([
     "# Contacts Ledger",
     "## Recruiters (ranked)",
-    "| Rank | Name | Practice | Email (inferred) | Source (search/enrich) |",
-    "|------|------|----------|------------------|------------------------|",
-    "| 1 | Brad Mallmann | GTM | brad.mallmann@snowflake.com | search |",
+    "| Rank | Name | Practice | Email (inferred) | Source | Confidence |",
+    "|------|------|----------|------------------|--------|------------|",
+    "| 1 | Brad Mallmann | GTM | brad.mallmann@snowflake.com | search | Medium (inferred) |",
 ])
 
 
@@ -186,7 +239,8 @@ _VERIFIED_OK = "\n".join([
     "# Verified Emails",
     "| Name | Email | Confidence |",
     "|---|---|---|",
-    "| Brad Mallmann | brad.mallmann@snowflake.com | High |",
+    "| Brad Mallmann | brad.mallmann@snowflake.com | verified |",
+    "| Diane Nguyen | diane.nguyen@snowflake.com | verified |",
 ])
 
 
@@ -292,18 +346,29 @@ _PACKET_OK = json.dumps({
     "answers_remote": "gdrive:_test/Apply Queue/Snowflake - FDE - Answers.txt",
     "pdf_sha256": "0" * 64, "remote_dir": "gdrive:_test/Apply Queue",
 })
-_PACKET_FILES = {".apply-packet.json": _PACKET_OK, "Application Answers.md": "Q1: ...\nA1: ..."}
+_PACKET_FILES = {".apply-packet.json": _PACKET_OK, "Application Answers.md": "Question: ...\nAnswer: ..."}
+_PIPELINE_FIXTURE = (
+    "## Considering / not yet applied\n\n"
+    "| Role | Stage | Folder |\n|---|---|---|\n"
+    "| **Snowflake — Forward Deployed Analytics Engineer** | Considering | "
+    "[[Snowflake - Forward Deployed Analytics Engineer]] |\n"
+)
+_OUTREACH_OK = (
+    "## Intro — Recruiter\nTo: brad.mallmann@snowflake.com\n\n"
+    "## Intro — Hiring Manager\nTo: diane.nguyen@snowflake.com\n"
+)
 
 
 def test_run_all_two_drafts_list_pass():
     files = {
-        "Job Description.md": "# Role\n" + "x" * 80,
+        "Job Description.md": _GOOD_JD,
         ".classification.json": _GOOD_CLASS,
-        "Test User Resume - Snowflake FDE.md": _RESUME_OK,
-        "Test User Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        f"{CONTRACT_PREFIX}Snowflake FDE.md": _CONTRACT_RESUME_OK,
+        f"{CONTRACT_PREFIX}Snowflake FDE.pdf": "%PDF-1.4\n/Type /Page \n",
         ".contacts-ledger.md": _LEDGER,
         "Verified Emails.md": _VERIFIED_OK,
-        "Cold Outreach.md": "two intros",
+        "Cold Outreach.md": _OUTREACH_OK,
+        "_pipeline-fixture.md": _PIPELINE_FIXTURE,
         **_PACKET_FILES,
     }
     clone = _clone_with(files)
@@ -322,19 +387,20 @@ def test_run_all_two_drafts_list_pass():
         "--expected-lead-recipient", "dana.hm@snowflake.com",
     ])
     report = va.run_all(args)
-    assert report["summary"]["overall"] == "pass", json.dumps(report, indent=2)
-    assert report["skills"]["write-outreach"]["status"] == "pass"
+    assert report["summary"]["overall"] == "blocked", json.dumps(report, indent=2)
+    assert report["skills"]["write-outreach"]["status"] == "blocked"
 
 
 def test_run_all_full_fixture_overall_pass():
     files = {
-        "Job Description.md": "# Role\n" + "x" * 80,
+        "Job Description.md": _GOOD_JD,
         ".classification.json": _GOOD_CLASS,
-        "Test User Resume - Snowflake FDE.md": _RESUME_OK,
-        "Test User Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        f"{CONTRACT_PREFIX}Snowflake FDE.md": _CONTRACT_RESUME_OK,
+        f"{CONTRACT_PREFIX}Snowflake FDE.pdf": "%PDF-1.4\n/Type /Page \n",
         ".contacts-ledger.md": _LEDGER,
         "Verified Emails.md": _VERIFIED_OK,
-        "Cold Outreach.md": "Hi Brad,",
+        "Cold Outreach.md": _OUTREACH_OK,
+        "_pipeline-fixture.md": _PIPELINE_FIXTURE,
         **_PACKET_FILES,
     }
     clone = _clone_with(files)
@@ -349,7 +415,7 @@ def test_run_all_full_fixture_overall_pass():
         "--draft-json", str(draft), "--expected-recipient", "brad.mallmann@snowflake.com",
     ])
     report = va.run_all(args)
-    assert report["summary"]["overall"] == "pass", json.dumps(report, indent=2)
+    assert report["summary"]["overall"] == "blocked", json.dumps(report, indent=2)
     assert set(report["skills"]) >= {
         "interview-prep-intake", "classify", "tailor-resume", "pdf", "apply-gate",
         "find-contacts", "enrich-contacts", "verify-emails", "write-outreach",
@@ -358,10 +424,11 @@ def test_run_all_full_fixture_overall_pass():
 
 def test_run_all_flags_issue1_overall_fail():
     files = dict({
-        "Job Description.md": "# Role\n" + "x" * 80,
+        "Job Description.md": _GOOD_JD,
         ".classification.json": _GOOD_CLASS,
-        "Test User Resume - Snowflake FDE.md": _RESUME_OK,
-        "Test User Resume - Snowflake FDE.pdf": "%PDF-1.4",
+        f"{CONTRACT_PREFIX}Snowflake FDE.md": _CONTRACT_RESUME_OK,
+        f"{CONTRACT_PREFIX}Snowflake FDE.pdf": "%PDF-1.4\n/Type /Page \n",
+        "_pipeline-fixture.md": _PIPELINE_FIXTURE,
         ".contacts-ledger.md": _LEDGER,
         "Verified Emails.md": "# Verified Emails\n_no rows_\n",  # <- Issue 1
         "Cold Outreach.md": "Hi Brad,",
@@ -375,10 +442,11 @@ def test_run_all_flags_issue1_overall_fail():
 
 def test_run_all_blocked_apply_marks_apply_skills_blocked():
     files = {
-        "Job Description.md": "# Role\n" + "x" * 80,
+        "Job Description.md": _GOOD_JD,
         ".classification.json": _GOOD_CLASS,
-        "Test User Resume - Snowflake FDE.md": _RESUME_OK,
-        "Test User Resume - Snowflake FDE.pdf": "%PDF-1.4",
+            f"{CONTRACT_PREFIX}Snowflake FDE.md": _CONTRACT_RESUME_OK,
+            f"{CONTRACT_PREFIX}Snowflake FDE.pdf": "%PDF-1.4\n/Type /Page \n",
+        "_pipeline-fixture.md": _PIPELINE_FIXTURE,
         **_PACKET_FILES,
     }
     clone = _clone_with(files)
@@ -403,6 +471,34 @@ def test_run_all_empty_draft_json_degrades_without_crash():
     args = va.build_parser().parse_args(["--clone", str(clone), "--draft-json", str(empty)])
     report = va.run_all(args)  # must not raise
     assert report["skills"]["write-outreach"]["status"] == "fail"
+
+
+def test_trace_runs_dir_adds_passing_behavior_trace_section(tmp_path):
+    clone = _clone_with({})
+    runs = tmp_path / "runs"
+    _write_behavior_traces(runs)
+    args = va.build_parser().parse_args([
+        "--clone", str(clone), "--trace-runs-dir", str(runs),
+    ])
+    report = va.run_all(args)
+    traces = report["skills"]["behavior-traces"]
+    assert traces["status"] == "pass"
+    assert len(traces["checks"]) == 9
+
+
+def test_trace_runs_dir_missing_behavior_fails_e2e_report(tmp_path):
+    clone = _clone_with({})
+    runs = tmp_path / "runs"
+    _write_behavior_traces(runs, omit="apply-packet")
+    args = va.build_parser().parse_args([
+        "--clone", str(clone), "--trace-runs-dir", str(runs),
+    ])
+    report = va.run_all(args)
+    traces = report["skills"]["behavior-traces"]
+    assert traces["status"] == "fail"
+    assert report["summary"]["overall"] == "fail"
+    assert any(check["name"] == "apply-packet" and not check["ok"]
+               for check in traces["checks"])
 
 
 def test_check_packet_passes_on_test_remote(tmp_path):

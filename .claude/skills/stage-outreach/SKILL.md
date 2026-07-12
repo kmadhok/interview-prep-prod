@@ -204,3 +204,11 @@ On success write `STAGED in Gmail <date>` to folder + Pipeline row (row via `pip
 ## What this skill does NOT do
 
 No intake (interview-prep-intake), no classification (reads `.classification.json` — never re-classifies), no resume work (tailor-resume). Never decides "applied" itself — acts only on rows already marked Applied. Drafts only, never sends (Gmail drafts + paste-ready LinkedIn text).
+
+## Behavior contracts
+
+Steps 4/4b/4c/5 are governed by `evals/find-contacts/contract.md`,
+`evals/enrich-contacts/contract.md`, `evals/verify-emails/contract.md`, and
+`evals/write-outreach/contract.md`. Put clause IDs on each trace `step_begin`
+and verifier-produced results on `step_end`; unavailable live dependencies are
+`BLOCKED`/`NOT_RUN`, never synthetic passes.

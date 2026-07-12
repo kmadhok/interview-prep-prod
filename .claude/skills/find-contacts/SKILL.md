@@ -178,3 +178,10 @@ Any contact surfaced via `enrich-contacts` (Sub-step 5) appears in the ledger as
 - If LinkedIn is unreachable and can't be recovered, return what you have with `gaps[]` noting contact research is incomplete — do not invent contacts to fill the table.
 - **In `full` mode, the scored ledger MUST be written to `<role_folder>/.contacts-ledger.md` — this is a required output, not optional.** It is the canonical artifact `enrich-contacts` reads and `write-outreach` consumes; rendering the table in chat is not a substitute. (A live run wrote only ad-hoc snapshots and skipped the canonical file — don't.) Write the file before returning.
 - Region goes in the search `keywords`, not the `location` param (the filter is unreliable — see Sub-step 1).
+
+## Behavior contract
+
+`evals/find-contacts/contract.md` is authoritative. Declare its clause IDs at
+trace begin and record verifier-produced results at trace end. Without
+LinkedIn MCP, only live-only clauses are `BLOCKED`/`NOT_RUN`; local ledger
+clauses still run.

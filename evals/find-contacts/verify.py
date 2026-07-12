@@ -14,9 +14,7 @@ from pathlib import Path
 EVALS_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(EVALS_DIR))
 
-from common import ClauseResult  # noqa: E402
-
-ROLE_FOLDER = "Acme - Senior Agent Builder"
+from common import ClauseResult, EvalContext  # noqa: E402
 
 CONFIDENCE_TAGS = ("verified", "inferred", "flagged")
 
@@ -32,9 +30,8 @@ def _load_ledger_parser():
     return mod
 
 
-def verify(workspace: Path) -> list[ClauseResult]:
-    workspace = Path(workspace)
-    role = workspace / "Roles" / ROLE_FOLDER
+def verify(context: EvalContext) -> list[ClauseResult]:
+    role = context.role
     ledger_path = role / ".contacts-ledger.md"
     ledger = _load_ledger_parser()
     parsed = ledger.read_ledger(ledger_path)
@@ -48,7 +45,7 @@ def verify(workspace: Path) -> list[ClauseResult]:
         else f"0 scored rows" if not parsed["rows"] else "",
     )
 
-    # C2 — table parses with the fixture columns
+    # C2 — table parses with the required ledger schema
     header = parsed["header"]
     c2_passed = False
     c2_detail = "no header parsed"
@@ -61,7 +58,7 @@ def verify(workspace: Path) -> list[ClauseResult]:
             f"header missing required cols; have {header}")
     c2 = ClauseResult(
         id="find-contacts-C2",
-        description="Table parses with the fixture columns (name, email, confidence)",
+        description="Table parses with required columns (name, email, confidence)",
         passed=c2_passed,
         detail=c2_detail,
     )
@@ -86,4 +83,21 @@ def verify(workspace: Path) -> list[ClauseResult]:
         detail=c3_detail,
     )
 
-    return [c1, c2, c3]
+    missing_source = [
+        index for index, row in enumerate(parsed["rows"])
+        if not str(row.get("source", "")).strip()
+    ]
+    c4 = ClauseResult(
+        id="find-contacts-C4",
+        description="Every ledger contact has source provenance",
+        passed=bool(parsed["rows"]) and not missing_source,
+        detail=f"rows missing source: {missing_source}" if missing_source else "",
+    )
+    c5 = ClauseResult(
+        id="find-contacts-C5",
+        description="Live LinkedIn identity and employer evidence",
+        status="NOT_RUN" if context.live else "BLOCKED",
+        tier="live",
+        detail="LinkedIn MCP unavailable; live clause was not executed",
+    )
+    return [c1, c2, c3, c4, c5]

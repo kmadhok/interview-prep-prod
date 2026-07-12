@@ -85,6 +85,8 @@ class RenderRunReportTests(unittest.TestCase):
             "tailor the resume against the canonical achievement bank",
             "--sources",
             json.dumps(["workspace/Resume Achievements Master.md", "workspace/Roles/x/Job Description.md"]),
+            "--contract-clauses",
+            json.dumps(["tailor-resume-C1"]),
         )
         self.run_cmd(
             "tool-event",
@@ -123,6 +125,8 @@ class RenderRunReportTests(unittest.TestCase):
             "",
             "--tokens",
             TOKENS,
+            "--clause-results",
+            json.dumps([{"id": "tailor-resume-C1", "status": "PASS"}]),
         )
         self.run_cmd("finish-run", "--status", "ok", "--gaps", "[]", "--files-written", "[]")
         return self.runs_dir / run_id
@@ -150,6 +154,8 @@ class RenderRunReportTests(unittest.TestCase):
         self.assertIn("Gaps", report)
         self.assertIn("Tokens", report)
         self.assertIn("Tool-call count: 1", report)
+        self.assertIn("tailor-resume-C1", report)
+        self.assertIn("## Contract clauses", report)
 
     def test_v1_trace_tolerates_missing_reason_sources_schema_and_skill(self) -> None:
         run_dir = self.root / "legacy-run"

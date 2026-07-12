@@ -11,8 +11,7 @@ observable end-state of a completed tailor-resume run.
 A resume markdown file exists in the role folder whose filename starts with
 the profile's `resume_glob_prefix()` (from `scripts/config.py`).
 
-**How checked:** Glob `workspace/Roles/Acme - Senior Agent Builder/` for
-files matching `{resume_glob_prefix()}*.md`; assert at least one match.
+**How checked:** Glob the selected role for the profile-derived prefix.
 
 ### tailor-resume-C2: No content from Resume Claims To Verify
 
@@ -32,16 +31,11 @@ tailoring: `[NUMBER?]`, `<user_`, `{name}`, `TBD`.
 **How checked:** Read the resume text; assert none of those four strings
 appear.
 
-### tailor-resume-C4: Gaps file present when JD demands non-canonical claims
+### tailor-resume-C4: Resume is nontrivial and contains profile contact email
 
-IF the workspace JD contains "fusion reactors" THEN a gaps file
-`.eval-gaps.json` exists in the role folder listing at least one gap with
-kind indicating no canonical match (e.g. `no-canonical-match`). This is the
-fixture-run convention: pipeline runs record returned gaps there for the
-verifier. If the JD does not contain "fusion reactors", this clause passes
-vacuously.
+The selected resume has more than 400 non-whitespace characters and includes
+the configured profile email. Both are artifacts owned by tailor-resume.
 
-**How checked:** If "fusion reactors" appears in any `*.md` file in the role
-folder, assert `workspace/Roles/Acme - Senior Agent Builder/.eval-gaps.json`
-exists, parses as JSON, and its gaps list has at least one entry whose
-`kind` contains "no-canonical-match" (or is a non-empty list of gaps).
+**How checked:** Read the matching resume markdown, measure stripped length,
+and require `profile.user_email` in its contact header. Structured `gaps[]`
+remain a cross-cutting trace requirement validated by the behavior trace audit.

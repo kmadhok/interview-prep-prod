@@ -208,7 +208,7 @@ class TraceStepTests(unittest.TestCase):
         self.assertIn("sources", result.stderr)
         self.assertIn("valid JSON", result.stderr)
 
-    def test_run_start_records_schema_version_two(self) -> None:
+    def test_run_start_records_schema_version_three(self) -> None:
         result = self.run_cmd(
             "start-run",
             "--run-id",
@@ -225,7 +225,46 @@ class TraceStepTests(unittest.TestCase):
             json.loads(line)
             for line in (self.runs_dir / run_id / "trace.jsonl").read_text(encoding="utf-8").splitlines()
         ]
-        self.assertEqual(events[0]["schema_version"], 2)
+        self.assertEqual(events[0]["schema_version"], 3)
+
+    def test_clause_results_are_recorded_and_drive_prediction(self) -> None:
+        self.start_and_bind()
+        self.run_cmd(
+            "begin", "--step", "1", "--primitive", "interview-prep-intake",
+            "--prediction", "contract passes", "--reason", "verify intake",
+            "--sources", "[]", "--contract-clauses", '["intake-C1","intake-C2"]',
+        )
+        results = json.dumps([
+            {"id": "intake-C1", "status": "PASS"},
+            {"id": "intake-C2", "status": "BLOCKED", "detail": "dependency absent"},
+        ])
+        self.run_cmd(
+            "end", "--step", "1", "--primitive", "interview-prep-intake",
+            "--status", "partial", "--prediction-met", "partial",
+            "--tokens", TOKENS, "--clause-results", results,
+        )
+        end = [event for event in self.read_trace() if event["event"] == "step_end"][-1]
+        self.assertEqual(end["clause_results"][1]["status"], "BLOCKED")
+
+    def test_clause_result_rejects_undeclared_id_and_wrong_prediction(self) -> None:
+        self.start_and_bind()
+        self.run_cmd(
+            "begin", "--step", "1", "--primitive", "intake",
+            "--prediction", "x", "--reason", "x", "--sources", "[]",
+            "--contract-clauses", '["intake-C1"]',
+        )
+        undeclared = self.run_cmd(
+            "end", "--step", "1", "--primitive", "intake", "--status", "failed",
+            "--prediction-met", "false", "--tokens", TOKENS,
+            "--clause-results", '[{"id":"intake-C9","status":"FAIL"}]', ok=False,
+        )
+        self.assertIn("not declared", undeclared.stderr)
+        wrong = self.run_cmd(
+            "end", "--step", "1", "--primitive", "intake", "--status", "ok",
+            "--prediction-met", "true", "--tokens", TOKENS,
+            "--clause-results", '[{"id":"intake-C1","status":"FAIL"}]', ok=False,
+        )
+        self.assertIn("does not match clause outcomes", wrong.stderr)
 
     def test_primitive_run_type_uses_skill_and_main_step(self) -> None:
         result = self.run_cmd(

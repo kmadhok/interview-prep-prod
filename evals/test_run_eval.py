@@ -23,9 +23,10 @@ RUN_EVAL = EVALS_DIR / "run_eval.py"
 # Resolve the resume prefix the same way the subprocess will, so test
 # fixtures can name resume files correctly without hard-coding a personal name.
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
-from config import resume_glob_prefix  # noqa: E402
+from config import load_profile, resume_glob_prefix  # noqa: E402
 
 RESUME_PREFIX = resume_glob_prefix()
+USER_EMAIL = load_profile()["user_email"]
 
 # build_resume_pdf (reportlab-dependent) is imported lazily inside the
 # resume-export green-path test so a machine without reportlab skips that one
@@ -147,6 +148,18 @@ def test_broken_intake_workspace_exits_one_names_c2(tmp_path):
     assert "FAIL" in result.stdout
 
 
+def test_intake_duplicate_pipeline_row_fails_idempotency_clause(tmp_path):
+    workspace = tmp_path / "ws"
+    _build_good_intake_workspace(workspace)
+    pipeline = workspace / "Pipeline.md"
+    row = next(line for line in pipeline.read_text(encoding="utf-8").splitlines()
+               if PIPELINE_ROLE in line)
+    pipeline.write_text(pipeline.read_text(encoding="utf-8") + row + "\n", encoding="utf-8")
+    result = _run_eval(["interview-prep-intake", "--workspace", str(workspace)])
+    assert result.returncode == 1
+    assert "intake-C4" in result.stdout
+
+
 # ---------------------------------------------------------------------------
 # Test d: --json output parses, 4 entries for intake, each with required keys
 # ---------------------------------------------------------------------------
@@ -189,9 +202,7 @@ def test_bad_skill_name_exits_two(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_tailor_resume_good_workspace_exits_zero(tmp_path):
-    """Build a workspace with a resume matching the profile prefix, no
-    quarantine markers, no placeholder leaks, and a gaps file (JD has
-    'fusion reactors'). All four tailor-resume clauses pass."""
+    """Build a workspace with a clean resume and structured runtime gaps."""
     workspace = tmp_path / "ws"
     roles_dir = workspace / "Roles"
     role = roles_dir / ROLE_FOLDER
@@ -200,22 +211,22 @@ def test_tailor_resume_good_workspace_exits_zero(tmp_path):
     # JD with the deliberate unmatched requirement.
     (role / "Job Description.md").write_text(
         "# Acme — Senior Agent Builder\n\n"
-        "Must have 10+ years operating fusion reactors.\n",
+        "Must have an advanced orbital mechanics certification.\n",
         encoding="utf-8",
     )
     # Resume matching the profile prefix, clean of all markers.
     resume_name = f"{RESUME_PREFIX}Acme Senior Agent Builder.md"
     (role / resume_name).write_text(
-        "# Tailored Resume\n\nSenior agent builder with production LLM experience.\n",
+        f"# Tailored Resume\n\n{USER_EMAIL}\n\n"
+        + ("Senior agent builder with production LLM experience. " * 12),
         encoding="utf-8",
     )
-    # Gaps file recording the no-canonical-match gap.
-    (role / ".eval-gaps.json").write_text(
-        json.dumps([{
-            "source": "resume",
-            "kind": "no-canonical-match",
-            "detail": "JD requires 10+ years operating fusion reactors; no canonical claim matches.",
-        }]),
+    # Runtime classification artifact records the no-canonical-match gap.
+    (role / ".classification.json").write_text(
+        json.dumps({"gaps": [{
+            "source": "tailor-resume", "kind": "no-canonical-match",
+            "detail": "fusion reactor requirement has no canonical claim",
+        }]}),
         encoding="utf-8",
     )
 
@@ -267,8 +278,7 @@ def _role_dir(workspace: Path) -> Path:
 def _write_ledger(role: Path, *, enrich_row: bool = False) -> None:
     """Write a scored .contacts-ledger.md with the fixture column set.
 
-    If enrich_row is True, append a row whose Source cell is 'enrich' (so
-    enrich-contacts C2 passes when .eval-enriched exists).
+    If enrich_row is True, append a row whose Source cell records enrichment.
     """
     recruiter_name, recruiter_email = PEOPLE["recruiter"]
     hm_name, hm_email = PEOPLE["hm"]
@@ -305,9 +315,9 @@ def _write_verified_emails(role: Path) -> None:
     (role / "Verified Emails.md").write_text(body, encoding="utf-8")
 
 
-_MINIMAL_RESUME_MD = """\
+_MINIMAL_RESUME_MD = f"""\
 Jordan Agent
-jordan.agent@example.com | (555) 123-4567 | linkedin.com/in/jordan-agent
+{USER_EMAIL} | (555) 123-4567 | linkedin.com/in/jordan-agent
 
 ## PROFESSIONAL EXPERIENCE
 
@@ -334,6 +344,12 @@ B.S. Computer Science — State University, 2021
 
 def _build_good_classify_workspace(workspace: Path) -> None:
     role = _role_dir(workspace)
+    (role / "Job Description.md").write_text(
+        "Design and ship production LLM agents. Prompt scaffolds and tool-use "
+        "orchestration. Build RAG pipelines grounded in customer data. Write "
+        "evaluation suites that catch regressions.",
+        encoding="utf-8",
+    )
     (role / ".classification.json").write_text(
         json.dumps({
             "themes": [
@@ -346,6 +362,7 @@ def _build_good_classify_workspace(workspace: Path) -> None:
             "archetype_rationale": "Hands-on agent design, build, and operation.",
             "notes": "Hard gate: shipped a production LLM agent.",
             "classified_ts": "2026-07-10",
+            "gaps": [],
         }, indent=2),
         encoding="utf-8",
     )
@@ -388,6 +405,24 @@ def test_classify_bad_theme_exits_one_names_c3(tmp_path):
     )
     assert "classify-C3" in result.stdout
     assert "FAIL" in result.stdout
+
+
+def test_classify_rejects_unresolved_evidence_and_incomplete_metadata(tmp_path):
+    workspace = tmp_path / "ws"
+    _build_good_classify_workspace(workspace)
+    role = _role_dir(workspace)
+    path = role / ".classification.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["themes"][0]["evidence"] = "evidence absent from the JD"
+    data["themes"] = data["themes"][:3]
+    data["archetype_rationale"] = ""
+    data["classified_ts"] = "not-a-date"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    result = _run_eval(["classify", "--workspace", str(workspace), "--json"])
+    assert result.returncode == 1
+    clauses = {item["id"]: item["status"] for item in json.loads(result.stdout)}
+    for clause_id in ("classify-C5", "classify-C6", "classify-C7", "classify-C8"):
+        assert clauses[clause_id] == "FAIL"
 
 
 # ---------------------------------------------------------------------------
@@ -471,12 +506,10 @@ def test_find_contacts_good_workspace_exits_zero(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_enrich_contacts_good_workspace_exits_zero(tmp_path):
-    """Ledger with an enrich-sourced row + .eval-enriched marker + hooks
-    referencing ledger people → all three enrich-contacts clauses pass."""
+    """Ledger with enrichment provenance and source-backed hooks passes."""
     workspace = tmp_path / "ws"
     role = _role_dir(workspace)
     _write_ledger(role, enrich_row=True)
-    (role / ".eval-enriched").write_text("", encoding="utf-8")
     recruiter_name, _ = PEOPLE["recruiter"]
     hm_name, _ = PEOPLE["hm"]
     peer_name, _ = PEOPLE["peer"]
@@ -493,6 +526,25 @@ def test_enrich_contacts_good_workspace_exits_zero(tmp_path):
         f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
     )
     assert "PASS" in result.stdout
+
+
+def test_enrich_missing_hooks_requires_explicit_trace_gap(tmp_path):
+    workspace = tmp_path / "ws"
+    role = _role_dir(workspace)
+    _write_ledger(role, enrich_row=True)
+    failed = _run_eval(["enrich-contacts", "--workspace", str(workspace)])
+    assert failed.returncode == 1
+    assert "enrich-contacts-C3" in failed.stdout
+
+    trace = workspace / "runs" / "fixture-run" / "trace.jsonl"
+    trace.parent.mkdir(parents=True)
+    trace.write_text(json.dumps({
+        "event": "step_end",
+        "gaps": [{"source": "enrich-contacts", "kind": "no-activity",
+                  "detail": "fixture profiles exposed no relevant activity"}],
+    }) + "\n", encoding="utf-8")
+    passed = _run_eval(["enrich-contacts", "--workspace", str(workspace)])
+    assert passed.returncode == 0, passed.stdout
 
 
 # ---------------------------------------------------------------------------
@@ -534,6 +586,10 @@ def _build_good_write_outreach_workspace(workspace: Path) -> None:
         f"Hi {hm_name.split()[0]}, I build production LLM agents and saw your role.\n",
         encoding="utf-8",
     )
+    (role / ".drafts.json").write_text(json.dumps([
+        {"id": "fixture-recruiter", "toRecipients": [recruiter_email], "sent": False},
+        {"id": "fixture-hm", "toRecipients": [hm_email], "sent": False},
+    ]), encoding="utf-8")
 
 
 def test_write_outreach_good_workspace_exits_zero(tmp_path):
@@ -594,3 +650,106 @@ def test_crashing_verifier_exits_4_with_clean_message(tmp_path):
     finally:
         import shutil
         shutil.rmtree(crash_dir, ignore_errors=True)
+
+
+def test_explicit_role_parameter_removes_acme_dependency(tmp_path):
+    workspace = tmp_path / "ws"
+    role = workspace / "Roles" / "Orbit - Platform Engineer"
+    role.mkdir(parents=True)
+    evidence = [
+        ("platform", "owns platform reliability"),
+        ("ML-pipeline", "builds machine learning pipelines"),
+        ("engineering-rigor", "tests production systems"),
+        ("cross-functional", "partners across product and engineering"),
+    ]
+    (role / "Job Description.md").write_text(
+        ". ".join(text for _, text in evidence), encoding="utf-8"
+    )
+    (role / ".classification.json").write_text(json.dumps({
+        "themes": [{"tag": tag, "evidence": text} for tag, text in evidence],
+        "archetype": "platform / ML engineering",
+        "archetype_rationale": "Platform ownership is the primary requirement.",
+        "classified_ts": "2026-07-11",
+        "gaps": [],
+    }), encoding="utf-8")
+    result = _run_eval([
+        "classify", "--workspace", str(workspace),
+        "--role", "Roles/Orbit - Platform Engineer",
+    ])
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_live_only_contact_clause_is_blocked_not_passed(tmp_path):
+    workspace = tmp_path / "ws"
+    role = _role_dir(workspace)
+    _write_ledger(role)
+    result = _run_eval(["find-contacts", "--workspace", str(workspace), "--json"])
+    assert result.returncode == 0
+    clauses = {item["id"]: item for item in json.loads(result.stdout)}
+    assert clauses["find-contacts-C5"]["status"] == "BLOCKED"
+    assert clauses["find-contacts-C5"]["passed"] is False
+
+
+def test_eval_enriched_sidecar_cannot_mask_missing_enrichment(tmp_path):
+    workspace = tmp_path / "ws"
+    role = _role_dir(workspace)
+    _write_ledger(role, enrich_row=False)
+    result = _run_eval(["enrich-contacts", "--workspace", str(workspace)])
+    assert result.returncode == 1
+    assert "enrich-contacts-C2" in result.stdout
+
+
+def test_sent_fixture_draft_fails_never_send_clause(tmp_path):
+    workspace = tmp_path / "ws"
+    _build_good_write_outreach_workspace(workspace)
+    role = _role_dir(workspace)
+    (role / ".drafts.json").write_text(
+        json.dumps([{"id": "bad", "sent": True}]), encoding="utf-8"
+    )
+    result = _run_eval(["write-outreach", "--workspace", str(workspace)])
+    assert result.returncode == 1
+    assert "write-outreach-C4" in result.stdout
+
+
+def _build_all_behavior_workspace(workspace: Path) -> None:
+    _build_good_intake_workspace(workspace)
+    _build_good_classify_workspace(workspace)
+    role = _role_dir(workspace)
+    resume = role / f"{RESUME_PREFIX}Acme Senior Agent Builder.md"
+    resume.write_text(_MINIMAL_RESUME_MD, encoding="utf-8")
+    resume.with_suffix(".pdf").write_bytes(b"%PDF-1.4\n/Type /Page \n")
+    _build_good_apply_packet_workspace(workspace)
+    _build_good_write_outreach_workspace(workspace)
+    _write_ledger(role, enrich_row=True)
+    recruiter_name, _ = PEOPLE["recruiter"]
+    (role / ".contacts-ledger.md").write_text(
+        (role / ".contacts-ledger.md").read_text(encoding="utf-8")
+        + f"\n## hooks\n\n- {recruiter_name} — source-backed activity.\n",
+        encoding="utf-8",
+    )
+    _write_verified_emails(role)
+
+
+def test_all_runs_nine_contracts_and_tolerates_blocked_live_clauses(tmp_path):
+    workspace = tmp_path / "ws"
+    _build_all_behavior_workspace(workspace)
+    result = _run_eval(["--all", "--workspace", str(workspace), "--json"])
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert len(payload["skills"]) == 9
+    statuses = {
+        clause["status"]
+        for clauses in payload["skills"].values()
+        for clause in clauses
+    }
+    assert "BLOCKED" in statuses
+    assert "FAIL" not in statuses
+
+
+def test_all_exits_nonzero_for_local_clause_failure(tmp_path):
+    workspace = tmp_path / "ws"
+    _build_all_behavior_workspace(workspace)
+    (workspace / "Roles" / ROLE_FOLDER / "Job Description.md").unlink()
+    result = _run_eval(["--all", "--workspace", str(workspace)])
+    assert result.returncode == 1
+    assert "intake-C2" in result.stdout

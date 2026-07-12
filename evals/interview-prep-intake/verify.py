@@ -12,18 +12,17 @@ from pathlib import Path
 # resolves whether invoked by run_eval.py or directly.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common import ClauseResult  # noqa: E402
-
-ROLE_FOLDER = "Acme - Senior Agent Builder"
-PIPELINE_ROLE = "Acme — Senior Agent Builder"  # em-dash, as in Pipeline.md
+from common import ClauseResult, EvalContext  # noqa: E402
 
 
-def verify(workspace: Path) -> list[ClauseResult]:
-    workspace = Path(workspace)
-    roles_dir = workspace / "Roles"
-    role_path = roles_dir / ROLE_FOLDER
+def verify(context: EvalContext) -> list[ClauseResult]:
+    workspace = context.workspace
+    role_path = context.role
+    isolated_clone = workspace.resolve() == role_path.resolve()
+    role_folder = role_path.name
+    pipeline_role = role_folder.replace(" - ", " — ", 1)
     jd_path = role_path / "Job Description.md"
-    pipeline_path = workspace / "Pipeline.md"
+    pipeline_path = (role_path / "_pipeline-fixture.md") if isolated_clone else workspace / "Pipeline.md"
 
     # C1 — role folder exists
     c1 = ClauseResult(
@@ -57,11 +56,11 @@ def verify(workspace: Path) -> list[ClauseResult]:
                 continue
             if in_considering and line.strip().startswith("## "):
                 in_considering = False
-            if in_considering and PIPELINE_ROLE in line:
+            if in_considering and pipeline_role in line:
                 c3_passed = True
                 break
         if not c3_passed:
-            c3_detail = f"'{PIPELINE_ROLE}' not found under ## Considering"
+            c3_detail = f"'{pipeline_role}' not found under ## Considering"
     c3 = ClauseResult(
         id="intake-C3",
         description="Pipeline row under Considering",
@@ -69,18 +68,22 @@ def verify(workspace: Path) -> list[ClauseResult]:
         detail="" if c3_passed else c3_detail,
     )
 
-    # C4 — no other role folder
-    other_roles = []
-    if roles_dir.is_dir():
-        other_roles = [
-            d.name for d in sorted(roles_dir.iterdir())
-            if d.is_dir() and d.name != ROLE_FOLDER
+    # C4 — idempotent row/path correspondence.
+    matching_rows = []
+    if pipeline_path.exists():
+        matching_rows = [
+            line for line in pipeline_path.read_text(
+                encoding="utf-8-sig", errors="ignore"
+            ).splitlines()
+            if line.lstrip().startswith("|") and pipeline_role in line
         ]
+    folder_linked = len(matching_rows) == 1 and role_folder in matching_rows[0]
     c4 = ClauseResult(
         id="intake-C4",
-        description="No other role folder created",
-        passed=len(other_roles) == 0,
-        detail=f"unexpected: {other_roles}" if other_roles else "",
+        description="Exactly one Pipeline row links the selected role path",
+        passed=folder_linked,
+        detail=f"matching rows={len(matching_rows)}; expected one row linking {role_folder!r}"
+        if not folder_linked else "",
     )
 
     return [c1, c2, c3, c4]

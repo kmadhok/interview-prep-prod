@@ -1,4 +1,4 @@
-# Trace Schema (v2 — all skills)
+# Trace Schema (v3 — behavior contracts)
 
 This document defines the trace schema for every orchestrator and primitive
 skill run. The helper is `scripts/trace_step.py` at the repo root; traces live
@@ -38,8 +38,8 @@ Required fields:
 - `skill` — the skill this run belongs to (for `--run-type primitive` it is the
   required `--skill` value; for orchestrator run-types it defaults to the
   run-type string)
-- `schema_version` — `2` for all new runs (v1 traces lack this field; the
-  report renderer tolerates them)
+- `schema_version` — `3` for new runs. v1/v2 traces lack contract fields and
+  remain readable.
 
 `required_steps` is set per `--run-type` at `start-run` (see the `RUN_TYPES`
 map in `trace_step.py`). The CLI default is `jd-to-ready` →
@@ -78,6 +78,8 @@ Required fields:
   (the skill prompt plus static inputs). This is the debuggability chain: a
   user walks from a bad output to the file to edit via this field. Never omit
   or pad it (v2, mandatory)
+- `contract_clauses` — JSON array of clause IDs from the authoritative
+  `evals/<behavior>/contract.md`; `[]` preserves old callers.
 
 Rules:
 
@@ -100,6 +102,8 @@ Required fields:
 - `gaps`
 - `failure_pattern`
 - `tokens`
+- `clause_results` — verifier-produced objects with `id`, `status`, and
+  optional `detail`. Status is `PASS`, `FAIL`, `BLOCKED`, or `NOT_RUN`.
 
 Allowed `status` values:
 
@@ -136,6 +140,13 @@ Rules:
 - `gaps` is a JSON array.
 - `tokens` follows `TOKEN_ACCOUNTING.md`.
 - A step can end only if it is the currently open step.
+- Clause result IDs must have been declared by `step_begin`, be unique, and
+  use the registered statuses.
+- When clause results are provided, `prediction_met` is validated: all PASS →
+  `true`; any FAIL → `false`; PASS mixed with BLOCKED/NOT_RUN → `partial`;
+  only BLOCKED/NOT_RUN → `unknown`.
+- Live-only clauses are BLOCKED/NOT_RUN when their service is unavailable;
+  they must never be emitted as PASS without verifier evidence.
 
 ### `tool_event`
 
@@ -248,3 +259,17 @@ may appear, but prefer reusing one of these before inventing another:
 - `run_finish.status` is `ok`.
 - Global summary and per-role trace agree on `role_folder`, `steps_closed`, and
   `files_written`.
+
+## Cross-behavior audit
+
+After local artifact evaluation, verify that all nine authoritative behaviors
+have one closed primitive trace:
+
+```
+python3 evals/run_eval.py --all --workspace "<fixture-workspace>"
+python3 evals/verify_behavior_traces.py --runs-dir "<fixture-workspace>/runs"
+```
+
+The trace audit validates exact contract IDs/results, lifecycle closure, and
+derived `prediction_met`. `BLOCKED` and `NOT_RUN` are legal tracked outcomes;
+missing traces or malformed local evidence fail the audit.

@@ -160,6 +160,29 @@ def render(run_dir: Path) -> Path:
     else:
         lines.append("- none")
 
+    lines.extend(["", "## Contract clauses", ""])
+    clause_rows = []
+    for begin in begins:
+        end = ends.get(_step_key(begin)) or {}
+        results = end.get("clause_results")
+        if not isinstance(results, list):
+            continue
+        for result in results:
+            if isinstance(result, dict):
+                clause_rows.append((_step_key(begin), result))
+    if clause_rows:
+        lines.extend([
+            "| Step | Clause | Outcome | Detail |",
+            "| --- | --- | --- | --- |",
+        ])
+        for step, result in clause_rows:
+            lines.append(
+                f"| {_table_cell(step)} | {_table_cell(result.get('id'))} | "
+                f"{_table_cell(result.get('status'))} | {_table_cell(result.get('detail'))} |"
+            )
+    else:
+        lines.append("- none (legacy trace or no contract verifier attached)")
+
     lines.extend(["", "## Gaps", ""])
 
     # step_end gaps plus terminal run_abort gaps (deduped: abort-run receives the

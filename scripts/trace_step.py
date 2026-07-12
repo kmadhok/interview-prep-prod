@@ -51,6 +51,7 @@ ALLOWED_FAILURE_PATTERNS = {
     "apply-packet-defect",
 }
 TOKEN_SOURCES = {"runtime", "manual", "estimated", None}
+CLAUSE_STATUSES = {"PASS", "FAIL", "BLOCKED", "NOT_RUN"}
 UNKNOWN_TOKENS = {
     "input": None,
     "output": None,
@@ -156,6 +157,37 @@ def validate_array(value: Any, field: str) -> str | None:
     if not isinstance(value, list):
         return f"{field} must be a JSON array"
     return None
+
+
+def validate_clause_results(value: Any, expected: list[str]) -> str | None:
+    if not isinstance(value, list):
+        return "clause_results must be a JSON array"
+    ids = []
+    for item in value:
+        if not isinstance(item, dict) or not isinstance(item.get("id"), str):
+            return "each clause result must be an object with a string id"
+        if item.get("status") not in CLAUSE_STATUSES:
+            return f"clause result status must be one of: {', '.join(sorted(CLAUSE_STATUSES))}"
+        ids.append(item["id"])
+    if len(ids) != len(set(ids)):
+        return "clause result ids must be unique"
+    unexpected = sorted(set(ids) - set(expected))
+    if unexpected:
+        return f"clause results were not declared at step_begin: {', '.join(unexpected)}"
+    return None
+
+
+def prediction_from_clauses(results: list[dict[str, Any]]) -> str:
+    if not results:
+        return "unknown"
+    statuses = {item["status"] for item in results}
+    if "FAIL" in statuses:
+        return "false"
+    if statuses == {"PASS"}:
+        return "true"
+    if "PASS" in statuses:
+        return "partial"
+    return "unknown"
 
 
 def validate_tokens(value: Any) -> str | None:
@@ -320,7 +352,7 @@ def cmd_start(args: argparse.Namespace) -> int:
         state,
         {
             "event": "run_start",
-            "schema_version": 2,
+            "schema_version": 3,
             "company": args.company,
             "role": args.role,
             "skill": skill,
@@ -384,7 +416,17 @@ def cmd_begin(args: argparse.Namespace) -> int:
     ok, inputs_summary, error = parse_json_optional(args.inputs_summary, args.inputs_summary, "inputs_summary")
     if not ok:
         return fail(error or "invalid inputs_summary")
+    ok, contract_clauses, error = parse_json_optional(args.contract_clauses, [], "contract_clauses")
+    if not ok:
+        return fail(error or "invalid contract_clauses")
+    if error := validate_array(contract_clauses, "contract_clauses"):
+        return fail(error)
+    if not all(isinstance(item, str) and item.strip() for item in contract_clauses):
+        return fail("contract_clauses must be a JSON array of non-empty strings")
+    if len(contract_clauses) != len(set(contract_clauses)):
+        return fail("contract_clauses must be unique")
     state["current_step"] = step
+    state["current_contract_clauses"] = contract_clauses
     save_state(state)
     append_event(
         state,
@@ -397,6 +439,7 @@ def cmd_begin(args: argparse.Namespace) -> int:
             "reason": args.reason,
             "sources": sources,
             "inputs_summary": inputs_summary,
+            "contract_clauses": contract_clauses,
             "status": "running",
         },
     )
@@ -432,6 +475,18 @@ def cmd_end(args: argparse.Namespace) -> int:
         return fail(error or "invalid tokens")
     if error := validate_tokens(tokens):
         return fail(error)
+    ok, clause_results, error = parse_json_optional(args.clause_results, [], "clause_results")
+    if not ok:
+        return fail(error or "invalid clause_results")
+    expected_clauses = state.get("current_contract_clauses", [])
+    if error := validate_clause_results(clause_results, expected_clauses):
+        return fail(error)
+    if clause_results:
+        derived = prediction_from_clauses(clause_results)
+        if args.prediction_met != derived:
+            return fail(
+                f"prediction_met {args.prediction_met!r} does not match clause outcomes {derived!r}"
+            )
     append_event(
         state,
         {
@@ -445,9 +500,11 @@ def cmd_end(args: argparse.Namespace) -> int:
             "gaps": gaps,
             "failure_pattern": failure_pattern,
             "tokens": tokens,
+            "clause_results": clause_results,
         },
     )
     state["current_step"] = None
+    state["current_contract_clauses"] = []
     closed = [str(item) for item in state.get("closed_steps", [])]
     if step not in closed:
         closed.append(step)
@@ -653,6 +710,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--reason", required=True)
     p.add_argument("--sources", required=True)
     p.add_argument("--inputs-summary")
+    p.add_argument("--contract-clauses",
+                   help="JSON array of authoritative behavior contract clause IDs")
     p.set_defaults(func=cmd_begin)
 
     p = sub.add_parser("end")
@@ -665,6 +724,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--gaps")
     p.add_argument("--failure-pattern")
     p.add_argument("--tokens", required=True)
+    p.add_argument("--clause-results",
+                   help="JSON array of verifier results: {id,status,detail?}")
     p.set_defaults(func=cmd_end)
 
     p = sub.add_parser("tool-event")

@@ -6,8 +6,6 @@ at evals/<skill>/, so the repo root is parents[2].
 """
 from __future__ import annotations
 
-import json
-import re
 import sys
 from pathlib import Path
 
@@ -18,10 +16,8 @@ sys.path.insert(0, str(REPO_SCRIPTS))
 # Bootstrap evals/ parent for `from common import ClauseResult`.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common import ClauseResult  # noqa: E402
-from config import resume_glob_prefix  # noqa: E402
-
-ROLE_FOLDER = "Acme - Senior Agent Builder"
+from common import ClauseResult, EvalContext  # noqa: E402
+from config import load_profile, resume_glob_prefix  # noqa: E402
 
 PLACEHOLDER_LEAKS = ["[NUMBER?]", "<user_", "{name}", "TBD"]
 QUARANTINE_MARKERS = ["Resume Claims To Verify", "UNVERIFIED"]
@@ -31,13 +27,17 @@ def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig", errors="ignore") if path.exists() else ""
 
 
-def verify(workspace: Path) -> list[ClauseResult]:
-    workspace = Path(workspace)
-    role_path = workspace / "Roles" / ROLE_FOLDER
-    prefix = resume_glob_prefix()
+def verify(context: EvalContext) -> list[ClauseResult]:
+    role_path = context.role
+    profile = load_profile(context.profile) if context.profile else load_profile()
+    prefix = resume_glob_prefix(profile)
 
     # C1 — resume md matching profile prefix
     matches = sorted(role_path.glob(f"{prefix}*.md")) if role_path.is_dir() else []
+    if not matches and context.profile is None and role_path.is_dir():
+        # Legacy isolated clones predate --profile; accept their sole
+        # profile-shaped resume while explicit profiles remain fail-closed.
+        matches = sorted(role_path.glob("* Resume - *.md"))
     c1 = ClauseResult(
         id="tailor-resume-C1",
         description="Resume md exists matching profile prefix",
@@ -84,46 +84,18 @@ def verify(workspace: Path) -> list[ClauseResult]:
         detail=c3_detail,
     )
 
-    # C4 — gaps file when JD demands non-canonical claims
-    jd_has_fusion = False
-    if role_path.is_dir():
-        for md in role_path.glob("*.md"):
-            if "fusion reactors" in _read(md).lower():
-                jd_has_fusion = True
-                break
-
-    if jd_has_fusion:
-        gaps_path = role_path / ".eval-gaps.json"
-        c4_passed = False
-        c4_detail = ".eval-gaps.json missing"
-        if gaps_path.exists():
-            try:
-                data = json.loads(_read(gaps_path))
-                gaps = data.get("gaps", data) if isinstance(data, dict) else data
-                if isinstance(gaps, list) and len(gaps) > 0:
-                    has_match_gap = any(
-                        "no-canonical-match" in str(g.get("kind", ""))
-                        for g in gaps if isinstance(g, dict)
-                    ) or len(gaps) > 0
-                    c4_passed = has_match_gap
-                    c4_detail = "" if c4_passed else f"gaps found but none with kind 'no-canonical-match': {gaps}"
-                else:
-                    c4_detail = "gaps list is empty or missing"
-            except (ValueError, AttributeError) as exc:
-                c4_detail = f"parse error: {exc}"
-        c4 = ClauseResult(
-            id="tailor-resume-C4",
-            description="Gaps file present when JD demands non-canonical claims",
-            passed=c4_passed,
-            detail=c4_detail,
-        )
-    else:
-        # Vacuous pass — JD does not demand the unmatched requirement.
-        c4 = ClauseResult(
-            id="tailor-resume-C4",
-            description="Gaps file present when JD demands non-canonical claims",
-            passed=True,
-            detail="JD does not contain 'fusion reactors' — vacuous pass",
-        )
+    # C4 — the owned resume artifact is substantive and carries profile contact.
+    resume_text = _read(matches[0]) if matches else ""
+    email = profile.get("user_email", "")
+    c4_passed = len(resume_text.strip()) > 400 and bool(email) and email in resume_text
+    c4_detail = "" if c4_passed else (
+        f"resume chars={len(resume_text.strip())}; profile email present={bool(email and email in resume_text)}"
+    )
+    c4 = ClauseResult(
+        id="tailor-resume-C4",
+        description="Resume is nontrivial and contains profile contact email",
+        passed=c4_passed,
+        detail=c4_detail,
+    )
 
     return [c1, c2, c3, c4]

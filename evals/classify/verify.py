@@ -5,41 +5,29 @@ per-skill tier and the e2e tier share one authority on classification validity.
 """
 from __future__ import annotations
 
-import importlib.util
 import json
+import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # Bootstrap evals/ parent for `from common import ClauseResult`.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-# Bootstrap the e2e scripts dir so verify_artifacts is importable by path.
-E2E_SCRIPTS = Path(__file__).resolve().parents[2] / ".claude/skills/two-orchestrator-e2e-test/scripts"
-
-from common import ClauseResult  # noqa: E402
-
-ROLE_FOLDER = "Acme - Senior Agent Builder"
-
-
-def _load_verify_artifacts():
-    """Import verify_artifacts.py from the e2e scripts dir by path."""
-    va_path = E2E_SCRIPTS / "verify_artifacts.py"
-    spec = importlib.util.spec_from_file_location("_eval_verify_artifacts", va_path)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules["_eval_verify_artifacts"] = mod
-    spec.loader.exec_module(mod)
-    return mod
+from common import ClauseResult, EvalContext, THEME_VOCAB, ARCHETYPE_VOCAB  # noqa: E402
 
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig", errors="ignore") if path.exists() else ""
 
 
-def verify(workspace: Path) -> list[ClauseResult]:
-    workspace = Path(workspace)
-    role = workspace / "Roles" / ROLE_FOLDER
+def _normalize(value: str) -> str:
+    return re.sub(r"\s+", " ", value).strip().casefold()
+
+
+def verify(context: EvalContext) -> list[ClauseResult]:
+    role = context.role
     cls_path = role / ".classification.json"
-    va = _load_verify_artifacts()
-    THEME_VOCAB = va.THEME_VOCAB
+    jd_text = _normalize(_read(role / "Job Description.md"))
 
     # C1 — .classification.json exists
     c1 = ClauseResult(
@@ -62,8 +50,10 @@ def verify(workspace: Path) -> list[ClauseResult]:
             elif not isinstance(data.get("archetype"), str) or not data["archetype"].strip():
                 c2_detail = "archetype missing or not a string"
             else:
-                no_ev = [t for t in themes
-                         if isinstance(t, dict) and not str(t.get("evidence", "")).strip()]
+                no_ev = [
+                    t for t in themes
+                    if not isinstance(t, dict) or not str(t.get("evidence", "")).strip()
+                ]
                 if no_ev:
                     c2_detail = f"{len(no_ev)} theme(s) missing evidence"
                 else:
@@ -94,21 +84,66 @@ def verify(workspace: Path) -> list[ClauseResult]:
         detail=c3_detail,
     )
 
-    # C4 — passes verify_artifacts.check_classify
-    c4_passed = False
-    c4_detail = "check_classify returned no checks"
-    if role.is_dir():
-        result = va.check_classify(role)
-        checks = result.get("checks", [])
-        failed = [c for c in checks if not c.get("ok")]
-        c4_passed = len(failed) == 0 and len(checks) > 0
-        c4_detail = "" if c4_passed else "; ".join(
-            f"{c.get('name')}: {c.get('detail')}" for c in failed)
+    # C4 — archetype is stable vocabulary
+    archetype = data.get("archetype") if isinstance(data, dict) else None
+    c4_passed = archetype in ARCHETYPE_VOCAB
+    c4_detail = "" if c4_passed else f"off-vocab archetype: {archetype!r}"
     c4 = ClauseResult(
         id="classify-C4",
-        description="Passes verify_artifacts.check_classify",
+        description="Archetype is within stable vocabulary",
         passed=c4_passed,
         detail=c4_detail,
     )
 
-    return [c1, c2, c3, c4]
+    themes = data.get("themes", []) if isinstance(data, dict) else []
+    c5 = ClauseResult(
+        id="classify-C5",
+        description="Classification contains 4–6 themes",
+        passed=isinstance(themes, list) and 4 <= len(themes) <= 6,
+        detail="" if isinstance(themes, list) and 4 <= len(themes) <= 6
+        else f"theme count={len(themes) if isinstance(themes, list) else 'invalid'}",
+    )
+
+    unresolved = []
+    if isinstance(themes, list) and jd_text:
+        unresolved = [
+            str(theme.get("evidence", ""))
+            for theme in themes if isinstance(theme, dict)
+            and _normalize(str(theme.get("evidence", ""))) not in jd_text
+        ]
+    c6_passed = (
+        bool(jd_text) and isinstance(themes, list) and bool(themes)
+        and all(isinstance(theme, dict) for theme in themes) and not unresolved
+    )
+    c6 = ClauseResult(
+        id="classify-C6",
+        description="Every theme evidence quote resolves against Job Description.md",
+        passed=c6_passed,
+        detail="Job Description.md missing/empty" if not jd_text
+        else f"unresolved evidence: {unresolved}" if unresolved else "",
+    )
+
+    rationale = data.get("archetype_rationale") if isinstance(data, dict) else None
+    c7 = ClauseResult(
+        id="classify-C7",
+        description="Archetype rationale is present",
+        passed=isinstance(rationale, str) and bool(rationale.strip()),
+        detail="" if isinstance(rationale, str) and rationale.strip()
+        else "archetype_rationale missing or empty",
+    )
+
+    classified_ts = data.get("classified_ts") if isinstance(data, dict) else None
+    ts_valid = False
+    if isinstance(classified_ts, str) and classified_ts.strip():
+        try:
+            datetime.fromisoformat(classified_ts.replace("Z", "+00:00"))
+            ts_valid = True
+        except ValueError:
+            pass
+    c8 = ClauseResult(
+        id="classify-C8",
+        description="classified_ts is a valid ISO timestamp/date",
+        passed=ts_valid,
+        detail="" if ts_valid else f"classified_ts={classified_ts!r}",
+    )
+    return [c1, c2, c3, c4, c5, c6, c7, c8]

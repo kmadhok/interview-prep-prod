@@ -11,9 +11,8 @@ resume-export run.
 A PDF file exists in the role folder whose name starts with the profile's
 `resume_glob_prefix()` — i.e. the `.pdf` sibling of the resume `.md`.
 
-**How checked:** Glob `workspace/Roles/Acme - Senior Agent Builder/` for
-`{resume_glob_prefix()}*.pdf`; assert at least one match. (Same glob
-verify_artifacts.check_pdf uses.)
+**How checked:** In the selected role, glob profile-derived resume markdown
+and PDF names and require a matching stem.
 
 ### resume-export-C2: One page
 

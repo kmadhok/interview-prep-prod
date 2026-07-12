@@ -1,18 +1,26 @@
 ---
 name: two-orchestrator-e2e-test
-description: Use this skill to run the full two-orchestrator end-to-end pipeline test — take ONE real role through all 8 skills (interview-prep-intake → classify → tailor-resume → PDF → apply-packet → [apply gate] → find-contacts → enrich-contacts → verify-emails → write-outreach) via sequential sub-agents in an isolated _jd-to-ready-test/ clone, verify each artifact deterministically with verify_artifacts.py, and write a TEST REPORT.md. Trigger on "run the e2e pipeline test", "end-to-end test the two-orchestrator pipeline", "test the whole jd-to-ready + stage-outreach flow on <role>". FULL LIVE RUN (real LinkedIn scraping + real Gmail draft, never sent). Does NOT touch real Roles/ or Pipeline.md. Do NOT trigger to file a JD (interview-prep-intake), prep a resume (jd-to-ready), or stage real outreach (stage-outreach).
+description: Run the two-orchestrator pipeline contract test in an isolated clone. Local fixture clauses always run; LinkedIn/Gmail live-only clauses are BLOCKED when their MCPs are unavailable. Never touches real Roles/Pipeline and never sends.
 ---
 
-# Two-Orchestrator E2E Test (full live, per-skill, isolated clone)
+# Two-Orchestrator E2E Test (contract-driven, isolated clone)
 
-Runs one real role through all 8 pipeline skills, one sub-agent per skill, **sequentially**, in a throwaway clone. Real `Roles/` and `Pipeline.md` are never touched; the apply gate is simulated on a local fixture. The only real external side effects are unsent Gmail drafts and an upload to the `_test` Drive remote. Read root `AGENTS.md`/`CLAUDE.md` first; it overrides anything here.
+Runs one fixture role through all behaviors in a throwaway clone. Real
+`Roles/` and `Pipeline.md` are never touched. By default there are **no
+external side effects**. `evals/<behavior>/contract.md` is authoritative;
+`verify_artifacts.py` delegates to those verifiers and preserves its legacy
+CLI/report shape.
 
 `<repo root>` = the directory containing `profile.yaml` (cwd); the workspace files live under `<repo root>/workspace/`. Use `python3` (Windows: `py -3`).
 
 **Test steps are numbered T0–T8** — deliberately NOT the real skills' step numbers. Each step header names the real skill step it exercises, so cross-reference by that annotation, never by the T-number.
 
 ## What this skill does NOT do
-No real Pipeline/Roles writes. No `jd-to-ready` trace run (an open trace step trips the Stop hook on every async sub-agent yield; the trace contract is covered by `test_trace_step.py`). Never sends — Gmail `create_draft` only.
+No real Pipeline/Roles writes, sends, production Drive uploads, or implicit
+LinkedIn/Gmail calls. Every primitive uses a closed `--run-type primitive`
+trace in the isolated clone's `TRACE_RUNS_DIR`: start, begin with
+`--contract-clauses`, end with verifier `--clause-results`, then finish before
+yielding. Live-only results are `BLOCKED`/`NOT_RUN`, never synthesized PASS.
 
 ## T0 — Setup
 1. Pick the target: a real `Company - Role` whose JD is available (an existing `Roles/<role>/Job Description.md`, a saved job, or pasted JD). Must be a real company (full-live apply side needs a LinkedIn presence).
@@ -30,7 +38,9 @@ No real Pipeline/Roles writes. No `jd-to-ready` trace run (an open trace step tr
    | Role | Stage | Next action | Date | Contacts | Folder |
    | **<Company> — <Role>** | Considering — not yet applied | — | — | — | — |
    ```
-5. Every sub-agent prompt below MUST include: "Operate ONLY in `<clone>`. Do NOT touch real Roles/ or Pipeline.md. Do NOT run trace_step.py. Do NOT send anything." (T8 audits compliance mechanically — see the isolation audit.)
+5. Every worker prompt MUST include: "Operate ONLY in `<clone>`. Do NOT touch
+real Roles/ or Pipeline.md. Use closed primitive traces under the clone. Do
+NOT send anything."
 
 ## T1–T3 — Prep sub-agents (sequential)
 Launch a fresh `general-purpose` sub-agent per skill; wait for each, then run its verifier check before the next.
@@ -58,17 +68,22 @@ Do NOT rely on `APPLY_PACKET_REMOTE_DIR` env-var inheritance — the explicit fl
 python3 "<repo root>/scripts/drip_runner/outreach_worklist.py" --pipeline "<clone>/_pipeline-fixture.md" > "<clone>/_worklist.txt"
 ```
 Confirm the role appears (this exercises the Pass B reader without touching real state).
-2. **Preflight:** invoke `linkedin-mcp-operations`. Handshake:
+2. **Optional live preflight:** only when the user explicitly requests a live
+run, invoke `linkedin-mcp-operations`. Handshake:
 ```
 curl -s -o /dev/null -w '%{http_code}\n' -m 6 -X POST http://127.0.0.1:8765/mcp -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"diag","version":"0.1"}}}'
 ```
-If not `200` → STOP the apply side; mark the T7 skills `blocked` in the report; jump to T8. When you reach T8 after a blocked apply side, pass `--blocked-apply` to verify_artifacts.py so the four apply-side skills are marked blocked, not failed.
+If unavailable, do not attempt LinkedIn. Run local contact fixtures and mark
+only each contract's live-only clause `BLOCKED`. `--blocked-apply` remains for
+backward compatibility when the entire apply side did not run.
 
 ## T7 — Apply sub-agents (sequential — one LinkedIn stream at a time, never parallel; real: stage-outreach Steps 4/4b/4c/5)
-- **T7.1 — find-contacts** (real: stage-outreach Step 4) → `<clone>/.contacts-ledger.md` (real LinkedIn, read-only).
-- **T7.2 — enrich-contacts** (real: stage-outreach Step 4b) → updates the ledger with hooks (real LinkedIn, read-only).
+- **T7.1 — find-contacts** → build `<clone>/.contacts-ledger.md` from fixture evidence; live LinkedIn identity clause is BLOCKED when unavailable.
+- **T7.2 — enrich-contacts** → update the ledger with fixture hooks/provenance; live activity clause is BLOCKED when unavailable.
 - **T7.3 — verify-emails** (real: stage-outreach Step 4c) → `<clone>/Verified Emails.md` (real EmailFinder; degrade to inferred if unavailable).
-- **T7.4 — write-outreach** (drip mode; real: stage-outreach Step 5) → `<clone>/Cold Outreach.md` + **two** Gmail drafts via `create_draft` — one to the resolved recruiter, one to the HM/peer-IC lead (the same-company double-send guard may collapse them to one). **NEVER send.** Capture each draft id + recipient.
+- **T7.4 — write-outreach** → `<clone>/Cold Outreach.md` plus normalized
+`<clone>/.drafts.json` fixture records with `sent:false`. Gmail Draft/Sent
+evidence is a separate live-only clause.
 
 ## T8 — Verify + report (main loop)
 1. **Confirm the drafts** (skip this sub-step on a blocked apply side — go straight to the verifier with `--blocked-apply` and no `--draft-json`):
@@ -78,8 +93,19 @@ If not `200` → STOP the apply side; mark the T7 skills `blocked` in the report
 2. **Isolation audit:** run `git status --porcelain` at `<repo root>`. Every changed path must be under `_jd-to-ready-test/`. Any path outside the clone = automatic FAIL in the report, regardless of verifier output.
 3. **Run the verifier:**
 ```
-python3 "~/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py" --clone "<clone>" --company "<Company>" --worklist-out "<clone>/_worklist.txt" --pages <n> --title-leak <0|1> --draft-json "<clone>/_draft.json" --expected-recipient "<recruiter>" --expected-lead-recipient "<lead>"
+python3 "~/.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py" --clone "<clone>" --company "<Company>" --worklist-out "<clone>/_worklist.txt" --pages <n> --title-leak <0|1> --draft-json "<clone>/_draft.json" --expected-recipient "<recruiter>" --expected-lead-recipient "<lead>" --trace-runs-dir "<clone>/runs"
 ```
+`--trace-runs-dir` is optional only for backward compatibility with historical
+test records. New contract-driven runs must supply it; a missing or incomplete
+primitive trace for any of the nine behaviors fails the E2E report.
+
+For a fully local run with no external services:
+```
+python3 evals/run_eval.py --all --workspace "<fixture-workspace>"
+python3 evals/verify_behavior_traces.py --runs-dir "<fixture-workspace>/runs"
+```
+LinkedIn/Gmail live clauses may be `BLOCKED`/`NOT_RUN`; both commands still
+require every local artifact clause and every behavior trace to be present.
 4. **Write `<clone>/TEST REPORT.md`** from the verifier JSON + each sub-agent's report + the PDF/gate/draft results. Use the same sections as `_jd-to-ready-test/Two-Orchestrator Split E2E - Snowflake FDE 2026-06-28/TEST REPORT.md`: summary table, per-skill detail, findings (your narrative on top of the verifier's deterministic pass/fail), environment notes, cleanup record (draft ids + the Cleanup list below).
 
 ## Cleanup

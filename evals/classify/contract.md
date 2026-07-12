@@ -8,8 +8,7 @@ end-state of a completed classify run.
 
 ### classify-C1: .classification.json exists in role folder
 
-The file `workspace/Roles/Acme - Senior Agent Builder/.classification.json`
-exists in the eval workspace.
+`.classification.json` exists in the selected role.
 
 **How checked:** `Path(role / ".classification.json").exists()`.
 
@@ -23,18 +22,29 @@ a non-empty string; every theme dict has `evidence` with stripped len > 0.
 
 ### classify-C3: Themes within the vocab
 
-Every theme tag is a member of `THEME_VOCAB` from
-`.claude/skills/two-orchestrator-e2e-test/scripts/verify_artifacts.py` — the
-single source of truth for the classification vocabulary.
+Every theme tag is a member of `THEME_VOCAB` in `evals/common.py`.
 
 **How checked:** For each theme tag, assert `tag in THEME_VOCAB`.
 
-### classify-C4: Passes verify_artifacts's classification check
+### classify-C4: Archetype is within the stable vocabulary
 
-The file passes `verify_artifacts.check_classify(role_folder)` — the same
-schema check the e2e verifier runs. This reuses the e2e authority so the
-per-skill tier and the e2e tier agree on what a valid classification is.
+The archetype is a member of `ARCHETYPE_VOCAB` in `evals/common.py`. The E2E
+verifier delegates to this contract verifier; it is not a second authority.
 
-**How checked:** Import `check_classify` from verify_artifacts (path-based
-import via the e2e scripts dir); call it with the role folder; assert every
-check in the returned `checks` list has `ok=True`.
+### classify-C5: Classification contains 4–6 themes
+
+The `themes` list has between four and six entries, inclusive.
+
+### classify-C6: Every theme evidence quote resolves against Job Description.md
+
+After case-folding and collapsing whitespace, each non-empty theme `evidence`
+string occurs in the selected role's `Job Description.md`.
+
+### classify-C7: Archetype rationale is present
+
+`archetype_rationale` is a non-empty string.
+
+### classify-C8: classified_ts is a valid ISO timestamp/date
+
+`classified_ts` is a non-empty ISO-8601 date or timestamp parseable by the
+stdlib datetime parser.

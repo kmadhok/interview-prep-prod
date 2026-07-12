@@ -103,3 +103,9 @@ The re-sorted ledger is the authoritative ranking. `write-outreach` reads its to
 - **No bonus for activity-surfaced people.** An appended row is scored exactly like a search row — being found via a repost is provenance, not a score factor.
 - **Relevance is judged against the `team` map**, not keyword overlap — a recruiter who recruits for five practices will post about all five; only the on-target practice's activity counts.
 - Profile scrapes are visible to the target (profile-view logged). That's acceptable for cold-outreach prep, but don't scrape beyond the recruiters in the ledger + the new people they surface.
+
+## Behavior contract
+
+`evals/enrich-contacts/contract.md` is authoritative. Declare its clause IDs
+at trace begin and record verifier-produced results at trace end. When no hook
+is found, emit the structured trace gap required by that contract.
