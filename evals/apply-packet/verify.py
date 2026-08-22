@@ -28,6 +28,7 @@ def _read(path: Path) -> str:
 
 
 def verify(context: EvalContext) -> list[ClauseResult]:
+    """Execute `verify`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     role = context.role
     answers_path = role / "Application Answers.md"
     packet_path = role / ".apply-packet.json"

@@ -51,7 +51,7 @@ Pull these fields from the JD (paste, file, or URL — fetch URLs, read PDFs):
 - **Compensation** — base, OTE, equity, bonuses if listed
 - **Key requirements** — years required, must-have tools (Python, SQL, ML, LLMs, cloud, etc.), level signals
 - **Team / org context** — what team the role sits on, why the team exists if mentioned
-- **Hard gates** — surface anything that could be an outright disqualifier *before* prep starts: US citizenship requirement, security clearance requirement ("ability to obtain"), no-sponsorship clauses, mandatory in-office cadence, heavy travel %, hard-required certifications. These belong in their own "Notes for Kanu" callout (see step 3) and in the report-back (step 6) so Kanu notices them before investing time.
+- **Hard gates** — surface anything that could be an outright disqualifier *before* prep starts: US citizenship requirement, security clearance requirement ("ability to obtain"), no-sponsorship clauses, mandatory in-office cadence, heavy travel %, hard-required certifications. These belong in their own "Notes for the user" callout (see step 3) and in the report-back (step 6) so the user notices them before investing time.
 - **Source** — URL if given, otherwise note "Pasted by user on YYYY-MM-DD". If a requisition / job-ID number is in the posting, capture it — it makes the application step easier later.
 
 If something isn't in the JD, mark it `_Not listed_` rather than invent it.
@@ -67,7 +67,7 @@ Job postings — especially on ATS platforms like Workday, Greenhouse, Deloitte'
 - Legal entity footers and "Deloitte means Deloitte Consulting LLP, a subsidiary of…" notes — capture the legal entity once in the header, then drop
 - Generic EEO / accommodation paragraphs at the very end
 
-Keep the substantive sections verbatim: position summary, "Work you'll do" / role overview, responsibilities, qualifications (required + preferred), compensation, "Why join" if it has actual role-specific content. The goal is a clean reading copy that Kanu can scan in 60 seconds — not a regurgitation of the ATS page.
+Keep the substantive sections verbatim: position summary, "Work you'll do" / role overview, responsibilities, qualifications (required + preferred), compensation, "Why join" if it has actual role-specific content. The goal is a clean reading copy that the user can scan in 60 seconds — not a regurgitation of the ATS page.
 
 ### 2. Decide the folder name
 
@@ -127,13 +127,13 @@ Use this structure. Omit sections that don't apply. Keep the content faithful to
 <The company's pitch / "Why join" section, if provided>
 ```
 
-Markdown niceties (headers, bullets, **bold** on key phrases) are fine. Don't paraphrase whole sections — keep the JD's language so Kanu can pattern-match to it later.
+Markdown niceties (headers, bullets, **bold** on key phrases) are fine. Don't paraphrase whole sections — keep the JD's language so the user can pattern-match to it later.
 
-#### Optional: Notes for Kanu
+#### Optional: Notes for the user
 
-If the JD contains anything Kanu should notice before deciding to apply — hard gates (citizenship, clearance, no sponsorship, mandatory travel %, RTO/in-office cadence), title-vs-employer mismatches, unusual compensation structures, atypical interview process hints, or anything else that materially shapes the apply/no-apply decision — append a `## Notes for Kanu` section at the bottom of `Job Description.md`. This is the only section where editorializing is fine; everything above it stays faithful to the source.
+If the JD contains anything the user should notice before deciding to apply — hard gates (citizenship, clearance, no sponsorship, mandatory travel %, RTO/in-office cadence), title-vs-employer mismatches, unusual compensation structures, atypical interview process hints, or anything else that materially shapes the apply/no-apply decision — append a `## Notes for the user` section at the bottom of `Job Description.md`. This is the only section where editorializing is fine; everything above it stays faithful to the source.
 
-Keep it tight: 3–6 bullets, each a single sentence. Don't pad with "this is exciting!" filler — Kanu is reading this to make a decision, not to be sold to. If there's nothing flag-worthy beyond the JD itself, skip this section entirely.
+Keep it tight: 3–6 bullets, each a single sentence. Don't pad with "this is exciting!" filler — the user is reading this to make a decision, not to be sold to. If there's nothing flag-worthy beyond the JD itself, skip this section entirely.
 
 ### 4. Update `Pipeline.md`
 
@@ -141,10 +141,10 @@ Read the current `Pipeline.md`. The sections are:
 
 - **Upcoming this week** — bulleted callouts for imminent interviews. Only touch if a date is already locked.
 - **Active** — table of roles currently in process (applied / recruiter screen / interviewing).
-- **Considering / not yet applied** — table for roles Kanu is evaluating but hasn't applied to yet.
+- **Considering / not yet applied** — table for roles the user is evaluating but hasn't applied to yet.
 - **Closed / On hold** — terminal states.
 
-**Default placement: `Considering / not yet applied`.** Only put a new row directly into **Active** if Kanu has clearly said he's already applied, is in a recruiter screen, or has an interview booked.
+**Default placement: `Considering / not yet applied`.** Only put a new row directly into **Active** if the user has clearly said they already applied, are in a recruiter screen, or have an interview booked.
 
 Add the row with the deterministic tool (it owns the 6-column format, placement, and duplicate refusal — do not hand-edit the table for the standard case):
 
@@ -156,11 +156,11 @@ Exit 3 = a row for this role already exists somewhere — check which section (`
 
 Also update the `_Last updated: YYYY-MM-DD_` line near the top of `Pipeline.md` to today's date.
 
-If `Pipeline.html` exists, it is now stale. **Do not regenerate it silently** — mention this in your final report so Kanu can ask for a regeneration if he wants one.
+If `Pipeline.html` exists, it is now stale. **Do not regenerate it silently** — mention this in your final report so the user can ask for a regeneration if they want one.
 
 ### 5. Update the auto-memory
 
-Open `active_interview_pipeline.md` in the auto-memory directory (path is in your system prompt). It is a project-type memory listing the roles Kanu is currently prepping for.
+Open `active_interview_pipeline.md` in the auto-memory directory (path is in your system prompt). It is a project-type memory listing the roles the user is currently prepping for.
 
 Append a new numbered bullet under the existing list (or update an existing one if this role is already in there). Match the existing style:
 
@@ -175,32 +175,32 @@ Also update the description/header timestamp ("as of YYYY-MM-DD") if it's stale.
 
 ### 6. Report back
 
-Keep the recap short. Kanu just pasted the JD — he knows what's in it. He wants to see that it landed correctly and what comes next.
+Keep the recap short. The user just pasted the JD — they know what's in it. They want to see that it landed correctly and what comes next.
 
 Include:
 
 - A `computer://` link to the new `Job Description.md`.
 - A `computer://` link to the updated `Pipeline.md`.
 - One line noting the memory was updated.
-- A line about `Pipeline.html` being stale (ask if he wants it regenerated).
-- **Surface any hard gates from step 1 right here, by name.** Don't bury them in the JD file and assume Kanu will scroll. If the role requires citizenship, clearance, no-sponsorship, heavy travel, or a hard cert, name it explicitly in the report and ask the disambiguating question (e.g., "this requires US citizenship + clearance eligibility — is that a blocker for you?"). Better to ask one direct question than to spin up tailored-resume work for a role he can't take.
-- If there was a **title-vs-employer mismatch** worth flagging (the role title names a vendor/tool but the employer is someone else), say so in one line — "Note: posted as 'Anthropic FDE' but the employer is Deloitte" — so Kanu doesn't carry a wrong mental model into prep.
-- A short suggestion for the natural next step — usually: tailor resume for this role, run the `job-outreach` skill if he wants to apply, or build out the full prep artifact set if an interview gets scheduled.
+- A line about `Pipeline.html` being stale (ask if they want it regenerated).
+- **Surface any hard gates from step 1 right here, by name.** Don't bury them in the JD file and assume the user will scroll. If the role requires citizenship, clearance, no-sponsorship, heavy travel, or a hard cert, name it explicitly in the report and ask the disambiguating question (e.g., "this requires US citizenship + clearance eligibility — is that a blocker for you?"). Better to ask one direct question than to spin up tailored-resume work for a role they can't take.
+- If there was a **title-vs-employer mismatch** worth flagging (the role title names a vendor/tool but the employer is someone else), say so in one line — "Note: posted as 'Anthropic FDE' but the employer is Deloitte" — so the user doesn't carry a wrong mental model into prep.
+- A short suggestion for the natural next step — usually: tailor resume for this role, run the `job-outreach` skill if they want to apply, or build out the full prep artifact set if an interview gets scheduled.
 
 Don't restate the full JD or write a 12-section summary. Don't pad with motivational fluff.
 
 ## Edge cases
 
-- **Folder already exists.** Don't overwrite. Tell Kanu the folder is there, ask whether he wants to refresh the JD in place, save as a variant (e.g., `Job Description - v2.md`), or skip.
-- **Ambiguous role title or multi-role JD.** Ask which role he means before creating the folder. Renaming a folder later is messy because the wiki-link in `Pipeline.md` has to change too.
+- **Folder already exists.** Don't overwrite. Tell the user the folder is there, ask whether they want to refresh the JD in place, save as a variant (e.g., `Job Description - v2.md`), or skip.
+- **Ambiguous role title or multi-role JD.** Ask which role they mean before creating the folder. Renaming a folder later is messy because the wiki-link in `Pipeline.md` has to change too.
 - **No company name / generic recruiter listing.** Ask for the company. Don't file under "Confidential" or a placeholder — it'll lose context.
-- **Internal mobility (role at Walmart Data Ventures).** Flag it as internal in the memory entry. The prep approach differs (he can talk to people internally, has insider context, may face different format).
+- **Internal mobility.** Flag it as internal in the memory entry. The prep approach differs because the user can talk to people internally, has insider context, and may face a different format.
 - **JD already applied / interview already booked.** Put the row in **Active** instead of **Considering**, and update the memory entry to reflect the current stage. If an interview date is set, also add a bullet under **Upcoming this week** if it falls within the next 7 days.
-- **JD is for a role outside Kanu's current focus areas** (data, AI, AI engineering, product engineering, AI strategy/ops). Still file it — judgment about fit is his, not yours — but don't editorialize.
+- **JD is for a role outside the user's current focus areas.** Still file it — judgment about fit is theirs, not yours — but don't editorialize.
 
 ## Voice for memory and tracker entries
 
-These files are for future-you and future-Kanu to scan in seconds. Be specific and concrete:
+These files are for both you and the user to scan in seconds. Be specific and concrete:
 
 - Bad: "Senior engineering role at a startup."
 - Good: "FDE role at Snorkel AI's DaaS org; Python/SQL + LLM eval + synthetic data + HITL pipelines; $172–300K OTE; positioned as founding member of technical DaaS team."

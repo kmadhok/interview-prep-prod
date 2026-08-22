@@ -56,6 +56,7 @@ def summarize_tool_input(value: Any) -> str | None:
 
 
 def main() -> int:
+    """Forward one completed tool event and always let the hook exit successfully."""
     payload = read_stdin_payload()
     tool_name = (
         payload.get("tool_name")

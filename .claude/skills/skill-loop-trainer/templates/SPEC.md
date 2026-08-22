@@ -28,7 +28,7 @@ Before judging, the harness re-runs the model's edited skill on one held-out fix
 
 ## 2. The gold email (acceptance anchor)
 
-`fixtures/gold-email.md` holds **one** cold-recruiter email Kanu loves. It is the single source of truth for "better." Every judge dimension in `RUBRIC.md` is derived from a real trait of this email — when the gold email changes, the rubric is re-tuned to match (not the other way around).
+`fixtures/gold-email.md` holds **one** cold-recruiter email the user loves. It is the single source of truth for "better." Every judge dimension in `RUBRIC.md` is derived from a real trait of this email — when the gold email changes, the rubric is re-tuned to match (not the other way around).
 
 > **STATUS: PLACEHOLDER.** `fixtures/gold-email.md` currently contains a marked placeholder. Drop the real email in before running. Until then the rubric dimensions are provisional, inferred from `Outreach Templates.md` §1, and flagged as such in `RUBRIC.md`.
 
@@ -48,7 +48,7 @@ All three are real roles in `Roles/` with a real recruiter contact and a verifie
 
 Each fixture in `fixtures/<slug>.md` carries exactly the inputs the skill needs: role title, company, recruiter name/title, verified email, archetype, lead theme, JD details, and an explicit **beat-3 mode**.
 
-**Why the beat-3 split matters.** The gold email's load-bearing trait (Kanu's own words) is paragraph two: real, live competing processes + a "closer match" pivot that induces #fomo without making the target the backup. So the harness MUST test that move. But the no-fabrication rule means beat 3 only appears when a real live process exists. As of the build date, nothing in `Pipeline.md` survives the freshness filter, so a naive "source it live" run would omit beat 3 on all three fixtures and never exercise the signature move. The fix:
+**Why the beat-3 split matters.** The gold email's load-bearing trait (the user's own words) is paragraph two: real, live competing processes + a "closer match" pivot that induces #fomo without making the target the backup. So the harness MUST test that move. But the no-fabrication rule means beat 3 only appears when a real live process exists. As of the build date, nothing in `Pipeline.md` survives the freshness filter, so a naive "source it live" run would omit beat 3 on all three fixtures and never exercise the signature move. The fix:
 - **`cohere-fde` is seeded with a declared, clearly-labeled live-process list** (mirroring the gold email's own) so the urgency move is tested. The seed is a *fixture test input*, not the skill inventing anything — the skill still only ever uses what it's handed.
 - **`distyl-fde` and `sierra-strategist` carry no live process** — they test that the skill sources live, finds nothing, and **omits beat 3 cleanly**. Per RUBRIC, a clean omission scores as high as a clean inclusion; the skill is graded on correct live-sourcing, not on always emitting a paragraph two.
 
@@ -77,7 +77,7 @@ Gates are defined as a machine-checkable checklist in `ACCEPTANCE.md`.
 Two-stage, per `ACCEPTANCE.md`:
 
 1. **Hard gates (G1–G9)** — binary. Any fail → email disqualified (score 0, reason logged).
-2. **LLM judge** — for emails that pass all gates, an LLM judge scores closeness to the gold email on the weighted dimensions in `RUBRIC.md` (voice, hook specificity, structure adherence, concreteness/numbers, length discipline, CTA quality, "sounds like Kanu"). Output: per-dimension 1–5 + weighted total + a one-line rationale per dimension.
+2. **LLM judge** — for emails that pass all gates, an LLM judge scores closeness to the gold email on the weighted dimensions in `RUBRIC.md` (voice, hook specificity, structure adherence, concreteness/numbers, length discipline, CTA quality, "sounds like the user"). Output: per-dimension 1–5 + weighted total + a one-line rationale per dimension.
 
 A model's run score = mean of its 3 emails' judge totals, with **any disqualified email scored 0** (a model can't win by acing 2 roles and failing the 3rd).
 
@@ -110,7 +110,7 @@ The skill is **vendored in-repo** at `.claude/skills/{{TARGET_SKILL}}/` (git-tra
 ├── RUBRIC.md          ← judge dimensions + weights, derived from the gold email
 ├── RUNNER.md          ← (stub) worktree + model execution mechanics, wired later
 ├── fixtures/
-│   ├── gold-email.md      ← THE anchor (placeholder until Kanu drops it in)
+│   ├── gold-email.md      ← THE anchor (placeholder until the user drops it in)
 │   ├── TASK_PROMPT.md     ← the exact prompt handed to every model
 │   ├── cohere-fde.md      ← role fixture (inputs the skill needs)
 │   ├── distyl-fde.md

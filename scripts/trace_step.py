@@ -72,18 +72,22 @@ def runs_dir() -> Path:
 
 
 def active_state_path() -> Path:
+    """Execute `active_state_path`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return runs_dir() / ".active-run.json"
 
 
 def run_dir_for(run_id: str) -> Path:
+    """Execute `run_dir_for`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return runs_dir() / run_id
 
 
 def global_summary_path() -> Path:
+    """Execute `global_summary_path`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return runs_dir() / "summary.jsonl"
 
 
 def now_iso() -> str:
+    """Execute `now_iso`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
 
 
@@ -99,10 +103,12 @@ def current_session() -> str | None:
 
 
 def ensure_dirs() -> None:
+    """Execute `ensure_dirs`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     runs_dir().mkdir(parents=True, exist_ok=True)
 
 
 def load_state() -> dict[str, Any] | None:
+    """Execute `load_state`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     path = active_state_path()
     if not path.exists():
         return None
@@ -122,20 +128,24 @@ def load_state() -> dict[str, Any] | None:
 
 
 def save_state(state: dict[str, Any]) -> None:
+    """Execute `save_state`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     ensure_dirs()
     active_state_path().write_text(json.dumps(state, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def trace_path(state: dict[str, Any]) -> Path:
+    """Execute `trace_path`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return run_dir_for(state["run_id"]) / "trace.jsonl"
 
 
 def fail(message: str) -> int:
+    """Execute `fail`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     print(message, file=sys.stderr)
     return 2
 
 
 def parse_json_strict(value: str | None, field: str) -> tuple[bool, Any, str | None]:
+    """Execute `parse_json_strict`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if value in (None, ""):
         return False, None, f"{field} is required and must be valid JSON"
     try:
@@ -145,6 +155,7 @@ def parse_json_strict(value: str | None, field: str) -> tuple[bool, Any, str | N
 
 
 def parse_json_optional(value: str | None, default: Any, field: str) -> tuple[bool, Any, str | None]:
+    """Execute `parse_json_optional`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if value in (None, ""):
         return True, default, None
     try:
@@ -154,12 +165,14 @@ def parse_json_optional(value: str | None, default: Any, field: str) -> tuple[bo
 
 
 def validate_array(value: Any, field: str) -> str | None:
+    """Execute `validate_array`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not isinstance(value, list):
         return f"{field} must be a JSON array"
     return None
 
 
 def validate_clause_results(value: Any, expected: list[str]) -> str | None:
+    """Execute `validate_clause_results`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not isinstance(value, list):
         return "clause_results must be a JSON array"
     ids = []
@@ -178,6 +191,7 @@ def validate_clause_results(value: Any, expected: list[str]) -> str | None:
 
 
 def prediction_from_clauses(results: list[dict[str, Any]]) -> str:
+    """Execute `prediction_from_clauses`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not results:
         return "unknown"
     statuses = {item["status"] for item in results}
@@ -191,6 +205,7 @@ def prediction_from_clauses(results: list[dict[str, Any]]) -> str:
 
 
 def validate_tokens(value: Any) -> str | None:
+    """Execute `validate_tokens`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not isinstance(value, dict):
         return "tokens must be a JSON object"
     required = {"input", "output", "cache_read", "cache_write", "total", "source", "notes"}
@@ -215,18 +230,21 @@ def validate_tokens(value: Any) -> str | None:
 
 
 def normalize_step(step: str | int | None) -> str | None:
+    """Execute `normalize_step`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if step is None:
         return None
     return str(step)
 
 
 def validate_step(step: str | None, state: dict[str, Any]) -> str | None:
+    """Execute `validate_step`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if step not in [str(item) for item in state.get("required_steps", REQUIRED_STEPS)]:
         return f"step must be one of: {', '.join(state.get('required_steps', REQUIRED_STEPS))}"
     return None
 
 
 def validate_role_folder(role_folder: str, is_test_run: bool) -> str | None:
+    """Execute `validate_role_folder`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     path = Path(role_folder).expanduser()
     if not path.is_absolute():
         return "role_folder must be absolute"
@@ -242,6 +260,7 @@ def validate_role_folder(role_folder: str, is_test_run: bool) -> str | None:
 
 
 def append_event(state: dict[str, Any], event: dict[str, Any]) -> None:
+    """Execute `append_event`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     ensure_dirs()
     event.setdefault("run_id", state["run_id"])
     event.setdefault("timestamp", now_iso())
@@ -257,6 +276,7 @@ def append_event(state: dict[str, Any], event: dict[str, Any]) -> None:
 
 
 def read_events(path: Path) -> list[dict[str, Any]]:
+    """Execute `read_events`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not path.exists():
         return []
     events: list[dict[str, Any]] = []
@@ -271,6 +291,7 @@ def read_events(path: Path) -> list[dict[str, Any]]:
 
 
 def step_status(events: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Execute `step_status`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     status: dict[str, dict[str, Any]] = {}
     for event in events:
         step = normalize_step(event.get("step"))
@@ -286,6 +307,7 @@ def step_status(events: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
 
 
 def missing_steps(state: dict[str, Any], events: list[dict[str, Any]]) -> list[str]:
+    """Execute `missing_steps`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     status = step_status(events)
     return [
         str(step)
@@ -295,6 +317,7 @@ def missing_steps(state: dict[str, Any], events: list[dict[str, Any]]) -> list[s
 
 
 def compute_finish_status(step_results: list[dict[str, Any]]) -> str:
+    """Execute `compute_finish_status`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     statuses = {event.get("status") for event in step_results}
     if "failed" in statuses:
         return "failed"
@@ -304,6 +327,7 @@ def compute_finish_status(step_results: list[dict[str, Any]]) -> str:
 
 
 def closed_steps_from_state_and_events(state: dict[str, Any], events: list[dict[str, Any]]) -> list[str]:
+    """Execute `closed_steps_from_state_and_events`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     closed = set(str(step) for step in state.get("closed_steps", []))
     for step, flags in step_status(events).items():
         if flags.get("end"):
@@ -313,6 +337,7 @@ def closed_steps_from_state_and_events(state: dict[str, Any], events: list[dict[
 
 
 def cmd_start(args: argparse.Namespace) -> int:
+    """Execute `cmd_start`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if load_state():
         return fail("An active jd-to-ready run already exists. Finish or abort it before starting another.")
     ensure_dirs()
@@ -367,6 +392,7 @@ def cmd_start(args: argparse.Namespace) -> int:
 
 
 def cmd_set_role_folder(args: argparse.Namespace) -> int:
+    """Execute `cmd_set_role_folder`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     state = load_state()
     if not state:
         return fail("No active jd-to-ready run. Call start-run first.")
@@ -394,6 +420,7 @@ def cmd_set_role_folder(args: argparse.Namespace) -> int:
 
 
 def cmd_begin(args: argparse.Namespace) -> int:
+    """Execute `cmd_begin`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     state = load_state()
     if not state:
         return fail("No active jd-to-ready run. Call start-run first.")
@@ -447,6 +474,7 @@ def cmd_begin(args: argparse.Namespace) -> int:
 
 
 def cmd_end(args: argparse.Namespace) -> int:
+    """Execute `cmd_end`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     state = load_state()
     if not state:
         return fail("No active jd-to-ready run. Call start-run first.")
@@ -514,6 +542,7 @@ def cmd_end(args: argparse.Namespace) -> int:
 
 
 def cmd_tool_event(args: argparse.Namespace) -> int:
+    """Execute `cmd_tool_event`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     state = load_state()
     if not state:
         return 0
@@ -531,6 +560,7 @@ def cmd_tool_event(args: argparse.Namespace) -> int:
 
 
 def cmd_subagent_event(args: argparse.Namespace) -> int:
+    """Execute `cmd_subagent_event`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     state = load_state()
     if not state:
         return 0
@@ -548,6 +578,7 @@ def cmd_subagent_event(args: argparse.Namespace) -> int:
 
 
 def cmd_check(args: argparse.Namespace) -> int:
+    """Execute `cmd_check`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     state = load_state()
     if not state:
         return 0
@@ -575,6 +606,7 @@ def cmd_check(args: argparse.Namespace) -> int:
 
 
 def cmd_finish(args: argparse.Namespace) -> int:
+    """Execute `cmd_finish`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     state = load_state()
     if not state:
         return fail("No active jd-to-ready run; nothing to finish.")
@@ -633,6 +665,7 @@ def cmd_finish(args: argparse.Namespace) -> int:
 
 
 def cmd_abort(args: argparse.Namespace) -> int:
+    """Execute `cmd_abort`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     state = load_state()
     if not state:
         return fail("No active jd-to-ready run; nothing to abort.")
@@ -680,6 +713,7 @@ def cmd_abort(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Execute `build_parser`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     parser = argparse.ArgumentParser(description="Trace jd-to-ready orchestration steps.")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -759,6 +793,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     args = build_parser().parse_args()
     return args.func(args)
 

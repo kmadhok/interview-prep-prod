@@ -45,6 +45,7 @@ def parse(text):
     return subject, body
 
 def check(text):
+    """Evaluate subject, body length, banned language, signature, and CTA hard gates."""
     subj, body = parse(text)
     words = len(re.findall(r"\S+", body))
     emdash = body.count('—')                      # banned em-dash only (en-dash – is fine)
@@ -57,6 +58,7 @@ def check(text):
 # ---------------------------------------------------------------------------
 
 def main():
+    """Print a per-model, per-fixture gate result while reporting absent outputs as missing."""
     root = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
     slugs = sys.argv[2].split(',') if len(sys.argv) > 2 else \
             ["cohere-fde", "distyl-fde", "sierra-strategist"]

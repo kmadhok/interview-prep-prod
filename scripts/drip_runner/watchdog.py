@@ -108,6 +108,7 @@ def _today(now) -> str:
 # .line is the rendered audit text ready for Pipeline.md / a run report.
 # ---------------------------------------------------------------------------
 def check_pc_pass_b(hb, now, threshold_hours=PASS_B_HOURS) -> Alert:
+    """Trip when outreach has never succeeded or is older than the strict hour limit."""
     ts = parse_ts((hb.get("pc") or {}).get("last_ok_outreach"))
     if ts is None:
         return Alert("pc_pass_b", True, (
@@ -124,6 +125,7 @@ def check_pc_pass_b(hb, now, threshold_hours=PASS_B_HOURS) -> Alert:
 
 
 def check_pc_pass_a(hb, now, threshold_hours=PASS_A_HOURS) -> Alert:
+    """Trip when saved-job preparation has no timestamp or exceeds its hour limit."""
     ts = parse_ts((hb.get("pc") or {}).get("last_ok_saved"))
     if ts is None:
         return Alert("pc_pass_a", True, (
@@ -153,6 +155,7 @@ def check_daemon(hb, now) -> Alert:
 
 
 def check_cloud_sweep(hb, now, threshold_weekdays=SWEEP_WEEKDAYS) -> Alert:
+    """Trip after more than the allowed crossed weekdays, treating no stamp as stale."""
     ts = parse_ts((hb.get("cloud") or {}).get("last_ok_sweep"))
     if ts is None:
         return Alert("cloud_sweep", True, (
@@ -169,6 +172,7 @@ def check_cloud_sweep(hb, now, threshold_weekdays=SWEEP_WEEKDAYS) -> Alert:
 
 
 def check_aborts(hb, now, threshold=ABORT_STREAK) -> Alert:
+    """Trip at or above the consecutive-abort threshold, defaulting a missing count to zero."""
     n = int((hb.get("pc") or {}).get("consecutive_aborts") or 0)
     if n >= threshold:
         return Alert("aborts", True, (
@@ -199,7 +203,7 @@ def should_alert(last_alert, now, min_hours=REALERT_HOURS) -> bool:
 
     `last_alert` is the aware datetime of the most recent WATCHDOG alert for this
     incident (None if never alerted). Alert once per incident; while still
-    unhealthy, re-alert at most every 24h so the watchdog never trains Kanu to
+    unhealthy, re-alert at most every 24h so the watchdog never trains the user to
     ignore it. Returns True when a fresh alert is due.
     """
     if last_alert is None:
@@ -213,6 +217,7 @@ def should_alert(last_alert, now, min_hours=REALERT_HOURS) -> bool:
 # nothing (and exits 0) when healthy or when anti-flap suppresses the alert.
 # ---------------------------------------------------------------------------
 def main(argv=None) -> int:
+    """Emit due watchdog lines in UTF-8, suppressing healthy and anti-flapped incidents."""
     p = argparse.ArgumentParser(description="Machine Watchdog staleness checks")
     p.add_argument("--heartbeat", required=True, help="path to heartbeat.json")
     p.add_argument("--check", choices=sorted(_GROUPS), default="all",

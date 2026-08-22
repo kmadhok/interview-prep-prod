@@ -22,6 +22,7 @@ UPDATED_RE = re.compile(r"^_Last updated:\s*(?P<value>.+?)_(?:\s+_(?P<note>.+?)_
 
 
 def split_sections(md: str) -> dict:
+    """Execute `split_sections`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     sections: dict = {}
     matches = list(SECTION_RE.finditer(md))
     for i, m in enumerate(matches):
@@ -33,6 +34,7 @@ def split_sections(md: str) -> dict:
 
 
 def parse_this_week(body: str) -> list:
+    """Execute `parse_this_week`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     items: list = []
     current: list = []
     for line in body.splitlines():
@@ -57,6 +59,7 @@ def parse_this_week(body: str) -> list:
 
 
 def parse_table(body: str) -> list:
+    """Execute `parse_table`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     lines = [ln for ln in body.splitlines() if ln.strip().startswith("|")]
     if len(lines) < 2:
         return []
@@ -71,8 +74,10 @@ def parse_table(body: str) -> list:
 
 
 def md_inline(text: str) -> str:
+    """Execute `md_inline`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     code_spans: list = []
     def stash_code(m):
+        """Execute `stash_code`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
         code_spans.append(m.group(1))
         return "\x00CODE{}\x00".format(len(code_spans) - 1)
     text = re.sub(r"`([^`]+)`", stash_code, text)
@@ -83,6 +88,7 @@ def md_inline(text: str) -> str:
     text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
     text = re.sub(r"(?<!\w)_([^_]+)_(?!\w)", r"<em>\1</em>", text)
     def restore(m):
+        """Execute `restore`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
         idx = int(m.group(1))
         return "<code>{}</code>".format(html.escape(code_spans[idx], quote=False))
     text = re.sub(r"\x00CODE(\d+)\x00", restore, text)
@@ -90,6 +96,7 @@ def md_inline(text: str) -> str:
 
 
 def stage_chip_class(stage_text: str) -> str:
+    """Execute `stage_chip_class`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     s = stage_text.lower()
     if "offer" in s:
         return "stage-offer"
@@ -103,6 +110,7 @@ def stage_chip_class(stage_text: str) -> str:
 
 
 def split_company_role(role_md: str):
+    """Execute `split_company_role`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     cleaned = re.sub(r"^\*\*|\*\*$", "", role_md.strip())
     for sep in [" — ", " – ", " - "]:
         if sep in cleaned:
@@ -112,6 +120,7 @@ def split_company_role(role_md: str):
 
 
 def render_card(row: dict) -> str:
+    """Execute `render_card`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     company, role = split_company_role(row.get("Role", ""))
     stage = row.get("Stage", "").strip()
     next_action = row.get("Next action", "").strip()
@@ -223,6 +232,7 @@ footer { margin-top: 40px; font-size: 12px; color: var(--muted); border-top: 1px
 
 
 def render(md: str) -> str:
+    """Execute `render`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     h1_m = H1_RE.search(md)
     title = h1_m.group("title").strip() if h1_m else "Job Application Pipeline"
 
@@ -312,6 +322,7 @@ def render(md: str) -> str:
 
 
 def main(argv):
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     default_md = WORKSPACE / "Pipeline.md"
     default_html = WORKSPACE / "Pipeline.html"
 

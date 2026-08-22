@@ -30,16 +30,19 @@ CLAUSE_STATUSES = {"PASS", "FAIL", "BLOCKED", "NOT_RUN"}
 
 @dataclass(frozen=True)
 class TraceAuditResult:
+    """Represent TraceAuditResult; constructor validation and side effects follow the defining fields and methods."""
     behavior: str
     passed: bool
     detail: str = ""
     run_id: str = ""
 
     def as_dict(self) -> dict[str, Any]:
+        """Execute `as_dict`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
         return asdict(self)
 
 
 def prediction_from_clauses(results: list[dict[str, Any]]) -> str:
+    """Execute `prediction_from_clauses`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     statuses = {item.get("status") for item in results}
     if "FAIL" in statuses:
         return "false"
@@ -137,6 +140,7 @@ def _validate_behavior(
 
 
 def audit_runs(runs_dir: Path) -> list[TraceAuditResult]:
+    """Execute `audit_runs`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     runs_dir = Path(runs_dir)
     traces: dict[str, list[tuple[Path, list[dict[str, Any]]]]] = {
         behavior: [] for behavior in BEHAVIORS
@@ -165,6 +169,7 @@ def audit_runs(runs_dir: Path) -> list[TraceAuditResult]:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Execute `build_parser`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     parser = argparse.ArgumentParser(
         description="Verify closed primitive traces for all nine pipeline behaviors."
     )
@@ -174,6 +179,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     args = build_parser().parse_args(argv)
     runs_dir = Path(args.runs_dir)
     if not runs_dir.is_dir():

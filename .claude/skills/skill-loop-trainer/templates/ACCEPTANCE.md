@@ -75,7 +75,7 @@ Only emails passing **all** Stage-1 gates reach here. The LLM judge scores close
     "concreteness": { "score": 5, "why": "..." },
     "length":       { "score": 5, "why": "..." },
     "cta":          { "score": 4, "why": "..." },
-    "sounds_like_kanu": { "score": 4, "why": "..." }
+    "sounds_like_user": { "score": 4, "why": "..." }
   },
   "weighted_total": 4.4
 }

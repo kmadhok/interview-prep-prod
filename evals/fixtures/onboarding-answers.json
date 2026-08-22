@@ -1,0 +1,17 @@
+{
+  "profile": {
+    "user_name": "Jordan Agent",
+    "user_email": "jordan.agent@example.com",
+    "user_linkedin": "linkedin.com/in/jordan-agent",
+    "user_github": "github.com/jordan-agent",
+    "resume_filename_pattern": "{name} Resume - {company} {role}",
+    "timezone": "America/New_York"
+  },
+  "masters": {
+    "Resume Achievements Master.md": "# Resume Achievements Master\n\n# Canonical Achievements\n\n## Acme — Senior Agent Builder\n\n### A1. Agent reliability\n\n- **Canonical bullet:** Built a production agent evaluation harness that caught regressions before release.\n- **Proof:** synthetic onboarding fixture.\n\n# Quick-Reference Theme Index\n\n- evaluation → A1\n",
+    "Master Story Bank.md": "# Master Story Bank\n\n## Theme → Story map\n\n- evaluation → S-1\n\n# Stories\n\n## S-1 — Catching agent regressions\n\n### Beats\n\n- Built an evaluation harness, found release-blocking failures, and added the checks to delivery.\n\n### Proof points\n\n- Achievement A1.\n",
+    "Tell Me About Yourself - Master.md": "# Tell Me About Yourself — Master\n\n## The spine (role-agnostic)\n\n1. Present: senior agent builder.\n2. Shift: moved from analysis into production systems.\n3. Built: reliable agents and evaluations.\n4. Recognition: trusted to own releases.\n5. Why: looking for end-to-end agent ownership.\n\n# Variant A — Agent builder\n\n> I build production agents with evaluation at the center of the delivery loop.\n",
+    "Job Search Target Profile.md": "# Job Search Target Profile\n\n## The role, in one paragraph\n\n- Senior agent-building roles with end-to-end product ownership.\n\n## Non-negotiables\n\n- Remote in the United States.\n\n## What I am NOT looking for\n\n- Roles centered on algorithm drills.\n",
+    "Application Profile.md": "# Application Profile\n\n## Facts\n\n- **Salary expectation:** discuss based on scope.\n- **Work authorization:** authorized; no sponsorship required.\n- **Notice period / availability:** 2 weeks.\n- **Email:** jordan.agent@example.com.\n- **Location / relocation / remote preference:** United States, remote.\n"
+  }
+}

@@ -16,6 +16,7 @@ TOPIC_FILE = Path.home() / ".claude" / "ntfy_topic.txt"
 
 
 def gather(repo_root: Path, now: datetime) -> dict:
+    """Execute `gather`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     queued, stale = [], []
     for folder in _packet_folders(repo_root):
         rec = read_packet(folder)
@@ -35,6 +36,7 @@ def gather(repo_root: Path, now: datetime) -> dict:
 
 
 def compose(data: dict) -> str:
+    """Execute `compose`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     q, s = data["queued"], data["stale"]
     if not q:
         return "Apply Queue: empty"
@@ -50,6 +52,7 @@ def compose(data: dict) -> str:
 
 
 def send(topic: str, text: str, opener=urllib.request.urlopen) -> None:
+    """Execute `send`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     req = urllib.request.Request(
         f"https://ntfy.sh/{topic}", data=text.encode("utf-8"),
         headers={"Title": "Apply Queue digest"})
@@ -59,6 +62,7 @@ def send(topic: str, text: str, opener=urllib.request.urlopen) -> None:
 
 
 def main(argv=None) -> int:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--repo-root", default=".")
     p.add_argument("--send", action="store_true")

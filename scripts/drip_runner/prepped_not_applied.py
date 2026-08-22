@@ -6,7 +6,7 @@ A role is "resolved" if it reached an Applied row in `## Active` OR appears in
 `## Closed / On hold` (rejected/archived). A prepped role that is NOT resolved
 and whose resume is older than the staleness threshold is the silent-failure
 path: prepped, never applied, outreach never staged. The secretary/report turns
-this into a visible "did you apply?" nudge — the machine reminds, Kanu decides.
+this into a visible "did you apply?" nudge — the machine reminds, the user decides.
 
 Age-in-days is supplied by the caller (CLI boundary) so the pure functions stay
 clock-free and unit-testable.
@@ -109,6 +109,7 @@ def _scan_prepped(roles_dir: str):
 
 
 def main(argv=None) -> int:
+    """Print stale unresolved role folders with age in days as tab-separated rows."""
     p = argparse.ArgumentParser(description="prepped-but-not-applied nudge")
     p.add_argument("--roles-dir", required=True)
     p.add_argument("--pipeline", required=True)

@@ -7,7 +7,7 @@ The single source of truth for "better." Every judge dimension in `RUBRIC.md` an
 this example does** (transferable traits), not by copying its words.
 
 > **⚠️ PLACEHOLDER — REPLACE WITH THE REAL EXAMPLE.** Until it's real, the rubric is hollow.
-> Paste one {{GOLD_NOUN}} Kanu loves — the exact output, as he'd actually use it.
+> Paste one {{GOLD_NOUN}} the user loves — the exact output, as they'd actually use it.
 
 ---
 
@@ -18,14 +18,14 @@ this example does** (transferable traits), not by copying its words.
 
 ---
 
-## Why this is the standard (Kanu's words → these drive the rubric weights)
+## Why this is the standard (the user's words → these drive the rubric weights)
 
 The most important section. The rubric's top-weighted dimensions come straight from here.
 
-- **Load-bearing trait #1:** <what makes it work — in his words>
+- **Load-bearing trait #1:** <what makes it work — in their words>
 - **Load-bearing trait #2:** <the second thing>
 - **The thing most AI drafts get wrong that this gets right:** <...>
-- **If he could keep only one trait:** <...>
+- **If they could keep only one trait:** <...>
 
 ## Metadata
 - **Originally for:** <the specific context this was made for>

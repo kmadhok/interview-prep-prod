@@ -1,6 +1,6 @@
 ---
 name: interview-prep-reusables
-description: Use whenever the user wants to bootstrap, refresh, or extend the cross-role reusable files at the root of their Interview Prep workspace at <repo root>/workspace/ — Master Story Bank.md, Tell Me About Yourself - Master.md, Demo Portfolio.md, Outreach Templates.md, Resume Achievements Master.md. Trigger on explicit language ("update story bank", "refresh demo portfolio", "add outreach template", "rebuild TMAY master", "bootstrap reusables", "rebuild prep library") AND on bare mentions of new material for these files — a new project shipped, a new live demo URL, an outreach pattern that worked, a new role archetype, a new flagship story, a new resume bullet — or when these files are missing and he wants them seeded. Do NOT trigger for JD intake (use interview-prep-intake), cold outreach drafting (use job-outreach), or per-role prep edits inside a Company - Role folder. If ambiguous between cross-role and per-role, ask before invoking.
+description: Use whenever the user wants to bootstrap, refresh, or extend the cross-role reusable files at the root of their Interview Prep workspace at <repo root>/workspace/ — Master Story Bank.md, Tell Me About Yourself - Master.md, Demo Portfolio.md, Outreach Templates.md, Resume Achievements Master.md. Trigger on explicit language ("update story bank", "refresh demo portfolio", "add outreach template", "rebuild TMAY master", "bootstrap reusables", "rebuild prep library") AND on bare mentions of new material for these files — a new project shipped, a new live demo URL, an outreach pattern that worked, a new role archetype, a new flagship story, a new resume bullet — or when these files are missing and they want them seeded. Do NOT trigger for JD intake (use interview-prep-intake), cold outreach drafting (use job-outreach), or per-role prep edits inside a Company - Role folder. If ambiguous between cross-role and per-role, ask before invoking.
 ---
 
 # Interview Prep — Cross-Role Reusables
@@ -21,7 +21,7 @@ Read the root `AGENTS.md` (or `CLAUDE.md`) in the Interview Prep folder before y
   - `Demo Portfolio.md` — canonical descriptions, URLs, talking points for live demos and Walmart-internal artifacts
   - `Outreach Templates.md` — voice-locked templates for every outreach situation, with a per-archetype hook bank
 - Source content the reusables draw from:
-  - Each `Roles/Company - Role/Interview Answers.md` — story drafts in Kanu's voice
+  - Each `Roles/Company - Role/Interview Answers.md` — story drafts in the user's voice
   - Each `Roles/Company - Role/Tell Me About Yourself - Cue Card.md` — role-tuned openers
   - Each `Roles/Company - Role/Messages with Recruiter.md` — outreach patterns that already worked
   - Each `Roles/Company - Role/Job Description.md` — role archetype signal
@@ -34,10 +34,10 @@ If the user is in a different workspace and you can't find this structure, ask b
 This skill runs in one of three modes — pick based on context, don't ask the user which:
 
 - **Bootstrap.** One or more of the five reusables doesn't exist yet. Build it from existing role folders + auto-memory + the resume master.
-- **Refresh.** Kanu mentioned new material (a new project, a new demo URL, an outreach pattern that landed, a new role archetype). Surgically update the relevant file(s) — don't rewrite anything that's already working.
-- **Audit.** Kanu wants a sanity pass before a new round of interviews — check for staleness ([NUMBER?] placeholders never filled in, dead demo URLs, outdated project lists, archetype variants that no longer match active pipeline roles). Surface findings + propose targeted fixes; don't blindly rewrite.
+- **Refresh.** The user mentioned new material (a new project, a new demo URL, an outreach pattern that landed, a new role archetype). Surgically update the relevant file(s) — don't rewrite anything that's already working.
+- **Audit.** The user wants a sanity pass before a new round of interviews — check for staleness ([NUMBER?] placeholders never filled in, dead demo URLs, outdated project lists, archetype variants that no longer match active pipeline roles). Surface findings + propose targeted fixes; don't blindly rewrite.
 
-If you can't tell which mode applies from context, ask Kanu in one short question — don't trigger a whole interview.
+If you can't tell which mode applies from context, ask the user in one short question — don't trigger a whole interview.
 
 ## Workflow
 
@@ -54,19 +54,19 @@ This is fast — under 60 seconds with the right reads. Don't over-research.
 
 ### 2. Identify what changed (refresh mode)
 
-Most invocations are refresh, not bootstrap. The unit of work is figuring out what new information Kanu surfaced and which file it belongs in. Common patterns:
+Most invocations are refresh, not bootstrap. The unit of work is figuring out what new information the user surfaced and which file it belongs in. Common patterns:
 
-| What Kanu said / did | File(s) to update |
+| What the user said / did | File(s) to update |
 |---|---|
 | Shipped a new project / system | `Master Story Bank.md` (new story entry), `Resume Achievements Master.md` (new bullet + variants), `Demo Portfolio.md` (if public-facing) |
 | Has a new live demo URL or redeployed an existing one | `Demo Portfolio.md` (URL + last-verified date) |
-| Got a new piece of feedback or learned something about his own work | `Master Story Bank.md` — fill a `[TO DRAFT]` slot or add a canonical line to an existing story |
+| Got a new piece of feedback or learned something about their own work | `Master Story Bank.md` — fill a `[TO DRAFT]` slot or add a canonical line to an existing story |
 | Tried a new outreach phrasing and it worked (or didn't) | `Outreach Templates.md` — extend the relevant template or hook bank |
 | Picked up a new role archetype not yet covered | `Tell Me About Yourself - Master.md` (new variant) and `Outreach Templates.md` (new hook in the hook bank) |
 | Verified a `[NUMBER?]` placeholder with a real number | Find every occurrence across the reusables and replace |
 | Confirmed a story is wrong or needs cutting | Remove or rewrite — don't leave half-rewritten beats |
 
-When in doubt about which file a piece of content belongs in, default to **the most specific** — if it's a one-line outreach phrasing, that's `Outreach Templates.md`; if it's a story arc, that's `Master Story Bank.md`. If it's both (e.g., a project that's now a story AND a resume bullet AND a demo), update all the relevant files in the same pass — don't make Kanu come back tomorrow.
+When in doubt about which file a piece of content belongs in, default to **the most specific** — if it's a one-line outreach phrasing, that's `Outreach Templates.md`; if it's a story arc, that's `Master Story Bank.md`. If it's both (e.g., a project that's now a story AND a resume bullet AND a demo), update all the relevant files in the same pass — don't make the user come back tomorrow.
 
 ### 3. Edit (don't rewrite)
 
@@ -103,30 +103,30 @@ When adding to `Outreach Templates.md`:
 
 These rules come from `AGENTS.md` and apply to everything you write into the reusables:
 
-- **First person, conversational.** Read it out loud — if it doesn't sound like Kanu talking, rewrite.
+- **First person, conversational.** Read it out loud — if it doesn't sound like the user is talking, rewrite.
 - **No corporate filler.** No "leverage," "spearhead," "synergize," "hope this finds you well," "I'm thrilled to."
 - **Real numbers only.** If a number isn't verified, use `[NUMBER?]` as a placeholder — never invent.
 - **Obsidian-friendly markdown.** No exotic frontmatter, fenced code blocks fine, internal `[[wiki links]]` allowed.
-- **Don't paraphrase existing voice.** When pulling content from a role folder's `Interview Answers.md` into the master Story Bank, keep Kanu's phrasing — don't rewrite it into something more "polished."
+- **Don't paraphrase existing voice.** When pulling content from a role folder's `Interview Answers.md` into the master Story Bank, keep the user's phrasing — don't rewrite it into something more "polished."
 - **Confidentiality.** Recruiter messages and interviewer bios are confidential. You can lift outreach *patterns* into `Outreach Templates.md` (e.g., "this short post-screen thank-you pattern got a 23-min reply from Ganna at BCG X — keep it") but don't paste verbatim recruiter content into outward-facing templates.
 
 ### 5. Report back
 
-Keep the recap short. Kanu just told you what changed — he knows the substance. He wants to see what landed where.
+Keep the recap short. The user just told you what changed — they know the substance. They want to see what landed where.
 
 Include:
 
 - A `computer://` link to each reusable file you edited.
 - One line per file describing what changed (e.g., "added S-A10 hybrid-orchestrator story under the Theme→Story map; updated the technical-depth row").
-- Any `[NUMBER?]` placeholders you left behind, so Kanu can fill them on his work laptop later.
+- Any `[NUMBER?]` placeholders you left behind, so the user can fill them on their work laptop later.
 - Any inconsistency you noticed but didn't fix (e.g., "the Demo Portfolio still has `[TO ADD]` for the Cloud Run URL — want me to confirm it's live and patch?").
 - If you touched something across multiple files (e.g., a new project that became a story + a resume bullet + a demo), say so explicitly so the cross-file consistency is visible.
 
-Don't restate the new content verbatim — Kanu can read the files himself. Don't pad with motivational fluff or "let me know if you'd like anything else."
+Don't restate the new content verbatim — the user can read the files themself. Don't pad with motivational fluff or "let me know if you'd like anything else."
 
 ## File structures (for bootstrap mode)
 
-If a reusable file doesn't exist yet, follow these structures. Each file should open with a **Purpose** line + a **How to use** block so future-Claude (and Kanu) know what the file is for.
+If a reusable file doesn't exist yet, follow these structures. Each file should open with a **Purpose** line + a **How to use** block so future-Claude (and the user) know what the file is for.
 
 ### `Master Story Bank.md`
 
@@ -154,7 +154,7 @@ If a reusable file doesn't exist yet, follow these structures. Each file should 
 [repeat per story]
 
 ## Stories I still need to draft
-[slots for question types where Kanu doesn't yet have a polished story]
+[slots for question types where the user doesn't yet have a polished story]
 
 ## Notes for tailoring
 [per-archetype guidance on which stories to lead with]
@@ -188,7 +188,7 @@ Aim for 8–12 stories. Fewer = the file isn't pulling enough weight. More = spr
 [when to swap which variant; what universally stays]
 ```
 
-Aim for 3 variants — covering the main archetypes Kanu is interviewing for. Don't proliferate.
+Aim for 3 variants — covering the main archetypes the user is interviewing for. Don't proliferate.
 
 ### `Demo Portfolio.md`
 
@@ -252,34 +252,34 @@ Aim for 3 variants — covering the main archetypes Kanu is interviewing for. Do
 
 ### `Resume Achievements Master.md`
 
-Already exists in Kanu's workspace as the canonical pattern — match its structure when adding new content. Key conventions: per-job sections, achievement entries with `Tags`, canonical bullet, variants, proof points, backstory. Plus a Skills block, Education, Honors, and a Theme Index at the bottom.
+Already exists in the user's workspace as the canonical pattern — match its structure when adding new content. Key conventions: per-job sections, achievement entries with `Tags`, canonical bullet, variants, proof points, backstory. Plus a Skills block, Education, Honors, and a Theme Index at the bottom.
 
 ## Edge cases
 
-- **Reusables file exists but has been edited by Kanu since the last refresh.** Treat his edits as canonical — don't overwrite them. Identify what's new and surgically add it.
-- **The story Kanu wants to add already exists under a different name.** Don't duplicate. Extend the existing story with the new beat or proof point. Note the rename in the report-back.
-- **Kanu shares an outreach pattern that worked but it's specific to one recruiter (e.g., "Ganna replied fast to this short thank-you").** Lift the *pattern*, not the recruiter-specific content. Reference the successful instance in the template's "Real-world reference" line, but the template itself should be archetype-generic.
-- **A `[NUMBER?]` placeholder shows up in multiple files for the same fact.** Treat them as one fact with multiple homes. When Kanu verifies the number, fix all instances in the same pass — and tell him you did, so he doesn't re-ask.
-- **Kanu mentions a role archetype that doesn't have a TMAY variant yet, but might be a one-off (e.g., a single interview at a research lab).** Don't create a new master variant for a one-off. Build the variant inside the role folder's `Tell Me About Yourself - Cue Card.md` instead. Only promote it to the master file if the archetype is going to recur.
+- **Reusables file exists but has been edited by the user since the last refresh.** Treat their edits as canonical — don't overwrite them. Identify what's new and surgically add it.
+- **The story the user wants to add already exists under a different name.** Don't duplicate. Extend the existing story with the new beat or proof point. Note the rename in the report-back.
+- **The user shares an outreach pattern that worked but it's specific to one recruiter (e.g., "Ganna replied fast to this short thank-you").** Lift the *pattern*, not the recruiter-specific content. Reference the successful instance in the template's "Real-world reference" line, but the template itself should be archetype-generic.
+- **A `[NUMBER?]` placeholder shows up in multiple files for the same fact.** Treat them as one fact with multiple homes. When the user verifies the number, fix all instances in the same pass — and tell them you did, so they don't re-ask.
+- **The user mentions a role archetype that doesn't have a TMAY variant yet, but might be a one-off (e.g., a single interview at a research lab).** Don't create a new master variant for a one-off. Build the variant inside the role folder's `Tell Me About Yourself - Cue Card.md` instead. Only promote it to the master file if the archetype is going to recur.
 - **Conflict between the Resume Achievements Master and the Master Story Bank for the same project.** The Resume Master is the source of truth for *numbers and proof points*. The Story Bank is the source of truth for *narrative arcs and canonical lines*. When they conflict on a number, fix the Story Bank to match the Resume Master.
-- **Kanu asks you to make the reusables "shorter."** First ask which file — they have different purposes and tolerate different lengths. Story Bank is allowed to be long because depth matters in interview answers; Outreach Templates should be tight because templates need to scan fast.
-- **Workspace doesn't exist at the expected path.** Don't create it. Tell Kanu the path you're looking for and ask whether he's working from a different workspace.
+- **The user asks you to make the reusables "shorter."** First ask which file — they have different purposes and tolerate different lengths. Story Bank is allowed to be long because depth matters in interview answers; Outreach Templates should be tight because templates need to scan fast.
+- **Workspace doesn't exist at the expected path.** Don't create it. Tell the user the path you're looking for and ask whether they're working from a different workspace.
 
 ## Anti-triggers
 
 Do NOT use this skill for:
 
-- **JD intake.** When Kanu shares a fresh JD he wants filed (creating a new role folder, writing `Job Description.md`, updating `Pipeline.md`), use `interview-prep-intake` instead.
-- **Cold outreach drafting for a specific named role.** When Kanu wants the actual cold-email written + sent for a JD (with recruiter/HM lookup), use `job-outreach`. This skill maintains the *templates* the email is drafted from; it doesn't draft the email itself.
-- **Per-role prep file edits.** When Kanu wants to refine `Interview Answers.md` or `7-Day Prep Schedule.md` inside a specific `Company - Role` folder, that's normal Claude editing. Only invoke this skill if the change he's making should be pulled out into the cross-role reusables.
-- **Pipeline tracker maintenance.** When Kanu is moving a row between Active / Considering / Closed in `Pipeline.md`, that's a manual edit (or part of `interview-prep-intake` for new rows). Not this skill.
+- **JD intake.** When the user shares a fresh JD they want filed (creating a new role folder, writing `Job Description.md`, updating `Pipeline.md`), use `interview-prep-intake` instead.
+- **Cold outreach drafting for a specific named role.** When the user wants the actual cold-email written + sent for a JD (with recruiter/HM lookup), use `job-outreach`. This skill maintains the *templates* the email is drafted from; it doesn't draft the email itself.
+- **Per-role prep file edits.** When the user wants to refine `Interview Answers.md` or `7-Day Prep Schedule.md` inside a specific `Company - Role` folder, that's normal Claude editing. Only invoke this skill if the change they're making should be pulled out into the cross-role reusables.
+- **Pipeline tracker maintenance.** When the user is moving a row between Active / Considering / Closed in `Pipeline.md`, that's a manual edit (or part of `interview-prep-intake` for new rows). Not this skill.
 - **Memory updates.** Auto-memory entries belong in the memory system, not the reusables. This skill doesn't write to memory directly.
 
 If both this skill and another could apply and the user is ambiguous, ask which they want before invoking either.
 
 ## Voice for the report-back
 
-Kanu reads the report at a glance. Be concrete and tight:
+The user reads the report at a glance. Be concrete and tight:
 
 - Bad: "I've completed an extensive update to your interview preparation reusables, incorporating the new project you mentioned with detailed integration across multiple files."
 - Good: "Added S-A11 (geo-readiness agent) to `Master Story Bank.md` and a new bullet under Walmart in `Resume Achievements Master.md`. One `[NUMBER?]` left — the geo-readiness adoption count. Both demo + outreach files unchanged."

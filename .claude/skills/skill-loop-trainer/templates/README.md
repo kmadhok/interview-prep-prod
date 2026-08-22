@@ -20,7 +20,7 @@ Files:
 - `RUBRIC.md` — judge dimensions/weights derived from the gold example.
 - `RUNNER.md` — worktree creation, verified CLI invocations, end-to-end flow, judge-model rationale.
 - `TASK_PROMPT.md` — the verbatim prompt every model runs.
-- `gold-example.md` — the anchor (placeholder until Kanu fills it).
+- `gold-example.md` — the anchor (placeholder until the user fills it).
 
 Reference implementation (fully worked, do not template over): `Write Outreach Test/` at repo root —
 target skill `write-outreach`, gold = a Google Cloud cold-recruiter email. Run 1 winner: Claude

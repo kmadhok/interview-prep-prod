@@ -53,6 +53,7 @@ def _leading(font_size: float) -> float:
 
 
 def build_styles(body_pt: float) -> dict[str, ParagraphStyle]:
+    """Derive a complete ReportLab style set from the current body-size fit tier."""
     name_pt = body_pt + 10.5
     section_pt = body_pt + 1
     meta_pt = body_pt - 0.5
@@ -124,6 +125,7 @@ def md_inline(text: str) -> str:
 
 def header_row(left_html: str, right_html: str, left_style, right_style,
                col_split: float = 4.7, frame_width_in: float = 7.2):
+    """Build a full-width, zero-padding two-column row pinned to both frame margins."""
     # The table must fill the full frame width and left-align within it, or it
     # centers itself (reportlab default hAlign=CENTER) and the company name drifts
     # right by half the (frame - table) gap — an amount that varies per font/margin
@@ -145,6 +147,7 @@ def header_row(left_html: str, right_html: str, left_style, right_style,
 
 
 def section_header_flow(title: str, styles: dict[str, ParagraphStyle]):
+    """Return the spacer, heading, and rule flowables that begin a resume section."""
     return [
         Spacer(1, 2),
         Paragraph(title, styles["section"]),
@@ -154,6 +157,7 @@ def section_header_flow(title: str, styles: dict[str, ParagraphStyle]):
 
 
 def bullet_flow(text: str, styles: dict[str, ParagraphStyle]):
+    """Render one Markdown-aware bullet using the configured hanging-indent style."""
     return Paragraph(f"• {md_inline(text)}", styles["bullet"])
 
 
@@ -208,7 +212,7 @@ def parse_resume(md_text: str):
     for i, ln in enumerate(lines):
         if ln.startswith("# "):
             raw_name = ln[2:].strip()
-            # Title-case fix for shouted KANU MADHOK
+            # Title-case fix for an all-uppercase name heading.
             name = raw_name.title() if raw_name.isupper() else raw_name
             # Next non-blank line that isn't italic helper text is contact
             j = i + 1
@@ -228,6 +232,7 @@ def parse_resume(md_text: str):
     cur_lines: list[str] = []
 
     def flush():
+        """Snapshot the current section only after a heading has established it."""
         if cur_title is not None:
             sections.append((cur_title, cur_lines[:]))
 
@@ -269,6 +274,7 @@ def parse_experience(section_lines: list[str]):
     cur = None
 
     def push():
+        """Append the completed job, then clear parser state for the next heading."""
         nonlocal cur
         if cur is not None:
             jobs.append(cur)
@@ -476,6 +482,7 @@ def _render_pdf_once(md_text: str, pdf_path: Path, tier: dict[str, float]) -> No
 
 
 def build_pdf(md_path: Path, pdf_path: Path) -> tuple[int, int, dict[str, float]]:
+    """Render progressively tighter tiers, returning the first one-page contract when possible."""
     md_text = md_path.read_text(encoding="utf-8")
     title_leak = _detect_title_leak(md_text)
     last_error = None
@@ -507,6 +514,7 @@ SKIP_FILES = {"Resume Achievements Master.md", "Resume Claims To Verify.md"}
 
 
 def discover_unpaired() -> list[Path]:
+    """Find role resume Markdown files lacking sibling PDFs while skipping master evidence files."""
     out = []
     for sub in sorted(ROOT.iterdir()):
         if not sub.is_dir():
@@ -591,6 +599,7 @@ def _run(argv: list[str] | None = None):
 
 
 def main():
+    """Run PDF conversion and always emit a machine-readable pages/title-leak contract."""
     rc, contracts = _run()
     for prefix, pages, title_leak in contracts:
         _emit_contract(pages, title_leak, prefix)

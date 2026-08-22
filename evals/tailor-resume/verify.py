@@ -28,6 +28,7 @@ def _read(path: Path) -> str:
 
 
 def verify(context: EvalContext) -> list[ClauseResult]:
+    """Execute `verify`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     role_path = context.role
     profile = load_profile(context.profile) if context.profile else load_profile()
     prefix = resume_glob_prefix(profile)

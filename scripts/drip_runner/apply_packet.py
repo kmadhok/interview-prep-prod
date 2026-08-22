@@ -30,6 +30,7 @@ class PacketError(RuntimeError):
 
 
 def default_remote() -> str:
+    """Execute `default_remote`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return os.environ.get("APPLY_PACKET_REMOTE_DIR", DEFAULT_REMOTE)
 
 
@@ -46,20 +47,24 @@ def packet_pdf_name(company: str, role: str, posted_date: str | None) -> str:
 
 
 def packet_answers_name(company: str, role: str) -> str:
+    """Execute `packet_answers_name`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return f"{company} - {role} - Answers.txt"
 
 
 def find_resume_pdf(folder: Path) -> Path | None:
+    """Execute `find_resume_pdf`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     pdfs = sorted(folder.glob(f"{resume_glob_prefix()}*.pdf"),
                   key=lambda p: p.stat().st_mtime, reverse=True)
     return pdfs[0] if pdfs else None
 
 
 def sha256_of(path: Path) -> str:
+    """Execute `sha256_of`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def read_classification(folder: Path) -> dict:
+    """Execute `read_classification`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     f = folder / CLASSIFICATION_FILE
     if not f.exists():
         return {}
@@ -71,11 +76,13 @@ def read_classification(folder: Path) -> dict:
 
 def write_packet(folder: Path, record: dict) -> None:
     # UTF-8 no BOM, trailing newline — repo readers are BOM-sensitive.
+    """Execute `write_packet`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     (folder / PACKET_FILE).write_text(
         json.dumps(record, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def read_packet(folder: Path) -> dict | None:
+    """Execute `read_packet`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     f = folder / PACKET_FILE
     if not f.exists():
         return None
@@ -149,6 +156,7 @@ def normalize_jd(text: str) -> str:
 def jd_similarity(a: str, b: str) -> float:
     # autojunk=False: real JDs exceed 200 chars, where difflib's autojunk
     # heuristic treats common words as junk and collapses the ratio to noise.
+    """Execute `jd_similarity`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return difflib.SequenceMatcher(None, normalize_jd(a), normalize_jd(b),
                                    autojunk=False).ratio()
 
@@ -297,6 +305,7 @@ def _cli_reconcile(args) -> int:
 
 
 def main(argv=None) -> int:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
     up = sub.add_parser("upload", help="upload one role's packet to the Apply Queue")

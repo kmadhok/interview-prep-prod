@@ -98,6 +98,7 @@ def _step_ends(events: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
 
 
 def render(run_dir: Path) -> Path:
+    """Execute `render`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     trace = run_dir / "trace.jsonl"
     events = read_events(trace)
     run_start = _first_event(events, "run_start") or {}
@@ -219,6 +220,7 @@ def render(run_dir: Path) -> Path:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     args = list(sys.argv[1:] if argv is None else argv)
     if len(args) != 1:
         print("usage: render_run_report.py <run-dir>", file=sys.stderr)

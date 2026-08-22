@@ -2,19 +2,19 @@
   "themes": [
     {
       "tag": "agents",
-      "evidence": "design and ship production LLM agents with tool-use orchestration"
+      "evidence": "Design and ship production LLM agents"
     },
     {
       "tag": "LLM-orchestration",
-      "evidence": "prompt scaffolds, tool-use orchestration, and guardrails for agents"
+      "evidence": "prompt scaffolds, tool-use orchestration, eval harnesses, and guardrails"
     },
     {
       "tag": "RAG",
-      "evidence": "build retrieval-augmented generation pipelines grounded in customer data"
+      "evidence": "Build retrieval-augmented generation (RAG) pipelines grounded in customer data"
     },
     {
       "tag": "evaluation",
-      "evidence": "write and maintain evaluation suites that catch regressions"
+      "evidence": "Write and maintain evaluation suites that catch regressions"
     }
   ],
   "archetype": "agent-builder",

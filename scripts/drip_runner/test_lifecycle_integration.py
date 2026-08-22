@@ -351,7 +351,7 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     This proves:
     - jd-to-ready (steps 1,2,3,3.5,6,7) produces a summary with run_type='jd-to-ready'
       and steps_closed == exactly those 6 prep steps.
-    - stage-outreach (steps 4,4b,4c,5,6,7) on the SAME role folder (simulating Kanu
+    - stage-outreach (steps 4,4b,4c,5,6,7) on the SAME role folder (simulating the user
       applied, then outreach staged) produces a SECOND summary with run_type='stage-outreach'.
     - set-role-folder binds the already-prepped folder without clobbering it.
     - The two skills trace as SEPARATE runs (the whole reason for the split).
@@ -428,7 +428,7 @@ def test_full_trace_lifecycle_both_runtypes(tmp_path):
     )
 
     # ------------------------------------------------------------------
-    # (Simulate Kanu applying: Pipeline.md row marked Applied; we don't
+    # (Simulate the user applying: Pipeline.md row marked Applied; we don't
     #  touch the file here — the worklist reader is exercised in Tests 1-4.
     #  What matters is that stage-outreach starts a FRESH run in the SAME folder.)
     # ------------------------------------------------------------------

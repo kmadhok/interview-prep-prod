@@ -68,6 +68,7 @@ def _has_no_hook_gap(context: EvalContext) -> bool:
 
 
 def verify(context: EvalContext) -> list[ClauseResult]:
+    """Execute `verify`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     role = context.role
     ledger_path = role / ".contacts-ledger.md"
     ledger = _load_ledger_parser()

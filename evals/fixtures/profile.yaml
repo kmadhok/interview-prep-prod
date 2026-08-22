@@ -1,0 +1,8 @@
+# Synthetic profile used by the canonical behavior-eval workspace.
+user_name: Jordan Agent
+user_email: jordan.agent@example.com
+user_linkedin: linkedin.com/in/jordan-agent
+user_github: github.com/jordan-agent
+resume_filename_pattern: "{name} Resume - {company} {role}"
+timezone: America/New_York
+notice_period: 2 weeks

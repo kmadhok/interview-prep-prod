@@ -11,7 +11,7 @@ The bundled script handles the deterministic part: company ATS and job pages tha
 
 ## When this fires
 
-Use this skill when Kanu asks whether roles in `Pipeline.md` are still live, still open, still accepting applications, closed, dead, stale, or worth applying to.
+Use this skill when the user asks whether roles in `Pipeline.md` are still live, still open, still accepting applications, closed, dead, stale, or worth applying to.
 
 Good trigger examples:
 
@@ -23,10 +23,10 @@ Good trigger examples:
 
 ## Do NOT use when
 
-- Kanu shares a fresh JD and wants it filed into the workspace -> use `interview-prep-intake`.
-- Kanu wants the full apply-ready package for a role -> use `jd-to-ready`.
-- Kanu wants to find NEW jobs that match his target profile -> use `find-fresh-jobs`.
-- Kanu asks for prep material for an interview already in motion -> use the normal role-folder prep workflow.
+- the user shares a fresh JD and wants it filed into the workspace -> use `interview-prep-intake`.
+- the user wants the full apply-ready package for a role -> use `jd-to-ready`.
+- the user wants to find NEW jobs that match their target profile -> use `find-fresh-jobs`.
+- the user asks for prep material for an interview already in motion -> use the normal role-folder prep workflow.
 
 ## Workflow
 
@@ -44,9 +44,9 @@ Good trigger examples:
 
 4. Grade confidence. HTTP 404, HTTP 410, or page text like "no longer accepting" is CERTAIN dead. Absence-from-search is PROBABLE dead. Keep that distinction in the report.
 
-5. Fold results back into `Pipeline.md`: move CERTAIN-dead roles to "Closed / On hold" and move their folders to `_Archived/`; flag PROBABLE-dead roles in place with a note like "LinkedIn shows no live posting — verify on company site". Always confirm with Kanu before archiving.
+5. Fold results back into `Pipeline.md`: move CERTAIN-dead roles to "Closed / On hold" and move their folders to `_Archived/`; flag PROBABLE-dead roles in place with a note like "LinkedIn shows no live posting — verify on company site". Always confirm with the user before archiving.
 
-6. Report a tight summary table to Kanu: LIVE / DEAD / UNVERIFIED, with the highest-fit live roles called out first.
+6. Report a tight summary table to the user: LIVE / DEAD / UNVERIFIED, with the highest-fit live roles called out first.
 
 ## Why a pure script can't do all of it
 

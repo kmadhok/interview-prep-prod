@@ -37,6 +37,7 @@ def read_stdin_payload() -> dict[str, Any]:
 
 
 def main() -> int:
+    """Record a best-effort subagent completion event without blocking hook shutdown."""
     payload = read_stdin_payload()
     agent_name = (
         payload.get("subagent_type")

@@ -26,6 +26,7 @@ from common import ClauseResult, run_verifier, discover_skills, format_table
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the mutually constrained single-skill/all-skills eval CLI."""
     p = argparse.ArgumentParser(
         prog="run_eval.py",
         description="Run a per-skill eval verifier against a workspace.",
@@ -37,7 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--role", default=None,
                    help="Role folder (absolute or relative to workspace); defaults to sole fixture role")
     p.add_argument("--profile", default=None,
-                   help="Profile/config fixture path passed to the verifier")
+                   help="Profile/config fixture; defaults to <workspace>/profile.yaml when present")
     p.add_argument("--live", action="store_true",
                    help="Evaluate live-only clauses; default records them BLOCKED")
     p.add_argument("--json", action="store_true", dest="as_json",
@@ -50,6 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run selected contracts, distinguishing clause failures, usage errors, and crashes."""
     args = build_parser().parse_args(argv)
 
     if args.list_skills:
@@ -91,10 +93,14 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     selected = available if args.all_skills else [args.skill]
+    profile = args.profile
+    workspace_profile = workspace / "profile.yaml"
+    if profile is None and workspace_profile.is_file():
+        profile = str(workspace_profile)
     try:
         by_skill = {
             skill: run_verifier(
-                skill, workspace, role=args.role, profile=args.profile, live=args.live
+                skill, workspace, role=args.role, profile=profile, live=args.live
             )
             for skill in selected
         }

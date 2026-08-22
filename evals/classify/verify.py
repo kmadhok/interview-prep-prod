@@ -25,6 +25,7 @@ def _normalize(value: str) -> str:
 
 
 def verify(context: EvalContext) -> list[ClauseResult]:
+    """Execute `verify`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     role = context.role
     cls_path = role / ".classification.json"
     jd_text = _normalize(_read(role / "Job Description.md"))

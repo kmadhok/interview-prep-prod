@@ -24,9 +24,9 @@ Two deterministic readers drive the apply-side poll (no LLM):
   don't go unnoticed.
   Run: `py -3 scripts/drip_runner/prepped_not_applied.py --roles-dir Roles --pipeline Pipeline.md`
 
-> **Status:** PC Pass A/Pass B cron wiring and the cloud-routine drafting change are
-> NOT yet wired — see `Automation Design - Two-Orchestrator/`. The skills + readers exist
-> and are tested; the schedulers that call them are pending a live-test session.
+> **Status:** Pass A and Pass B scheduler wiring is implemented in
+> `install-tasks.ps1`. Older architecture notes that call it pending are historical.
+> The portable required/optional manifest lives under `infra/`.
 
 ## Mode: saved (default, primary)
 Ingests your **LinkedIn saved-jobs list** — save a job on LinkedIn = consent to
@@ -41,7 +41,7 @@ process it. No email step.
   no outreach drafted) -> Pipeline row + ledger `done` -> commit `drip-runner:` + push
   (per role). Failures -> ledger `error` + a `[DRIP-RUNNER] failures` Gmail draft, then
   continue to the next id. Survivors past 6 defer to the next daily run. Outreach drafts
-  are staged later via `stage-outreach` after Kanu applies.
+  are staged later via `stage-outreach` after the user applies.
 - **Re-attempt a parked job:** remove its id from `scripts/drip_runner/saved_seen.json`.
 - **Requires:** the daemon running the `feature/522-get-saved-jobs` branch (stride-10
   fix) so `get_saved_jobs` is served. `install-tasks.ps1` starts it from the repo dir.
@@ -57,15 +57,19 @@ Ingests the Gmail `drip-queue` label. Use for postings that aren't LinkedIn-nati
 - **Re-queue a parked job:** in Gmail, relabel `drip-error` -> `drip-queue`.
 
 ## One-time setup
-1. **Daemon auto-start + cron:** `install-tasks.ps1` once (registers `LinkedInDaemon`
-   at-logon and `DripRunner` weekday 08:00, the latter DISABLED until smoke-tested).
+1. **Daemon auto-start + schedulers:** `install-tasks.ps1` once (registers
+   `LinkedInDaemon` at logon, daily `DripRunner`, and hourly
+   `DripRunnerOutreach`; all are enabled by the installer).
 2. **Deps (optional):** `py -3 -m pip install reportlab` for resume PDF export; without
    it the resume renders to `.md` and the PDF step graceful-skips. Optional poppler
    (`pdftoppm`) for the resume vision-verify.
 3. **.env** at repo root carries `Email_Finder_Dev=<key>` (no BOM).
 
-## Enable the cron once smoke-tested
-`Enable-ScheduledTask -TaskName DripRunner`  (runs `run.ps1` with default `-Mode saved`).
+## Pause or resume a scheduler
+
+Use `Disable-ScheduledTask` / `Enable-ScheduledTask` with `DripRunner` or
+`DripRunnerOutreach`. See `infra/pc-runner/README.md` for the portable setup and
+manual equivalents.
 
 ## Tests
 `py -3 -m pytest scripts/drip_runner -q`

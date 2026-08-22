@@ -68,6 +68,7 @@ def parse_ledger(text: str) -> dict:
 
 
 def read_ledger(path: Path) -> dict:
+    """Execute `read_ledger`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not path.exists():
         return {"header": None, "rows": [], "raw_rows": []}
     return parse_ledger(path.read_text(encoding="utf-8-sig", errors="ignore"))

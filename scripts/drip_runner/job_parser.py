@@ -9,6 +9,7 @@ URL_RE = re.compile(r"https?://[^\s<>\"')]+", re.IGNORECASE)
 
 @dataclass
 class JobRef:
+    """Represent JobRef; constructor validation and side effects follow the defining fields and methods."""
     is_job: bool
     url: str = ""
     source: str = ""
@@ -17,15 +18,18 @@ class JobRef:
 
 
 def is_job_subject(subject: str) -> bool:
+    """Execute `is_job_subject`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return bool(re.match(r"\s*job\b", subject or "", re.IGNORECASE))
 
 
 def first_url(body: str) -> str:
+    """Execute `first_url`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     m = URL_RE.search(body or "")
     return m.group(0).rstrip(".,);]") if m else ""
 
 
 def parse_job_email(subject: str, body: str) -> JobRef:
+    """Execute `parse_job_email`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not is_job_subject(subject):
         return JobRef(False, reason="subject does not start with JOB token")
     url = first_url(body)
@@ -38,6 +42,7 @@ def parse_job_email(subject: str, body: str) -> JobRef:
 
 
 def main(argv=None) -> int:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     p = argparse.ArgumentParser()
     p.add_argument("--subject", required=True)
     p.add_argument("--body", required=True)

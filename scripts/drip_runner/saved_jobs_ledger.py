@@ -21,6 +21,7 @@ TERMINAL = {"done", "error", "skipped"}
 
 
 def load(path: str) -> dict:
+    """Execute `load`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     p = Path(path)
     if not p.exists():
         return {"version": 1, "entries": {}}
@@ -35,6 +36,7 @@ def load(path: str) -> dict:
 
 
 def is_processed(job_id: str, ledger: dict) -> bool:
+    """Execute `is_processed`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not job_id:
         return False
     entry = ledger.get("entries", {}).get(str(job_id))
@@ -42,6 +44,7 @@ def is_processed(job_id: str, ledger: dict) -> bool:
 
 
 def mark(ledger: dict, job_id: str, status: str, note: str = "", ts: str = "") -> dict:
+    """Execute `mark`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not job_id:
         raise ValueError("job_id required")
     if status not in TERMINAL:
@@ -52,12 +55,14 @@ def mark(ledger: dict, job_id: str, status: str, note: str = "", ts: str = "") -
 
 def save(path: str, ledger: dict) -> None:
     # UTF-8 no BOM, trailing newline, stable key order -> clean git diffs.
+    """Execute `save`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     Path(path).write_text(
         json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
 
 
 def main(argv=None) -> int:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     p = argparse.ArgumentParser(description="saved-jobs processed-ledger")
     sub = p.add_subparsers(dest="cmd", required=True)
 

@@ -20,11 +20,13 @@ _ERROR = re.compile(r"Outreach error", re.IGNORECASE)
 
 
 def row_is_applied(row: str) -> bool:
+    """Recognize an Applied marker without misclassifying 'not yet applied' prose."""
     row = row or ""
     return bool(_APPLIED.search(row)) and not bool(_NOT_YET.search(row))
 
 
 def row_is_staged(row: str) -> bool:
+    """Return whether a row already carries the case-insensitive Gmail staging marker."""
     return bool(_STAGED.search(row or ""))
 
 
@@ -32,7 +34,7 @@ def row_has_error(row: str) -> bool:
     """A row Pass B already failed on and parked with an 'Outreach error' note.
 
     No auto-retry (design D): a parked row is excluded from the worklist until
-    Kanu removes the note. Without this, an hourly Pass B would re-scrape a
+    the user removes the note. Without this, an hourly Pass B would re-scrape a
     failing role on LinkedIn every run — the exact account-flag surface to avoid.
     """
     return bool(_ERROR.search(row or ""))
@@ -60,6 +62,7 @@ def active_section(pipeline_text: str) -> list[str]:
 
 
 def applied_not_staged(pipeline_text: str) -> list[tuple[str, str]]:
+    """Extract Active company/role pairs that are applied, unstaged, and not parked."""
     out: list[tuple[str, str]] = []
     for line in active_section(pipeline_text):
         if not row_is_applied(line) or row_is_staged(line) or row_has_error(line):
@@ -71,6 +74,7 @@ def applied_not_staged(pipeline_text: str) -> list[tuple[str, str]]:
 
 
 def main(argv=None) -> int:
+    """Print the Pass B worklist as tab-separated company and role pairs."""
     p = argparse.ArgumentParser(description="Pass B worklist: Applied & not STAGED")
     p.add_argument("--pipeline", required=True)
     args = p.parse_args(argv)

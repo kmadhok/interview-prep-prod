@@ -32,6 +32,7 @@ def _verified_emails(role: Path) -> set[str]:
 
 
 def verify(context: EvalContext) -> list[ClauseResult]:
+    """Execute `verify`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     role = context.role
     outreach_path = role / "Cold Outreach.md"
 

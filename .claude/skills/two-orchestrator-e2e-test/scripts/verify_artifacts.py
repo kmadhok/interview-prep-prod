@@ -22,10 +22,12 @@ from common import ARCHETYPE_VOCAB, THEME_VOCAB, run_verifier
 from verify_behavior_traces import audit_runs
 
 def check(name: str, ok: bool, detail: str = "", severity: str = "fail") -> dict:
+    """Normalize a truthy condition into the verifier's serializable check schema."""
     return {"name": name, "ok": bool(ok), "detail": detail, "severity": severity}
 
 
 def rollup(checks: list[dict]) -> str:
+    """Return fail for failed hard checks, warn for only softer failures, else pass."""
     failed = [c for c in checks if not c["ok"]]
     if any(c["severity"] == "fail" for c in failed):
         return "fail"
@@ -35,10 +37,12 @@ def rollup(checks: list[dict]) -> str:
 
 
 def skill_result(checks: list[dict], notes: str = "") -> dict:
+    """Package checks with their rolled-up status and optional diagnostic notes."""
     return {"status": rollup(checks), "checks": checks, "notes": notes}
 
 
 def blocked_result(note: str = "") -> dict:
+    """Represent an intentionally unrun skill without fabricating individual checks."""
     return {"status": "blocked", "checks": [], "notes": note}
 
 
@@ -69,6 +73,7 @@ def _read(path: Path) -> str:
 
 
 def check_intake(clone: Path) -> dict:
+    """Require a role clone and a nontrivial Job Description artifact."""
     jd = clone / "Job Description.md"
     text = _read(jd)
     return skill_result([
@@ -79,6 +84,7 @@ def check_intake(clone: Path) -> dict:
 
 
 def check_classify(clone: Path) -> dict:
+    """Validate classification JSON vocabulary, theme cardinality, evidence, and timestamp."""
     f = clone / ".classification.json"
     if not f.exists():
         return skill_result([check("classification-present", False, str(f))])
@@ -101,6 +107,7 @@ def check_classify(clone: Path) -> dict:
 
 
 def find_resume(clone: Path, prefix: str | None = None) -> Path | None:
+    """Return the lexically first matching resume, or None when no configured prefix matches."""
     prefix = prefix if prefix is not None else resume_glob_prefix()
     matches = sorted(clone.glob(f"{prefix}*.md"))
     return matches[0] if matches else None
@@ -108,6 +115,7 @@ def find_resume(clone: Path, prefix: str | None = None) -> Path | None:
 
 def check_tailor_resume(clone: Path, prefix: str | None = None,
                         email: str | None = None) -> dict:
+    """Require a substantial tailored resume with contact email and no verification tokens."""
     prefix = prefix if prefix is not None else resume_glob_prefix()
     email = email if email is not None else load_profile()["user_email"]
     r = find_resume(clone, prefix)
@@ -124,6 +132,7 @@ def check_tailor_resume(clone: Path, prefix: str | None = None,
 
 
 def check_pdf(clone: Path, pages, title_leak, prefix: str | None = None) -> dict:
+    """Check PDF presence and supplied export contract, warning when diagnostics are absent."""
     prefix = prefix if prefix is not None else resume_glob_prefix()
     checks = [check("resume-pdf-present", bool(list(clone.glob(f"{prefix}*.pdf"))), "glob: *.pdf")]
     if pages is not None:
@@ -158,6 +167,7 @@ def check_packet(clone: Path) -> dict:
 
 
 def check_gate(worklist_text: str, company: str) -> dict:
+    """Require the apply-gate worklist to surface the expected nonempty company name."""
     ok = bool(company) and company.lower() in (worklist_text or "").lower()
     return skill_result([check("worklist-surfaces-role", ok, f"company={company!r}")])
 
@@ -186,6 +196,7 @@ def _ledger_contact_rows(text: str) -> int:
 
 
 def check_find_contacts(clone: Path) -> dict:
+    """Require a contacts ledger containing at least one data-bearing contact row."""
     f = clone / ".contacts-ledger.md"
     if not f.exists():
         return skill_result([check("ledger-present", False, str(f))])
@@ -197,6 +208,7 @@ def check_find_contacts(clone: Path) -> dict:
 
 
 def check_enrich_contacts(clone: Path) -> dict:
+    """Require the hooks section and warn when enrichment added no source-tagged rows."""
     f = clone / ".contacts-ledger.md"
     if not f.exists():
         return skill_result([check("ledger-present", False, str(f))])
@@ -228,6 +240,7 @@ def _verified_email_rows(text: str) -> int:
 
 
 def check_verify_emails(clone: Path) -> dict:
+    """Require email rows, warning on all-inferred output and failing ledger format mismatches."""
     f = clone / "Verified Emails.md"
     if not f.exists():
         return skill_result([check("verified-emails-present", False, str(f))])
@@ -311,6 +324,7 @@ def check_write_outreach(clone: Path, drafts, expected_recipient: str,
 
 
 def run_all(args) -> dict:
+    """Run authoritative contracts plus diagnostics and compute the overall E2E status."""
     clone = Path(args.clone)
     worklist_text = _read(Path(args.worklist_out)) if args.worklist_out else ""
     drafts = _load_drafts(args.draft_json)
@@ -385,6 +399,7 @@ def run_all(args) -> dict:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build E2E artifact inputs, including optional legacy captures and trace auditing."""
     p = argparse.ArgumentParser(description="Two-orchestrator E2E artifact verifier")
     p.add_argument("--clone", required=True)
     p.add_argument("--company", default="")
@@ -406,6 +421,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv=None) -> int:
+    """Print the E2E report as JSON and exit nonzero only for an overall failure."""
     args = build_parser().parse_args(argv)
     report = run_all(args)
     print(json.dumps(report, indent=2, ensure_ascii=False))

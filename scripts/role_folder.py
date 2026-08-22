@@ -72,6 +72,7 @@ def ensure_folder(workspace: Path, company: str, role: str) -> tuple[Path, str]:
 
 
 def main(argv=None) -> int:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     p = argparse.ArgumentParser(description="Canonical role-folder naming + ensure")
     sub = p.add_subparsers(dest="cmd", required=True)
 

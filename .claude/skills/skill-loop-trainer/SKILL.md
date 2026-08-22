@@ -1,6 +1,6 @@
 ---
 name: skill-loop-trainer
-description: Loop-engineer any skill by having multiple provider models (Claude/Codex/Gemini), each in an isolated git worktree, improve the skill and produce outputs that are graded against a gold-standard example. Use when Kanu wants to optimize/train/improve a skill against a "here's the output I want" anchor, run a multi-model bake-off, or A/B skill edits across providers. Trigger on "loop-engineer this skill", "train the X skill", "run a model bake-off on X", "have different models improve X", "optimize X against this gold example". Produces a self-contained `<Name> Test/` harness (spec, acceptance gates, judge rubric, fixtures, runner, scoreboard) and runs it end to end. Generalized from the Write Outreach Test harness.
+description: Loop-engineer any skill by having multiple provider models (Claude/Codex/Gemini), each in an isolated git worktree, improve the skill and produce outputs that are graded against a gold-standard example. Use when the user wants to optimize/train/improve a skill against a "here's the output I want" anchor, run a multi-model bake-off, or A/B skill edits across providers. Trigger on "loop-engineer this skill", "train the X skill", "run a model bake-off on X", "have different models improve X", "optimize X against this gold example". Produces a self-contained `<Name> Test/` harness (spec, acceptance gates, judge rubric, fixtures, runner, scoreboard) and runs it end to end. Generalized from the Write Outreach Test harness.
 ---
 
 # Skill Loop Trainer
@@ -17,7 +17,7 @@ This skill is the **generalized form of the `Write Outreach Test/` harness** —
 | Input | Required | Notes |
 |-------|----------|-------|
 | `target_skill` | yes | The skill to improve. Must be **vendored in-repo** at `.claude/skills/<name>/` and git-tracked — that's what makes worktrees isolate it for free. If only global (`~/.claude/skills/`), copy it in-repo first. |
-| `gold_example` | yes | One example output Kanu loves + **why** he loves it (his words). This is the single source of "better"; every rubric dimension derives from its real traits. |
+| `gold_example` | yes | One example output the user loves + **why** they love it (their words). This is the single source of "better"; every rubric dimension derives from its real traits. |
 | `test_set` | yes | 3–5 fixed fixtures the improved skill runs on. Each = the exact inputs the skill needs. Vary them so the skill is tested across cases, not overfit. |
 | `models` | no | Default: strongest-per-provider (Claude/Codex/Gemini). Verify ids at run time (see Step 4). |
 | `judge` | no | Default: single blinded judge ≠ the front-runner's family; upgrade to two-judge cross-family average before a decisive result. |
@@ -26,10 +26,10 @@ This skill is the **generalized form of the `Write Outreach Test/` harness** —
 
 ### Phase A — Build the harness (mirror `templates/`)
 1. **Confirm the target skill is in-repo + git-tracked.** `ls .claude/skills/<target>/`. If absent, copy from global and `git add`. Worktrees only isolate tracked files.
-2. **Capture the gold example.** Write `<Name> Test/fixtures/gold-example.md` with the exact output AND Kanu's "why it's gold" (load-bearing traits in his words). If he hasn't given the why, ask for it — it sets the rubric weights. Copy `templates/gold-example.md`.
+2. **Capture the gold example.** Write `<Name> Test/fixtures/gold-example.md` with the exact output AND the user's "why it's gold" (load-bearing traits in their words). If they haven't given the why, ask for it — it sets the rubric weights. Copy `templates/gold-example.md`.
 3. **Write the spec** (`<Name> Test/SPEC.md` from `templates/SPEC.md`): task contract (each model edits the skill *then* runs it — graded on outputs, deliverable is the skill diff), the test set table, the hard invariants (constraints, not optimization targets — drawn from the skill's own rules), the scoring model, the worktree matrix.
 4. **Write acceptance gates** (`ACCEPTANCE.md` from `templates/ACCEPTANCE.md`): Stage 0 reproducibility (must edit the skill; outputs must regenerate from it — disqualify hand-authored runs), Stage 1 mechanical hard gates (binary, disqualifying — adapt G-list to the target skill's rules), Stage 2 judge schema + scoring math (disqualified = 0, run score = mean across fixtures).
-5. **Tune the rubric** (`RUBRIC.md` from `templates/RUBRIC.md`): one dimension per real trait of the gold example, **weighted toward the 2–3 traits Kanu named as why it's gold**. Calibrate gold-to-itself ≈ 4.7 (reserve 5 for "beats gold") so the loop can detect improvement. Require quoted-evidence per score.
+5. **Tune the rubric** (`RUBRIC.md` from `templates/RUBRIC.md`): one dimension per real trait of the gold example, **weighted toward the 2–3 traits the user named as why it's gold**. Calibrate gold-to-itself ≈ 4.7 (reserve 5 for "beats gold") so the loop can detect improvement. Require quoted-evidence per score.
 6. **Write the fixtures + task prompt.** One `fixtures/<slug>.md` per test case (real inputs, not synthetic). `fixtures/TASK_PROMPT.md` = the verbatim prompt every model runs (from `templates/TASK_PROMPT.md`): read gold + fixtures + skill → edit the in-worktree skill (never global) → run it on each fixture → write outputs to `runs/<model>/<slug>.md` + `NOTES.md` → commit the skill diff.
 
 ### Phase B — Run the competition

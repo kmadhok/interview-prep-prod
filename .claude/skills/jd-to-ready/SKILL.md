@@ -344,7 +344,7 @@ Keep the recap short and actionable. Include:
 - **Apply packet** — confirm the packet uploaded (Drive `Apply Queue/` filename with its posted-date prefix), flag `repost-detected` / `posted-date-unknown` / `upload-failed` gaps, and note Easy Apply availability
 - **`Pipeline.html` is now stale** — ask if they want it regenerated
 
-End with the obvious next step: apply on the ATS; once the Pipeline row is marked Applied, `stage-outreach` auto-stages the recruiter draft. Offer to regenerate the PDF or tweak a bullet if he wants the page tighter.
+End with the obvious next step: apply on the ATS; once the Pipeline row is marked Applied, `stage-outreach` auto-stages the recruiter draft. Offer to regenerate the PDF or tweak a bullet if they want the page tighter.
 
 ### Step 7 — Log the run
 

@@ -21,11 +21,13 @@ TEMPLATE_DIRS = ["scripts", ".claude/skills", "templates", "evals", "infra",
 SCAN_SUFFIXES = {".py", ".md", ".yaml", ".yml", ".json", ".ps1", ".sh", ".txt"}
 
 FORBIDDEN = [
+    re.compile(r"\bKanu\b"),
+    re.compile(r"\bMadhok\b"),
     re.compile(r"kanumadhok", re.IGNORECASE),
     re.compile(r"madhok\.kanu"),
-    re.compile(r"Kanu Madhok"),
+    re.compile(r"the user the user"),
     re.compile(r"/Users/[A-Za-z]"),          # absolute Mac home paths
-    re.compile(r"G:[/\\]projects"),           # Kanu's PC drive layout
+    re.compile(r"G:[/\\]projects"),           # the user's PC drive layout
     re.compile(r"Documents/Claude/Projects"), # any form of the live workspace path
     re.compile(r"kanu-madhok"),               # personal LinkedIn handle
     re.compile(r"\bkmadhok\b"),               # personal GitHub handle
@@ -45,7 +47,7 @@ def iter_template_files():
                 yield f
 
 
-def test_no_personal_refs_in_template_dirs():
+def find_violations() -> list[str]:
     violations = []
     for f in iter_template_files():
         text = f.read_text(encoding="utf-8", errors="surrogateescape")  # surrogateescape: lossless — never silently drop bytes that could hide a violation
@@ -53,6 +55,25 @@ def test_no_personal_refs_in_template_dirs():
             for m in pattern.finditer(text):
                 line_no = text.count("\n", 0, m.start()) + 1
                 violations.append(f"{f.relative_to(REPO_ROOT)}:{line_no}: {m.group(0)!r}")
+    return violations
+
+
+def test_no_personal_refs_in_template_dirs():
+    violations = find_violations()
     assert not violations, (
         "Personal references found in template-side files:\n" + "\n".join(violations)
     )
+
+
+def main() -> int:
+    violations = find_violations()
+    if violations:
+        print("Personal references found in template-side files:")
+        print("\n".join(violations))
+        return 1
+    print("PASS: no personal references found in template-side files")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

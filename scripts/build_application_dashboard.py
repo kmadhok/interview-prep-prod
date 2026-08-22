@@ -19,6 +19,7 @@ OUT_HTML = ROOT / "Application Dashboard.html"
 
 @dataclass
 class Role:
+    """Represent Role; constructor validation and side effects follow the defining fields and methods."""
     name: str
     stage: str = ""
     next_action: str = ""
@@ -32,6 +33,7 @@ class Role:
 
     @property
     def missing(self) -> list[str]:
+        """Execute `missing`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
         missing = []
         if not self.has_jd or self.jd_placeholder:
             missing.append("JD")
@@ -43,6 +45,7 @@ class Role:
 
 
 def split_markdown_row(line: str) -> list[str]:
+    """Execute `split_markdown_row`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     line = line.strip()
     if not line.startswith("|") or not line.endswith("|"):
         return []
@@ -50,17 +53,20 @@ def split_markdown_row(line: str) -> list[str]:
 
 
 def strip_md(text: str) -> str:
+    """Execute `strip_md`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
     text = re.sub(r"\[\[(.*?)\]\]", r"\1", text)
     return text.strip()
 
 
 def extract_folder(text: str) -> str:
+    """Execute `extract_folder`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     match = re.search(r"\[\[(.*?)\]\]", text)
     return match.group(1).strip() if match else strip_md(text)
 
 
 def parse_pipeline() -> list[Role]:
+    """Execute `parse_pipeline`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     roles: list[Role] = []
     section = ""
     if not PIPELINE.exists():
@@ -90,6 +96,7 @@ def parse_pipeline() -> list[Role]:
 
 
 def role_folders() -> set[str]:
+    """Execute `role_folders`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     folders = set()
     roles_dir = ROOT / "Roles"
     if not roles_dir.is_dir():
@@ -105,6 +112,7 @@ def role_folders() -> set[str]:
 
 
 def is_placeholder_jd(path: Path, role: Role) -> bool:
+    """Execute `is_placeholder_jd`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     text = path.read_text(encoding="utf-8", errors="ignore").lower()
     combined = f"{role.stage} {role.next_action}".lower()
     markers = (
@@ -123,6 +131,7 @@ def is_placeholder_jd(path: Path, role: Role) -> bool:
 
 
 def add_artifacts(roles: list[Role]) -> list[Role]:
+    """Execute `add_artifacts`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     by_folder = {role.folder: role for role in roles if role.folder}
     for folder in sorted(role_folders()):
         role = by_folder.get(folder)
@@ -139,11 +148,13 @@ def add_artifacts(roles: list[Role]) -> list[Role]:
 
 
 def mentions_any(text: str, terms: tuple[str, ...]) -> bool:
+    """Execute `mentions_any`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     lowered = text.lower()
     return any(term in lowered for term in terms)
 
 
 def bucket(role: Role) -> str:
+    """Execute `bucket`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     combined = f"{role.stage} {role.next_action}".lower()
     if role.section == "Untracked folder":
         return "Untracked folder"
@@ -165,6 +176,7 @@ def bucket(role: Role) -> str:
 
 
 def artifact_text(role: Role) -> str:
+    """Execute `artifact_text`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     bits = [
         "JD placeholder" if role.jd_placeholder else ("JD" if role.has_jd else "JD missing"),
         "resume" if role.has_resume else "resume missing",
@@ -174,6 +186,7 @@ def artifact_text(role: Role) -> str:
 
 
 def short(text: str, limit: int = 180) -> str:
+    """Execute `short`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     text = re.sub(r"\s+", " ", text).strip()
     if len(text) <= limit:
         return text
@@ -181,6 +194,7 @@ def short(text: str, limit: int = 180) -> str:
 
 
 def render_table(roles: list[Role]) -> str:
+    """Execute `render_table`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     lines = [
         "| Role | Stage | Artifacts | Next action | Folder |",
         "|---|---|---|---|---|",
@@ -195,16 +209,19 @@ def render_table(roles: list[Role]) -> str:
 
 
 def status_class(bucket_name: str) -> str:
+    """Execute `status_class`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     return re.sub(r"[^a-z0-9]+", "-", bucket_name.lower()).strip("-")
 
 
 def folder_href(role: Role) -> str:
+    """Execute `folder_href`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not role.folder:
         return ""
     return quote(role.folder) + "/"
 
 
 def render_html_table(roles: list[Role], bucket_name: str) -> str:
+    """Execute `render_html_table`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     if not roles:
         return '<p class="empty">None.</p>'
     rows = []
@@ -232,6 +249,7 @@ def render_html_table(roles: list[Role], bucket_name: str) -> str:
 
 
 def render_html(buckets: dict[str, list[Role]]) -> str:
+    """Execute `render_html`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     today = date.today().isoformat()
     count_cards = "\n".join(
         f'<a class="count-card {status_class(name)}" href="#{status_class(name)}">'
@@ -378,6 +396,7 @@ def render_html(buckets: dict[str, list[Role]]) -> str:
 
 
 def main() -> None:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     roles = add_artifacts(parse_pipeline())
     buckets = {
         "Urgent / dated actions": [],

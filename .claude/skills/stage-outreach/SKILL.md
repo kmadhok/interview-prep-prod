@@ -1,11 +1,11 @@
 ---
 name: stage-outreach
-description: Use this skill when a role Kanu has already APPLIED to needs its recruiter outreach staged — find the recruiter on LinkedIn, verify their email, draft the cold outreach, and drop Gmail drafts (recruiter + hiring manager) addressed to them (never sent). Fires from the PC's hourly Pass B poll on Pipeline rows marked Applied with no STAGED marker, or manually for an immediate draft. Reads the role folder + `.classification.json` that jd-to-ready already wrote. Do NOT trigger to file a JD (interview-prep-intake) or prep a resume (jd-to-ready) — this is strictly the post-apply, LinkedIn-bound, Gmail-drafting half.
+description: Use this skill when a role the user has already APPLIED to needs its recruiter outreach staged — find the recruiter on LinkedIn, verify their email, draft the cold outreach, and drop Gmail drafts (recruiter + hiring manager) addressed to them (never sent). Fires from the PC's hourly Pass B poll on Pipeline rows marked Applied with no STAGED marker, or manually for an immediate draft. Reads the role folder + `.classification.json` that jd-to-ready already wrote. Do NOT trigger to file a JD (interview-prep-intake) or prep a resume (jd-to-ready) — this is strictly the post-apply, LinkedIn-bound, Gmail-drafting half.
 ---
 
 # Stage Outreach (apply-side: find recruiter → verify email → Gmail draft)
 
-This is the apply-gated half of the two-orchestrator split. It runs ONLY on roles Kanu actually applied to, so all LinkedIn flag-risk and all Gmail writes live here. Steps 4/4b/4c/5 are lifted unchanged from the former monolithic `jd-to-ready`; the primitives own their domain logic — this skill only composes them. The step bodies are VERBATIM from the former monolith; adapting them here would break the primitive contracts. Note: read root `AGENTS.md`/`CLAUDE.md` first; it overrides anything here.
+This is the apply-gated half of the two-orchestrator split. It runs ONLY on roles the user actually applied to, so all LinkedIn flag-risk and all Gmail writes live here. Steps 4/4b/4c/5 are lifted unchanged from the former monolithic `jd-to-ready`; the primitives own their domain logic — this skill only composes them. The step bodies are VERBATIM from the former monolith; adapting them here would break the primitive contracts. Note: read root `AGENTS.md`/`CLAUDE.md` first; it overrides anything here.
 
 ## Preconditions
 
@@ -29,7 +29,7 @@ The `.classification.json` written by jd-to-ready has this schema (read `archety
 
 - PC, cron Pass B (hourly): `git pull`, then the deterministic worklist reader `scripts/drip_runner/outreach_worklist.py` scans `Pipeline.md` for rows marked Applied with no STAGED marker → run this skill on them, ONE role at a time (sequential LinkedIn, never parallel — see `linkedin-mcp-operations`). Manual kick on a single role is also supported.
 - Runs on the PC (LinkedIn daemon at 127.0.0.1:8765).
-- This poll IS the apply trigger — no role_state.json, no separate detector. The "Applied" signal is Kanu's Pipeline edit or the cloud routine marking it from an app-ack.
+- This poll IS the apply trigger — no role_state.json, no separate detector. The "Applied" signal is the user's Pipeline edit or the cloud routine marking it from an app-ack.
 
 ## Trace — open a SECOND, independent run
 
@@ -74,7 +74,7 @@ If a step fails or is skipped, still write its `end` event with `status: failed|
 
 ## Workflow
 
-Run steps 4 → 7 in order. Don't pepper Kanu with questions mid-flow — make sensible defaults and surface fixes in the step 6 report.
+Run steps 4 → 7 in order. Don't pepper the user with questions mid-flow — make sensible defaults and surface fixes in the step 6 report.
 
 ### Step 4 — Contact research (sequential LinkedIn MCP)
 
@@ -95,7 +95,7 @@ find-contacts(
 
 **Wire the output forward:** `find-contacts(full)` **writes the scored-ledger artifact to `<role folder>/.contacts-ledger.md`** (Recruiters · Hiring Managers · Peer ICs, every candidate scored, each row carrying email + confidence). Each ledger row carries a pattern-inferred email at Medium confidence; the top picks are SMTP-verified later in **step 4c** (after enrichment), which writes `<role folder>/Verified Emails.md` — the table `write-outreach` reads for the Gmail draft. It also returns the three rendered tables, a provisional `top_picks` + `recommended_lead`, and `gaps[]` (`{source: "contacts", ...}`). **Do not bind `top_picks` for outreach yet** — step 4b may append a higher-ranked person and re-sort the ledger. The authoritative picks are read from the ledger *after* 4b. Capture the gaps for steps 6/7 now.
 
-**Warm-tie check (recommended before step 4c):** if Gmail is connected, search it for prior correspondence with the company (`from:<domain> OR to:<domain>`). A recruiter Kanu already interviewed with is a header-verified, warm contact that outranks any cold pick — promote them to the top of the ledger with `High (header-verified)` email and pivot the outreach to a warm reconnect (see `write-outreach`). This is how the McKinsey run surfaced Caroline DeCorrevont over a cold top-pick.
+**Warm-tie check (recommended before step 4c):** if Gmail is connected, search it for prior correspondence with the company (`from:<domain> OR to:<domain>`). A recruiter the user already interviewed with is a header-verified, warm contact that outranks any cold pick — promote them to the top of the ledger with `High (header-verified)` email and pivot the outreach to a warm reconnect (see `write-outreach`). This is how the McKinsey run surfaced Caroline DeCorrevont over a cold top-pick.
 
 ### Step 4b — Enrich recruiters from their activity
 
@@ -130,7 +130,7 @@ The script reads the ledger's `**Email pattern:**` line for the domain + local-p
 
 **Wire forward:** `Verified Emails.md` now exists with one row per resolved recruiter — Confidence `High (EmailFinder-verified)` for SMTP hits, `Medium (inferred <pattern>)` for misses that fell back to the ledger's pattern. Capture a `gaps[]` entry per outcome worth surfacing: `{source:"verify-emails", kind:"inferred-email", detail:"<name>: EmailFinder miss; using inferred <pattern> address"}` for inferred rows, `{source:"verify-emails", kind:"emailfinder-unavailable", detail:"<reason>; top picks use inferred emails"}` if the API key is missing or returns 402/429 (the script marks those rows SKIPPED — never blocks). Merge into steps 6/7.
 
-**Graceful degradation:** if the `Email_Finder_Dev` key is absent or the ledger has no `**Email pattern:**` line, the script still runs by company name and degrades to NOT FOUND / inferred rows rather than crashing. A missing `Verified Emails.md` is not fatal — `write-outreach` falls back to Kanu's own address with a flagged gap.
+**Graceful degradation:** if the `Email_Finder_Dev` key is absent or the ledger has no `**Email pattern:**` line, the script still runs by company name and degrades to NOT FOUND / inferred rows rather than crashing. A missing `Verified Emails.md` is not fatal — `write-outreach` falls back to the user's own address with a flagged gap.
 
 ### Step 5 — Draft Cold Outreach.md
 
@@ -167,7 +167,7 @@ Wrap this step in begin/end. Produce a short apply-side report in chat covering:
 - Merged `gaps[]` from steps 4, 4b, 4c, and 5 — list each gap's `source`, `kind`, and `detail`
 - Any hard-gate flag carried forward from jd-to-ready: check the Pipeline row's Stage/Next-action text and `<role folder>/Job Description.md` for an unconfirmed hard gate (citizenship/clearance/seniority) that jd-to-ready flagged; if present and unconfirmed, do not stage — leave the row un-STAGED and note it here.
 
-Keep the report brief; surface only what Kanu needs to act on or review before hitting Send.
+Keep the report brief; surface only what the user needs to act on or review before hitting Send.
 
 ### Step 7 — Log the run
 
@@ -197,9 +197,9 @@ On success write `STAGED in Gmail <date>` to folder + Pipeline row (row via `pip
 
 - **LinkedIn daemon down** → STOP before step 4; write nothing; leave the row un-STAGED so the next poll retries.
 - **Zero contacts** → write `Cold Outreach.md` with empty tables + a note; do not fabricate.
-- **EmailFinder unavailable / inferred email** → verify-emails degrades to inferred rows; write-outreach still drafts, falling back to Kanu's own address with a flagged gap.
+- **EmailFinder unavailable / inferred email** → verify-emails degrades to inferred rows; write-outreach still drafts, falling back to the user's own address with a flagged gap.
 - **Internal-mobility role** → skip; write `STAGED` with a note ("internal — handled in person").
-- **Unconfirmed hard gate flagged by jd-to-ready** → do not stage; leave the row un-STAGED until Kanu confirms.
+- **Unconfirmed hard gate flagged by jd-to-ready** → do not stage; leave the row un-STAGED until the user confirms.
 
 ## What this skill does NOT do
 

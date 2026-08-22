@@ -1,6 +1,6 @@
 ---
 name: linkedin-mcp-operations
-description: Use this skill BEFORE invoking any mcp__linkedin__* tool, when a LinkedIn MCP call fails or times out, or when diagnosing the linkedin MCP server. The single source of truth for how to use the LinkedIn MCP — the http-transport invariant, the sequential-only rule (never parallel), the per-operation reference, and the diagnostic ladder for the launchd-supervised daemon (com.kanu.linkedin-mcp on 127.0.0.1:8765). Trigger phrases - "linkedin mcp", "scrape linkedin", "find contacts", "linkedin handshake", "mcp__linkedin", "transport error".
+description: Use this skill BEFORE invoking any mcp__linkedin__* tool, when a LinkedIn MCP call fails or times out, or when diagnosing the linkedin MCP server. The single source of truth for how to use the LinkedIn MCP — the http-transport invariant, the sequential-only rule (never parallel), the per-operation reference, and the diagnostic ladder for the launchd-supervised daemon (com.<user>.linkedin-mcp on 127.0.0.1:8765). Trigger phrases - "linkedin mcp", "scrape linkedin", "find contacts", "linkedin handshake", "mcp__linkedin", "transport error".
 ---
 
 # LinkedIn MCP Operations
@@ -47,8 +47,8 @@ Run in order, stop at the first that explains the failure:
 a. **Daemon log tail** — `tail -n 40 ~/.claude/logs/linkedin-mcp-daemon.log`
 b. **Supervisor log tail** — `tail -n 20 ~/.claude/logs/linkedin-mcp-supervisor.log`
 c. **Handshake** — see Common commands below; expect HTTP 200.
-d. **launchctl status** — `launchctl list | grep com.kanu.linkedin-mcp` (last column 0 = healthy, non-zero = crashed)
-e. **Ask the user** — only after a–d are inconclusive, ask before running `launchctl kickstart -k gui/$(id -u)/com.kanu.linkedin-mcp`.
+d. **launchctl status** — `launchctl list | grep 'linkedin-mcp'` (last column 0 = healthy, non-zero = crashed)
+e. **Ask the user** — only after a–d are inconclusive, ask before running `launchctl kickstart -k gui/$(id -u)/com.<user>.linkedin-mcp`.
 
 ## Common commands
 
@@ -63,10 +63,10 @@ curl -s -o /dev/null -w '%{http_code}\n' -m 5 -X POST http://127.0.0.1:8765/mcp 
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"diag","version":"0.1"}}}'
 
 # Job status
-launchctl list | grep com.kanu.linkedin-mcp
+launchctl list | grep 'linkedin-mcp'
 
 # Restart (only after diagnostic ladder a–d, with user confirmation)
-launchctl kickstart -k gui/$(id -u)/com.kanu.linkedin-mcp
+launchctl kickstart -k gui/$(id -u)/com.<user>.linkedin-mcp
 ```
 
 ## What NOT to do

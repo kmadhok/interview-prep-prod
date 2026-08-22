@@ -1,6 +1,6 @@
 ---
 name: find-contacts
-description: Find recruiters, hiring managers, or team members at a target company using the LinkedIn MCP. Use when Kanu wants to identify who to reach out to at a specific company for a role. Runs standalone (quick shortlist) or as a step inside jd-to-ready (full 5+5 with email inference).
+description: Find recruiters, hiring managers, or team members at a target company using the LinkedIn MCP. Use when the user wants to identify who to reach out to at a specific company for a role. Runs standalone (quick shortlist) or as a step inside jd-to-ready (full 5+5 with email inference).
 ---
 
 # Find Contacts
@@ -66,7 +66,7 @@ The three categories have different leverage, and which one to *lead* outreach w
 **`recommended_lead` heuristic (by archetype / company size):**
 - **Big firm / enterprise** (Deloitte, Google, Amazon, large consultancies) → lead with the **practice-aligned recruiter**; use peer ICs for referrals; HMs are a low-yield bet.
 - **Startup / small team** (seed–series-C, FDE roles at small AI labs) → lead with the **hiring manager** — they're reachable, they ARE the decision-maker, and there's often no dedicated recruiter for the role.
-- This is a *hint*, not a forced choice — Kanu picks who `write-outreach` drafts for.
+- This is a *hint*, not a forced choice — the user picks who `write-outreach` drafts for.
 
 ## Targets (three categories — `full` mode returns one table each)
 
@@ -145,13 +145,13 @@ Pick per table (`full`): top 5 recruiters, top 3–5 hiring managers, top 3–5 
 **Sub-step 3 — Drilldown** (`full` mode). For the top picks (≤10 in full), call `mcp__linkedin__get_person_profile` once per URL, sequentially. Collect enriched records.
 
 **Sub-step 4 — Email inference** (`full` mode). Infer email from the company's standard pattern (`first.last@`, `first@`, `flast@`). Confidence:
-- **High** — verified from prior Kanu correspondence or a public source.
+- **High** — verified from prior correspondence with the user or a public source.
 - **Medium** — pattern matches multiple visible employees publicly.
 - **Low** — guess; no verification.
 
 **Never fabricate.** If no pattern can be inferred, leave email empty, mark "InMail only", and record `{kind: "no-email", detail: "<name>: InMail only"}` in `gaps[]`.
 
-**Email confidence (`full` mode).** Each ledger row carries a pattern-inferred work email at Medium confidence (e.g. `first.last@<domain>`). This skill does NOT verify them — verification of the top 3 recruiters is a downstream concern owned by jd-to-ready **step 4c** (the `verify-emails` script + EmailFinder.dev), which writes `Verified Emails.md`. A `High (header-verified)` email already present from prior Kanu correspondence (e.g. found in Gmail) should be kept as-is and is exempt from downstream re-verification.
+**Email confidence (`full` mode).** Each ledger row carries a pattern-inferred work email at Medium confidence (e.g. `first.last@<domain>`). This skill does NOT verify them — verification of the top 3 recruiters is a downstream concern owned by jd-to-ready **step 4c** (the `verify-emails` script + EmailFinder.dev), which writes `Verified Emails.md`. A `High (header-verified)` email already present from prior correspondence with the user (e.g. found in Gmail) should be kept as-is and is exempt from downstream re-verification.
 
 **Sub-step 5 — Hand off to `enrich-contacts` via the ledger artifact** (`full` mode, recommended). Discovery by keyword search alone misses people the recruiters have *amplified* — a practice-aligned recruiter who reposts "we're hiring an AI Specialist Leader" has surfaced both a live req and its sourcer that no title search returns.
 
@@ -168,7 +168,7 @@ So: ranking logic still lives in exactly one place — *this skill's rubric* —
 | # | Name | Title | Location | Why this pick | LinkedIn |
 |---|------|-------|----------|---------------|----------|
 
-**`full`** — three separate tables (**Recruiters 5 · Hiring Managers 3–5 · Peer ICs 3–5**), each adding `Email (inferred)` and `Confidence` columns. Plus `top_picks` (the #1 of each table) and a `recommended_lead` hint per "Who to lead with". `write-outreach(drip)` drafts for whichever pick(s) Kanu chooses.
+**`full`** — three separate tables (**Recruiters 5 · Hiring Managers 3–5 · Peer ICs 3–5**), each adding `Email (inferred)` and `Confidence` columns. Plus `top_picks` (the #1 of each table) and a `recommended_lead` hint per "Who to lead with". `write-outreach(drip)` drafts for whichever pick(s) the user chooses.
 
 Any contact surfaced via `enrich-contacts` (Sub-step 5) appears in the ledger as a `Source: enrich` row with a `Provenance` note ("via <recruiter>'s repost of <author>, <date>") so the activity-derived path is traceable, not silently merged in. The rendered tables read from the (post-enrichment) ledger, so they reflect the final ranking.
 

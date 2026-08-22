@@ -18,7 +18,7 @@ from:(greenhouse.io OR lever.co OR ashbyhq.com OR myworkday.com OR icims.com OR 
 ```
 Most of these are pure noise (auto-rejections, application confirmations), but two things make them worth scanning:
 1. Some include the recruiter's name in the body or signature.
-2. Pattern of applications shows Kanu which companies are in his pipeline — useful context when triaging.
+2. Pattern of applications shows the user which companies are in their pipeline — useful context when triaging.
 
 ### 3. Interview / scheduling subjects
 ```
@@ -39,17 +39,17 @@ Surfaces internal-referrer threads. Microsoft uses `donotreply@email.careers.mic
 
 ## Company-domain sweep
 
-Once you have a rough company list (from the queries above + Kanu's known pipeline), pull every human email exchange with those domains:
+Once you have a rough company list (from the queries above + the user's known pipeline), pull every human email exchange with those domains:
 
 ```
 from:(@walmart.com OR @bcg.com OR @mckinsey.com OR @google.com OR @stripe.com OR @anthropic.com OR @openai.com OR @apple.com OR @cvshealth.com OR @deloitte.com OR @grainger.com OR @upside.com OR @amazon.com OR @microsoft.com OR @meta.com OR @uber.com OR @linkedin.com OR @snowflake.com OR @figma.com OR @hubinternational.com OR @pppllc.com) after:<floor> -from:no-reply -from:noreply
 ```
 
-Add/remove domains based on Kanu's actual pipeline. New active companies should be added — old ones with zero activity in the window can be dropped to save query budget.
+Add/remove domains based on the user's actual pipeline. New active companies should be added — old ones with zero activity in the window can be dropped to save query budget.
 
-## Kanu's own outbound
+## the user's own outbound
 
-Don't forget threads Kanu started. He often cold-emails internal contacts asking to be routed to the right recruiter — those people are valuable contacts even when they never replied.
+Don't forget threads the user started. They often cold-emails internal contacts asking to be routed to the right recruiter — those people are valuable contacts even when they never replied.
 
 ```
 in:sent after:<floor> -to:noreply -to:no-reply -to:jobs-noreply

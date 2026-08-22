@@ -52,6 +52,7 @@ DEFAULTS = [
 ]
 
 def render(md_path: pathlib.Path):
+    """Execute `render`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     text = md_path.read_text(encoding="utf-8")
     body = markdown.markdown(text, extensions=["tables", "fenced_code", "sane_lists", "toc"])
     title = md_path.stem
@@ -65,6 +66,7 @@ def render(md_path: pathlib.Path):
     print(f"wrote {out} ({len(html):,} bytes)")
 
 def main():
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     root = WORKSPACE
     args = sys.argv[1:] or DEFAULTS
     for a in args:

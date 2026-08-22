@@ -28,6 +28,7 @@ ARCHETYPE_VOCAB = {
 
 @dataclass
 class ClauseResult:
+    """Represent ClauseResult; constructor validation and side effects follow the defining fields and methods."""
     id: str
     description: str
     passed: bool = False
@@ -36,17 +37,20 @@ class ClauseResult:
     tier: str = "local"
 
     def as_dict(self) -> dict:
+        """Execute `as_dict`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
         data = asdict(self)
         data["status"] = self.verdict
         return data
 
     @property
     def verdict(self) -> str:
+        """Execute `verdict`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
         return self.status.upper() if self.status else ("PASS" if self.passed else "FAIL")
 
 
 @dataclass(frozen=True)
 class EvalContext:
+    """Represent EvalContext; constructor validation and side effects follow the defining fields and methods."""
     workspace: Path
     role: Path
     profile: Path | None = None
@@ -69,6 +73,7 @@ def resolve_role(workspace: Path, role: str | Path | None = None) -> Path:
 
 
 def contract_clause_ids(skill: str) -> list[str]:
+    """Execute `contract_clause_ids`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     text = (EVALS_DIR / skill / "contract.md").read_text(encoding="utf-8")
     return re.findall(r"^###\s+([A-Za-z0-9._-]+):", text, re.MULTILINE)
 

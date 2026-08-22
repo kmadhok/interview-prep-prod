@@ -67,6 +67,7 @@ USER_AGENT = (
 
 @dataclass
 class Role:
+    """A normalized pipeline role with the section context needed for eligibility."""
     name: str
     stage: str = ""
     next_action: str = ""
@@ -77,6 +78,7 @@ class Role:
 
 @dataclass
 class UrlInfo:
+    """A captured posting URL classified for HTTP or LinkedIn verification."""
     kind: str
     url: str = ""
     job_id: str = ""
@@ -84,6 +86,7 @@ class UrlInfo:
 
 @dataclass
 class HttpResult:
+    """A posting reachability verdict with HTTP and signal diagnostics."""
     status: str
     http: str
     signal: str
@@ -91,11 +94,14 @@ class HttpResult:
 
 
 class NoRedirectHandler(HTTPRedirectHandler):
+    """Prevent implicit redirects so the bounded fetch loop owns every hop."""
     def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[no-untyped-def]
+        """Decline redirects for explicit Location processing."""
         return None
 
 
 def split_markdown_row(line: str) -> list[str]:
+    """Split a complete pipe-delimited Markdown row, rejecting non-table lines."""
     line = line.strip()
     if not line.startswith("|") or not line.endswith("|"):
         return []
@@ -103,17 +109,20 @@ def split_markdown_row(line: str) -> list[str]:
 
 
 def strip_md(text: str) -> str:
+    """Remove supported bold and wiki-link wrappers while preserving cell text."""
     text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
     text = re.sub(r"\[\[(.*?)\]\]", r"\1", text)
     return text.strip()
 
 
 def extract_folder(text: str) -> str:
+    """Prefer the target of a wiki link, falling back to normalized visible text."""
     match = re.search(r"\[\[(.*?)\]\]", text)
     return match.group(1).strip() if match else strip_md(text)
 
 
 def parse_pipeline() -> list[Role]:
+    """Parse six-cell role rows while carrying their nearest H2/H3 section heading."""
     roles: list[Role] = []
     section = ""
     if not PIPELINE.exists():
@@ -146,6 +155,7 @@ def parse_pipeline() -> list[Role]:
 
 
 def should_verify(role: Role) -> bool:
+    """Select considering/bulk roles unless stage prose proves an application was submitted."""
     section = role.section
     if section != "Considering / not yet applied" and not section.startswith("Bulk-imported"):
         return False
@@ -158,6 +168,7 @@ def should_verify(role: Role) -> bool:
 
 
 def jd_text(role: Role) -> str:
+    """Read a role's Job Description, returning empty for absent folders or files."""
     if not role.folder:
         return ""
     path = ROOT / "Roles" / role.folder / "Job Description.md"
@@ -167,10 +178,12 @@ def jd_text(role: Role) -> str:
 
 
 def clean_url(url: str) -> str:
+    """Trim punctuation commonly captured immediately after a prose URL."""
     return url.rstrip(".,;]")
 
 
 def extract_url_info(text: str) -> UrlInfo:
+    """Prefer LinkedIn job IDs, then ATS-like URLs, otherwise classify as no URL."""
     linkedin_match = LINKEDIN_JOB_RE.search(text)
     if linkedin_match:
         return UrlInfo(
@@ -185,6 +198,7 @@ def extract_url_info(text: str) -> UrlInfo:
 
 
 def truncate(text: str, limit: int = 80) -> str:
+    """Collapse whitespace and shorten over-limit diagnostics with a three-dot suffix."""
     text = re.sub(r"\s+", " ", text).strip()
     if len(text) <= limit:
         return text
@@ -192,6 +206,7 @@ def truncate(text: str, limit: int = 80) -> str:
 
 
 def find_dead_marker(body: str) -> str:
+    """Return the first configured closure phrase found case-insensitively in a page."""
     lowered = body.lower()
     for marker in DEAD_MARKERS:
         if marker in lowered:
@@ -200,6 +215,7 @@ def find_dead_marker(body: str) -> str:
 
 
 def request_for(url: str) -> Request:
+    """Create a browser-like HTML request to reduce avoidable ATS blocking."""
     return Request(
         url,
         headers={
@@ -211,15 +227,18 @@ def request_for(url: str) -> Request:
 
 
 def header_url(headers: Any, key: str) -> str:
+    """Read an optional response header and normalize a missing value to empty."""
     value = headers.get(key)
     return str(value) if value else ""
 
 
 def resolve_redirect(current_url: str, location: str) -> str:
+    """Resolve relative and absolute Location values against the current URL."""
     return urljoin(current_url, location)
 
 
 def fetch_url(url: str, timeout: int = 10, max_redirects: int = 5) -> tuple[int, str, str]:
+    """Fetch at most one megabyte while following no more than the configured redirects."""
     opener = build_opener(NoRedirectHandler)
     current_url = url
     for _hop in range(max_redirects + 1):
@@ -241,6 +260,7 @@ def fetch_url(url: str, timeout: int = 10, max_redirects: int = 5) -> tuple[int,
 
 
 def classify_ats_url(url: str) -> HttpResult:
+    """Classify ATS URLs as live, dead, or unverified without propagating network failures."""
     try:
         status_code, body, final_url = fetch_url(url)
     except (HTTPError, URLError, TimeoutError, socket.timeout, ssl.SSLError, OSError, RuntimeError) as exc:
@@ -265,6 +285,7 @@ def classify_ats_url(url: str) -> HttpResult:
 
 
 def split_company_title(role_name: str) -> tuple[str, str]:
+    """Split the first supported company/title delimiter, or return a company-only pair."""
     for delimiter in (" — ", " - "):
         if delimiter in role_name:
             company, title = role_name.split(delimiter, 1)
@@ -273,29 +294,35 @@ def split_company_title(role_name: str) -> tuple[str, str]:
 
 
 def short_title(title: str) -> str:
+    """Remove parenthetical qualifiers and normalize whitespace for LinkedIn search."""
     title = re.sub(r"\([^)]*\)", "", title)
     title = re.sub(r"\s+", " ", title).strip()
     return title
 
 
 def json_string(value: str) -> str:
+    """Quote arbitrary Unicode text as a JSON-safe MCP argument literal."""
     return json.dumps(value, ensure_ascii=False)
 
 
 def linkedin_details_call(job_id: str) -> str:
+    """Render the sequential LinkedIn details call for an exact captured job ID."""
     return f'mcp__linkedin__get_job_details(job_id="{job_id}")'
 
 
 def linkedin_search_call(company: str, title: str) -> str:
+    """Render a LinkedIn search call from the nonempty company/title terms."""
     keywords = " ".join(part for part in (company, title) if part).strip()
     return f"mcp__linkedin__search_jobs(keywords={json_string(keywords)})"
 
 
 def table_cell(text: str) -> str:
+    """Escape pipes and collapse newlines so report values cannot break the table."""
     return str(text).replace("|", "\\|").replace("\n", " ").strip()
 
 
 def build_report() -> dict[str, Any]:
+    """Route eligible roles into HTTP, LinkedIn-details, and LinkedIn-search tiers."""
     selected = [role for role in parse_pipeline() if should_verify(role)]
     tier1: list[dict[str, str]] = []
     tier2: list[dict[str, str]] = []
@@ -354,6 +381,7 @@ def build_report() -> dict[str, Any]:
 
 
 def render_markdown(report: dict[str, Any]) -> str:
+    """Render HTTP results and ordered MCP worklists with an aggregate summary."""
     lines = [f"# Posting Verification Report — {report['checked_at']}", ""]
     lines.extend(
         [
@@ -414,6 +442,7 @@ def render_markdown(report: dict[str, Any]) -> str:
 
 
 def main() -> None:
+    """Build posting verification once and print either JSON or Markdown."""
     parser = argparse.ArgumentParser(
         description="Verify not-yet-applied postings from Pipeline.md."
     )

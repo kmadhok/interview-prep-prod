@@ -47,6 +47,7 @@ def _detect_title_leak(md_text: str) -> int:
 
 
 def verify(context: EvalContext) -> list[ClauseResult]:
+    """Execute `verify`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     role = context.role
     prefix = resume_glob_prefix(load_profile(context.profile) if context.profile else None)
 

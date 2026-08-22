@@ -1,6 +1,6 @@
 ---
 name: write-outreach
-description: Draft cold outreach (email / LinkedIn / InMail) for a recruiter, hiring manager, or referral about a specific role. Use when Kanu wants to cold-message someone, or when jd-to-ready needs the Cold Outreach.md drip drafted. Single message standalone, or two intro emails (recruiter #1 + HM/peer-IC #1) in pipeline use.
+description: Draft cold outreach (email / LinkedIn / InMail) for a recruiter, hiring manager, or referral about a specific role. Use when the user wants to cold-message someone, or when jd-to-ready needs the Cold Outreach.md drip drafted. Single message standalone, or two intro emails (recruiter #1 + HM/peer-IC #1) in pipeline use.
 ---
 
 # Write Outreach
@@ -52,7 +52,7 @@ Adjust `--sources` to the files actually read this run; the ones above are this 
 | One drafted message (subject + body + signature, channel flagged) | `single` | returned to chat |
 | `Cold Outreach.md` | `drip` | `<role_folder>/Cold Outreach.md` — role summary, urgency context, the two contact tables (passed through from find-contacts), **two intro emails (one per top pick: recruiter #1 + HM/peer-IC #1)**, and a Notes block (send timing, send order, **same-company double-send guard**, reserves) |
 | Gmail draft (Drafts folder, never sent) | `single` (the one message); `drip` (**both intros — one per top pick**) | Gmail via `mcp__claude_ai_Gmail__create_draft`; To: from `<role_folder>/Verified Emails.md` |
-| `gaps[]` | always | cross-skill schema `{source: "outreach", kind, detail}` — e.g. `{source:"outreach", kind:"no-hook", detail:"no specific hook found for <name>; asked Kanu"}`. Empty `[]` if none. |
+| `gaps[]` | always | cross-skill schema `{source: "outreach", kind, detail}` — e.g. `{source:"outreach", kind:"no-hook", detail:"no specific hook found for <name>; asked the user"}`. Empty `[]` if none. |
 
 **Standalone:** `write-outreach(contacts: {one person}, role_title, company, mode: single)`
 **Pipeline (from jd-to-ready):** `write-outreach(contacts: top_picks, role_title, company, archetype, lead_theme, urgency, mode: drip, role_folder)`
@@ -67,7 +67,7 @@ Adjust `--sources` to the files actually read this run; the ones above are this 
    2. A JD-specific detail (practice area, stack item, customer segment) → beat 4 "why-this-company."
    3. The trigger line (beat 1) from context: applied → "I just applied for…"; job-board → "Found your post on…"; cold → "Saw [Company]'s [specific thing]…".
 
-   If you can't find a real, specific hook, **ask Kanu for one detail** before drafting — never fabricate one. Record `{source:"outreach", kind:"no-hook", ...}` in `gaps[]` if you had to ask.
+   If you can't find a real, specific hook, **ask the user for one detail** before drafting — never fabricate one. Record `{source:"outreach", kind:"no-hook", ...}` in `gaps[]` if you had to ask.
 
 3. **Source beat-3 urgency without fabrication.** Branch on the `urgency` input:
    - If `urgency` is an **explicit live-process list** from the caller or benchmark fixture, use that list exactly as the canonical beat-3 input. Do not add extra companies, roles, dates, interview stages, or timelines.
@@ -84,7 +84,7 @@ Adjust `--sources` to the files actually read this run; the ones above are this 
 
 6. **Write the drafts.** `drip` mode: write **ONE intro email per top pick (2 total: recruiter #1 + HM/peer-IC #1)** per `Outreach Templates.md` sections 1/4 — no follow-ups. Then assemble `Cold Outreach.md` (role summary, urgency context, the two find-contacts tables, the two intro emails, and a Notes block incl. send timing, send order, the **same-company double-send guard**, and reserves). `single` mode: write one message for the one contact.
 
-7. **Human-writing pass (every draft).** Before the Format check, run each draft through the `human-writing` skill to strip hedging, buzzwords, and passive voice and make it read like Kanu actually talking. THEN run the Format-check gate below. Only a draft that has passed both the human-writing pass and the Format check is eligible for Gmail drafting.
+7. **Human-writing pass (every draft).** Before the Format check, run each draft through the `human-writing` skill to strip hedging, buzzwords, and passive voice and make it read like the user is actually talking. THEN run the Format-check gate below. Only a draft that has passed both the human-writing pass and the Format check is eligible for Gmail drafting.
 
 8. **Save to Gmail draft** — runs only AFTER the human-writing pass AND the Format check gate pass for the message in question; never draft from an unchecked message. Use `mcp__claude_ai_Gmail__create_draft` — it saves to the Drafts folder and sends nothing. This skill DRAFTS ONLY; never call any send tool.
    - **When:** `single` → always draft the one message (in addition to returning it to chat). `drip` → draft **BOTH intros** (one per top pick: recruiter #1 + HM/peer-IC #1). There are no follow-ups to draft.
@@ -120,7 +120,7 @@ Check every draft against `Outreach Templates.md` before returning it. This is a
 - Length, banned-phrase, and subject rules come from that file — don't relax them.
 - **No fabricated personalization or urgency.** If a hook or a competing process isn't real, omit it or ask.
 - One clear ask / CTA per message.
-- **Draft, never send — universal across channels.** This skill may create Gmail DRAFTS only (`mcp__claude_ai_Gmail__create_draft`, which saves to Drafts and sends nothing) and must never call any send tool. Same invariant as LinkedIn: confirm with Kanu before any `mcp__linkedin__send_message`. Across both channels this skill drafts; it doesn't send.
+- **Draft, never send — universal across channels.** This skill may create Gmail DRAFTS only (`mcp__claude_ai_Gmail__create_draft`, which saves to Drafts and sends nothing) and must never call any send tool. Same invariant as LinkedIn: confirm with the user before any `mcp__linkedin__send_message`. Across both channels this skill drafts; it doesn't send.
 
 ## Behavior contract
 

@@ -329,6 +329,7 @@ def _write_atomic(path: Path, lines: list[str], had_trailing_nl: bool) -> None:
 # ---------------------------------------------------------------------------
 
 def main(argv=None) -> int:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     p = argparse.ArgumentParser(description="Pipeline.md row CRUD (deterministic)")
     sub = p.add_subparsers(dest="cmd", required=True)
 

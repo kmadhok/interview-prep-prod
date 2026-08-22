@@ -41,6 +41,7 @@ def _row_emails_and_status(line: str) -> tuple[list[str], str]:
 
 
 def verify(context: EvalContext) -> list[ClauseResult]:
+    """Execute `verify`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     role = context.role
     verified_path = role / "Verified Emails.md"
     ledger_path = role / ".contacts-ledger.md"

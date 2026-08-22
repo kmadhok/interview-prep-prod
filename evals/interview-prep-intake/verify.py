@@ -16,6 +16,7 @@ from common import ClauseResult, EvalContext  # noqa: E402
 
 
 def verify(context: EvalContext) -> list[ClauseResult]:
+    """Execute `verify`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     workspace = context.workspace
     role_path = context.role
     isolated_clone = workspace.resolve() == role_path.resolve()

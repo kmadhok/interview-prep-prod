@@ -60,6 +60,7 @@ USER_AGENT = (
 
 @dataclass
 class Recruiter:
+    """A ledger recruiter reduced to the ranking and identity fields needed for lookup."""
     rank: int
     name: str
     title: str
@@ -67,6 +68,7 @@ class Recruiter:
 
 @dataclass
 class ApiResult:
+    """Normalized EmailFinder outcome, including billing and whether later calls must stop."""
     status: str
     email: str = ""
     credits_charged: int = 0
@@ -76,11 +78,14 @@ class ApiResult:
 
 
 class NoRedirectHandler(HTTPRedirectHandler):
+    """Expose redirect responses to the caller instead of following them implicitly."""
     def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[no-untyped-def]
+        """Decline every redirect so HTTP status handling remains explicit."""
         return None
 
 
 def split_markdown_row(line: str) -> list[str]:
+    """Split a pipe-delimited row while preserving Markdown-escaped pipes in cells."""
     line = line.strip()
     if not line.startswith("|") or not line.endswith("|"):
         return []
@@ -90,6 +95,7 @@ def split_markdown_row(line: str) -> list[str]:
 
 
 def strip_md(text: str) -> str:
+    """Remove supported emphasis, wiki-link, code, and status glyph markup from a cell."""
     text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
     text = re.sub(r"\[\[(.*?)\]\]", r"\1", text)
     text = text.replace("`", "")
@@ -98,10 +104,12 @@ def strip_md(text: str) -> str:
 
 
 def table_cell(text: Any) -> str:
+    """Escape pipes and collapse newlines so arbitrary values remain in one Markdown cell."""
     return str(text).replace("|", "\\|").replace("\n", " ").strip()
 
 
 def resolve_ledger_path(raw_path: str) -> Path:
+    """Resolve relative ledger paths against the discovered workspace root."""
     path = Path(raw_path).expanduser()
     if path.is_absolute():
         return path
@@ -109,6 +117,7 @@ def resolve_ledger_path(raw_path: str) -> Path:
 
 
 def resolve_output_path(raw_path: str) -> Path:
+    """Resolve relative output paths against the discovered workspace root."""
     path = Path(raw_path).expanduser()
     if path.is_absolute():
         return path
@@ -116,6 +125,7 @@ def resolve_output_path(raw_path: str) -> Path:
 
 
 def company_from_ledger(ledger_path: Path) -> str:
+    """Derive company from a `Company - Role` folder, falling back to the whole folder name."""
     folder = ledger_path.parent.name
     if " - " in folder:
         return folder.split(" - ", 1)[0].strip()
@@ -123,6 +133,7 @@ def company_from_ledger(ledger_path: Path) -> str:
 
 
 def parse_email_pattern(text: str) -> tuple[str, str]:
+    """Return a supported domain/pattern declaration, or empty values when absent or invalid."""
     for line in text.splitlines():
         if not line.strip().startswith("**Email pattern:**"):
             continue
@@ -137,20 +148,24 @@ def parse_email_pattern(text: str) -> tuple[str, str]:
 
 
 def is_divider_row(cells: list[str]) -> bool:
+    """Recognize a nonempty Markdown alignment-divider row and nothing else."""
     return bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell.strip()) for cell in cells)
 
 
 def clean_header(text: str) -> str:
+    """Normalize a Markdown header cell for case-insensitive schema matching."""
     text = strip_md(text).lower()
     return re.sub(r"\s+", " ", text).strip()
 
 
 def rank_from_cell(text: str) -> int:
+    """Extract `Rec #N`, assigning unranked cells a stable low-priority sentinel."""
     match = re.search(r"\bRec\s*#\s*(\d+)\b", strip_md(text), re.IGNORECASE)
     return int(match.group(1)) if match else 10_000
 
 
 def title_from_row(headers: list[str], cells: list[str]) -> str:
+    """Prefer a nonnumeric title column, then fall back to evidence text."""
     for index, header in enumerate(headers):
         if header.startswith("title") and index < len(cells):
             title = strip_md(cells[index])
@@ -163,6 +178,7 @@ def title_from_row(headers: list[str], cells: list[str]) -> str:
 
 
 def parse_recruiters(text: str, top: int) -> list[Recruiter]:
+    """Locate the contacts table by required headers and return its top recruiters."""
     lines = text.splitlines()
     for line_number, line in enumerate(lines):
         header_cells = split_markdown_row(line)
@@ -174,6 +190,7 @@ def parse_recruiters(text: str, top: int) -> list[Recruiter]:
 
 
 def recruiters_from_table(lines: list[str], headers: list[str], top: int) -> list[Recruiter]:
+    """Parse recruiter rows until the table ends, skipping malformed and other-category rows."""
     name_index = headers.index("name")
     category_index = headers.index("category")
     rank_index = headers.index("rank")
@@ -201,6 +218,7 @@ def recruiters_from_table(lines: list[str], headers: list[str], top: int) -> lis
 
 
 def load_env_file() -> dict[str, str]:
+    """Read simple KEY=VALUE entries from a BOM-tolerant workspace .env file."""
     path = ROOT / ".env"
     values: dict[str, str] = {}
     if not path.exists():
@@ -218,6 +236,7 @@ def load_env_file() -> dict[str, str]:
 
 
 def api_key_from_env() -> str:
+    """Prefer the process API key, falling back to the workspace .env value."""
     key = os.environ.get("Email_Finder_Dev", "")
     if key:
         return key
@@ -225,6 +244,7 @@ def api_key_from_env() -> str:
 
 
 def load_cache() -> dict[str, Any]:
+    """Return a dictionary cache, degrading missing, malformed, or unreadable files to empty."""
     if not CACHE_PATH.exists():
         return {}
     try:
@@ -235,15 +255,18 @@ def load_cache() -> dict[str, Any]:
 
 
 def save_cache(cache: dict[str, Any]) -> None:
+    """Persist the complete paid-result cache as readable UTF-8 JSON."""
     CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
     CACHE_PATH.write_text(json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 def cache_key(full_name: str, company: str) -> str:
+    """Build a case-insensitive person/company cache identity."""
     return f"{full_name.lower()}|{company.lower()}"
 
 
 def endpoint_url(name: str, company: str, domain: str) -> str:
+    """Build the person lookup URL, omitting the optional domain when unknown."""
     params = {"full_name": name, "company_name": company}
     if domain:
         params["domain"] = domain
@@ -251,6 +274,7 @@ def endpoint_url(name: str, company: str, domain: str) -> str:
 
 
 def request_for(url: str, api_key: str) -> Request:
+    """Create an authenticated JSON request with the browser-compatible user agent."""
     return Request(
         url,
         headers={
@@ -262,6 +286,7 @@ def request_for(url: str, api_key: str) -> Request:
 
 
 def response_json(exc: HTTPError) -> dict[str, Any]:
+    """Decode a bounded HTTP error body as an object, returning empty on invalid JSON."""
     raw = exc.read(1_000_000)
     try:
         data = json.loads(raw.decode("utf-8", errors="ignore"))
@@ -271,6 +296,7 @@ def response_json(exc: HTTPError) -> dict[str, Any]:
 
 
 def api_reason(code: int, body: dict[str, Any]) -> str:
+    """Map known billing/auth statuses to stable reasons and preserve other API messages."""
     if code == 401:
         return "unauthorized"
     if code == 402:
@@ -284,6 +310,7 @@ def api_reason(code: int, body: dict[str, Any]) -> str:
 
 
 def parse_api_hit(data: dict[str, Any]) -> ApiResult:
+    """Convert API JSON to VERIFIED or NOT FOUND, normalizing malformed credit counts."""
     email = str(data.get("valid_email") or "")
     credits = data.get("credits_charged", 1)
     title = str(data.get("person_job_title") or "")
@@ -297,6 +324,7 @@ def parse_api_hit(data: dict[str, Any]) -> ApiResult:
 
 
 def find_email(name: str, company: str, domain: str, api_key: str) -> ApiResult:
+    """Perform one bounded lookup and normalize HTTP, network, and JSON failures without raising."""
     opener = build_opener(NoRedirectHandler)
     try:
         with opener.open(request_for(endpoint_url(name, company, domain), api_key), timeout=15) as response:
@@ -320,10 +348,12 @@ def find_email(name: str, company: str, domain: str, api_key: str) -> ApiResult:
 
 
 def clean_name_part(text: str) -> str:
+    """Reduce a name component to lowercase ASCII letters for local-part inference."""
     return re.sub(r"[^a-z]", "", text.lower())
 
 
 def infer_email(full_name: str, domain: str, pattern: str) -> str:
+    """Infer an address for supported patterns, refusing single-part names or missing domains."""
     parts = [clean_name_part(part) for part in full_name.split()]
     parts = [part for part in parts if part]
     if len(parts) < 2:
@@ -342,6 +372,7 @@ def infer_email(full_name: str, domain: str, pattern: str) -> str:
 
 
 def cache_entry(result: ApiResult) -> dict[str, Any]:
+    """Serialize a cacheable API result with today's check date."""
     return {
         "email": result.email,
         "status": result.status,
@@ -352,6 +383,7 @@ def cache_entry(result: ApiResult) -> dict[str, Any]:
 
 
 def row_from_cache(recruiter: Recruiter, entry: dict[str, Any], domain: str, pattern: str) -> dict[str, Any]:
+    """Build a zero-credit row, inferring an address only for cached misses."""
     status = str(entry.get("status") or "")
     email = str(entry.get("email") or "")
     if status == "NOT FOUND" and domain and pattern:
@@ -369,6 +401,7 @@ def recruiter_row(
     credits: int,
     api_url: str = "",
 ) -> dict[str, Any]:
+    """Create the canonical report row and include an API URL only when supplied."""
     row = {
         "rank": recruiter.rank,
         "name": recruiter.name,
@@ -384,10 +417,12 @@ def recruiter_row(
 
 
 def skipped_row(recruiter: Recruiter, reason: str) -> dict[str, Any]:
+    """Represent an unattempted recruiter without an address or credit charge."""
     return recruiter_row(recruiter, "", f"SKIPPED ({reason})", "none", 0)
 
 
 def row_from_miss(recruiter: Recruiter, domain: str, pattern: str) -> dict[str, Any]:
+    """Turn an API miss into an inferred row when possible, otherwise NOT FOUND."""
     email = infer_email(recruiter.name, domain, pattern)
     if email:
         return recruiter_row(recruiter, email, "INFERRED", "inferred", 0)
@@ -402,6 +437,7 @@ def resolve_recruiters(
     max_credits: int,
     dry_run: bool,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Resolve recruiters under cache, dry-run, credit-cap, and API stop constraints."""
     cache = load_cache()
     rows: list[dict[str, Any]] = []
     api_key = "" if dry_run else api_key_from_env()
@@ -446,6 +482,7 @@ def resolve_recruiters(
 
 
 def summarize(rows: list[dict[str, Any]], credits_spent: int, cache_hits: int) -> dict[str, int]:
+    """Count billing, cache, exact statuses, and reason-qualified skipped rows."""
     return {
         "credits_spent": credits_spent,
         "cache_hits": cache_hits,
@@ -457,10 +494,12 @@ def summarize(rows: list[dict[str, Any]], credits_spent: int, cache_hits: int) -
 
 
 def count_status(rows: list[dict[str, Any]], status: str) -> int:
+    """Count rows whose status exactly matches the requested value."""
     return sum(1 for row in rows if row["status"] == status)
 
 
 def build_report(args: argparse.Namespace) -> dict[str, Any]:
+    """Parse one ledger, resolve selected recruiters, and assemble write destinations."""
     ledger_path = resolve_ledger_path(args.ledger)
     text = ledger_path.read_text(encoding="utf-8")
     company = company_from_ledger(ledger_path)
@@ -487,6 +526,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def render_markdown(report: dict[str, Any]) -> str:
+    """Render the ledger section with all outcomes, run totals, and inference warning."""
     lines = [
         "## Verified Emails",
         "",
@@ -523,6 +563,7 @@ def render_markdown(report: dict[str, Any]) -> str:
 
 
 def emails_md_path(args: argparse.Namespace, ledger_path: Path) -> str | None:
+    """Choose the derived artifact path unless dry-run or no-write forbids output."""
     if args.dry_run or args.no_write:
         return None
     if args.emails_md:
@@ -533,6 +574,7 @@ def emails_md_path(args: argparse.Namespace, ledger_path: Path) -> str | None:
 
 
 def confidence_for(item: dict[str, Any], pattern: str) -> str:
+    """Label verified and inferred rows while suppressing unusable statuses."""
     if item["status"] == "VERIFIED":
         return "High (EmailFinder-verified)"
     if item["status"] == "INFERRED":
@@ -541,6 +583,7 @@ def confidence_for(item: dict[str, Any], pattern: str) -> str:
 
 
 def render_emails_markdown(report: dict[str, Any]) -> str:
+    """Render only addressed verified/inferred recruiters into the pipeline artifact."""
     lines = [
         "# Verified Emails",
         "",
@@ -568,6 +611,7 @@ def render_emails_markdown(report: dict[str, Any]) -> str:
 
 
 def replace_verified_section(text: str, section: str) -> str:
+    """Replace the first Verified Emails H2 block or append it with stable spacing."""
     lines = text.splitlines(keepends=True)
     start = next((index for index, line in enumerate(lines) if line.strip() == "## Verified Emails"), -1)
     if start == -1:
@@ -583,6 +627,7 @@ def replace_verified_section(text: str, section: str) -> str:
 
 
 def write_ledger(report: dict[str, Any]) -> None:
+    """Update only the generated Verified Emails section of the source ledger."""
     path = Path(report["ledger"])
     text = path.read_text(encoding="utf-8")
     section = render_markdown(report)
@@ -590,6 +635,7 @@ def write_ledger(report: dict[str, Any]) -> None:
 
 
 def write_emails_markdown(report: dict[str, Any]) -> None:
+    """Write the optional derived artifact, doing nothing when no path was selected."""
     path_text = report.get("emails_md_path")
     if not path_text:
         return
@@ -599,6 +645,7 @@ def write_emails_markdown(report: dict[str, Any]) -> None:
 
 
 def main() -> None:
+    """Run verification, honor write-suppression modes, and print JSON or ledger Markdown."""
     parser = argparse.ArgumentParser(
         description="Verify top recruiter emails from a role contacts ledger."
     )

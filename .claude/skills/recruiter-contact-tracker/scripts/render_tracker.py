@@ -50,6 +50,7 @@ def _quote_unquoted_keys(js_array_src: str) -> str:
 
 
 def extract(html_path: Path) -> None:
+    """Write embedded tracker rows as JSON, using legacy JS syntax as a fallback."""
     html = html_path.read_text(encoding="utf-8")
     m = ROWS_RE.search(html)
     if not m:
@@ -83,6 +84,7 @@ def extract(html_path: Path) -> None:
 
 
 def render(output_path: Path, rows: list) -> None:
+    """Render rows into the marked template region and stamp today's generation date."""
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
     rows_json = json.dumps(rows, indent=2, ensure_ascii=False)
 
@@ -107,6 +109,7 @@ def render(output_path: Path, rows: list) -> None:
 
 
 def main() -> None:
+    """Dispatch extract/render commands, rejecting missing files and non-array JSON."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
 

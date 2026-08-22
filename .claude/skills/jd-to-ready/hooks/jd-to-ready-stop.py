@@ -39,6 +39,7 @@ def read_stdin_payload() -> dict[str, Any]:
 
 
 def main() -> int:
+    """Block only an owner session whose active trace fails the strict completeness check."""
     payload = read_stdin_payload()
     env = os.environ.copy()
     session_id = payload.get("session_id")

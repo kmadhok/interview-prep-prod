@@ -221,6 +221,7 @@ def _emit_ready(packet: dict[str, object]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
+    """Execute `parse_args`; propagate invalid input, I/O, authentication, and provider failures to the caller unless handled here."""
     parser = argparse.ArgumentParser(description="Render and verify a resume PDF.")
     parser.add_argument("target_pdf", help="Resume PDF to verify.")
     parser.add_argument(
@@ -266,6 +267,7 @@ def _run() -> int:
 
 
 def main() -> int:
+    """Run the command-line workflow; parse/user/provider failures terminate with the documented nonzero status."""
     return _run()
 
 

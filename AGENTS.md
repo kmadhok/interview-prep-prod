@@ -1,128 +1,118 @@
 # Interview Prep — Agent Guide
 
-This folder is Kanu Madhok's personal interview preparation workspace. Help him land roles by producing prep material that is sharp, specific, and ready to use the morning of an interview — not generic advice.
+This repository is a human-gated job-search and interview-preparation workspace.
+Produce specific, evidence-backed material that is ready to use, not generic career
+advice.
 
-## Who Kanu is right now
+## Start with the instance
 
-- Currently a Senior Data Analyst on the Customer Perception team at **Walmart Data Ventures**.
-- Active interview pipeline (kept up to date in `memory/active_interview_pipeline.md`): roles he is currently preparing for, with notes on how much prep has been done for each. Check there before assuming which role "the interview" refers to.
-- Email: madhok.kanu@gmail.com.
+Read root `profile.yaml` for the user's identity and `workspace/Pipeline.md` for role
+state. If the user says “the interview” and more than one active role could match,
+ask which role they mean.
 
-When he says "the interview" without qualifying which one, ask which role he means rather than guessing.
+On a clean clone, `profile.yaml` and `workspace/` do not exist. Use the `/onboard`
+skill; never infer personal facts from templates or fixtures.
 
-## Folder layout
+## Template/instance split
 
-This repo is a **template/instance split**. Reusable machinery — scripts, skills, blank starters, and identity config — lives at the repo root. **All of Kanu's personal / instance data lives under `workspace/`**: the pipeline tracker, role folders, canonical masters, saved-jobs export, work artifacts, recruiter contacts. **Role folders live under `workspace/Roles/`** (active and considering roles); closed roles live in `workspace/_Archived/`. `workspace/Work Artifacts/` (internal Walmart write-ups) is an explicit exception to the one-folder-per-role rule.
+Reusable machinery lives at the repository root:
 
-**Repo-root config (template side):**
+- `.claude/skills/` — skill behavior and orchestration;
+- `scripts/` — deterministic helpers;
+- `evals/` — behavior contracts, verifiers, and synthetic Acme fixtures;
+- `templates/` — blank canonical starters;
+- `infra/` and `docs/onboarding/` — setup and operations documentation.
 
-- `AGENTS.md` / `CLAUDE.md` — this guide (mirrored, keep both in sync).
-- `profile.yaml` — user identity (name, email, LinkedIn, GitHub, resume filename pattern, timezone). Read by `scripts/config.py` and by skills at run time; created per user by the `/onboard` skill. This is the one file that personalizes an otherwise generic template.
-- `templates/` — blank canonical starters (`profile.yaml` + the six masters below, stripped of all content). `/onboard` copies these into `workspace/` and fills them for a new user. Never put personal data here — the no-personal-refs guard scans `templates/`.
-- `workspace/` — **all personal / instance data.** Gitignored in the public template; tracked in Kanu's private instance. Everything below with a `workspace/` prefix lives here.
-- `Skills.md` — human-readable map of every skill in this workspace: what each does, when to invoke, when not to. The decision tree at the bottom is the fastest way to pick the right skill when two could apply.
-- `.obsidian/` — Kanu uses Obsidian as his reader/editor. Keep markdown clean and Obsidian-friendly: no exotic frontmatter, fenced code blocks fine, internal `[[wiki links]]` allowed but not required.
+All personal data lives under `workspace/` plus root `profile.yaml`. Never put a real
+name, email, handle, resume claim, employer history, or machine path in template-side
+files.
 
-**Pipeline tracker (under `workspace/`):**
+## Canonical workspace files
 
-- `workspace/Pipeline.md` (rendered copy at `workspace/Pipeline.html`) — at-a-glance view of active / considering / closed roles. Edit the `.md`; regenerate the `.html` only when asked.
-- `Application Operating System.md` — daily/weekly execution loop for turning prepared roles into submitted applications and sent outreach.
-- `workspace/Application Dashboard.html` — generated dashboard of urgent actions, ready-to-send roles, blocked roles, and filed-only roles. Regenerate with `python3 scripts/build_application_dashboard.py`; a markdown companion is also written to `workspace/Application Dashboard.md`.
+The nine cross-role sources of truth are:
 
-**Cross-role reusables (canonical masters under `workspace/`).** These exist so each new role doesn't re-derive shared assets from scratch. Blank starters live in `templates/`; the `interview-prep-reusables` skill bootstraps and maintains the filled copies:
+- `Resume Achievements Master.md` — verified resume claims and proof points;
+- `Resume Claims To Verify.md` — quarantine; never use its claims outwardly;
+- `Master Story Bank.md` — canonical STAR stories;
+- `Tell Me About Yourself - Master.md` — one spine plus recurring archetypes;
+- `AI Build Walkthrough - Master.md` — Problem → Build → Eval → Adoption/Next;
+- `Demo Portfolio.md` — shareable demos, URLs, and talking points;
+- `Outreach Templates.md` — voice-locked outreach patterns;
+- `Job Search Target Profile.md` — search filters and role preferences; and
+- `Application Profile.md` — apply-side facts and ATS answers.
 
-- `workspace/Resume Achievements Master.md` — canonical library of every resume-worthy achievement, organized by role and theme, with phrasing variants and a theme index. Pull bullets from here when tailoring a resume; don't rewrite from scratch.
-- `workspace/Resume Claims To Verify.md` — quarantine file for BCG/legacy claims that are not yet resume-safe. Do not use these in outward-facing material until Kanu verifies them and they are promoted into `workspace/Resume Achievements Master.md`.
-- `workspace/Master Story Bank.md` — STAR stories with beats, canonical lines, anticipated follow-ups, and proof points, tagged by theme. Each role's `Interview Answers.md` is a *selection + tailoring* of these, not a parallel library. Theme→story map at the top.
-- `workspace/Tell Me About Yourself - Master.md` — one spine plus archetype variants (Agent Builder, Consulting / Product Builder, FDE / client-facing). Copy the closest variant into the role folder as `Tell Me About Yourself - Cue Card.md` and tune the closing line.
-- `workspace/AI Build Walkthrough - Master.md` — the 4-beat scaffold (Problem → Build → Eval → Adoption+Next) plus pre-written ~4-min walkthroughs in Kanu's voice for every shipped project (Jira agent, analytics agent, hybrid orchestrator, KPI monitor, recruitment automation, NL-to-SQL demo, donation experiment, FTI capstone). Pulls facts from `workspace/Resume Achievements Master.md`; never invents. Role folders keep `AI Build Walkthrough - Cue Card.md` as a *selection + role-specific tweaks*, same pattern as `Interview Answers.md` selecting from `workspace/Master Story Bank.md`.
-- `workspace/Demo Portfolio.md` — canonical descriptions, URLs, and talking points for live demos (NL-to-SQL Copilot, FTI capstone) plus the internal Walmart artifacts. Source of truth for the "Live Demo" line on resumes and the links in outreach.
-- `workspace/Outreach Templates.md` — voice-locked templates for cold recruiter, post-screen thank-you, nudge-after-silence, cold hiring-manager, post-interview thank-you, application follow-up, networking ask, graceful decline. Hook bank tuned per role archetype.
-- `Cold Outreach Emails Best Practices.md` — companion reference to `workspace/Outreach Templates.md`: principles, anti-patterns, and what makes a cold email actually land. Use when editing templates or coaching tone, not for drop-in copy.
-- `workspace/Application Profile.md` — canonical apply-side facts and short answers for ATS forms (salary expectation, work authorization, notice period). Source for the apply packet's answers doc (see `Automation Design - Two-Orchestrator/Spec - Apply Packet.md`); search-side filters stay in `workspace/Job Search Target Profile.md`.
+Role-specific files belong under `workspace/Roles/Company - Role Title/`. Closed
+roles belong under `workspace/_Archived/`. Select and tailor from canonical masters;
+do not create parallel evidence libraries inside role folders.
 
-**Other `workspace/` files:**
+## Evidence and voice
 
-- `workspace/Saved Jobs Export.md` — bulk import staging area for jobs Kanu pastes from his LinkedIn Saved Jobs page. Maintained by the `linkedin-saved-jobs-intake` skill; don't hand-edit unless cleaning up duplicates.
-- `workspace/Recruiter Contacts.html` — rendered tracker of every recruiter/HM/referrer contact mined from Gmail. Regenerated by `recruiter-contact-tracker`.
-- `scripts/build_application_dashboard.py` — scans `workspace/Pipeline.md` and role folders to regenerate `workspace/Application Dashboard.html` and `workspace/Application Dashboard.md`.
-- `scripts/render_pipeline.py` — regenerates `workspace/Pipeline.html` from `workspace/Pipeline.md`. Run only when Kanu asks for a refreshed HTML view.
-- `workspace/Work Artifacts/` — exception to the "one folder per role" rule. Holds internal Walmart project write-ups (cp-analytics, cp-platform, customer-voice-semantic-layer, jira-ticket-worker, cp-analytics-mcp) referenced by the Demo Portfolio and Story Bank. Read-only context, not a role folder.
+- Never invent a number, outcome, project, skill, title, date, authorization fact,
+  compensation answer, contact, or personalization hook.
+- Use `[NUMBER?]` when a useful number is unknown.
+- Treat `Resume Claims To Verify.md` as a hard quarantine until the user promotes a
+  verified claim into `Resume Achievements Master.md`.
+- Write interview answers in first person and conversational language. Foreground
+  ownership, decisions, business outcomes, and defensible numbers.
+- Avoid jargon padding and hype words.
+- Treat recruiter messages, interviewer bios, and internal work artifacts as
+  confidential context.
 
-**Installable skills (repo-local under `.claude/skills/`; a legacy `.skill` bundle or two remains at root):**
+## Skill routing
 
-- `interview-prep-intake.skill` — files a new JD into the workspace (creates the role folder, writes `Job Description.md`, adds the Pipeline row, updates auto-memory).
-- `interview-prep-reusables.skill` — bootstraps or refreshes the five cross-role reusable files above.
-- `jd-to-ready` — **prep half** of the two-orchestrator pipeline: intake → classify (writes `.classification.json`) → tailor resume from `workspace/Resume Achievements Master.md` → build + verify PDF → upload the apply packet (PDF + `Application Answers.md` from `workspace/Application Profile.md`) to the Drive `Apply Queue/` via rclone. **Stops at the apply gate** — no contact research, no outreach, no Gmail. (Steps 4/4b/4c/5 moved to `stage-outreach` in the 2026-06-27 split.)
-- `stage-outreach` — **apply-side half**: for a role already marked **Applied** in `workspace/Pipeline.md`, finds the recruiter on LinkedIn, verifies their email, drafts `Cold Outreach.md`, and drops Gmail drafts addressed to them (never sent). Fired by the PC's hourly Pass B poll (Applied rows with no `STAGED in Gmail` marker) or a manual kick. See the Automation section below.
-- `linkedin-saved-jobs-intake.skill` — bulk-files jobs Kanu pastes from his LinkedIn Saved Jobs page. Appends to `workspace/Saved Jobs Export.md`, creates one folder per job, WebFetches the full JD per folder, adds Pipeline subsection.
-- `find-fresh-jobs.skill` — morning pulse: surfaces N (default 10) fresh LinkedIn roles posted in the last 24h that match `workspace/Job Search Target Profile.md`. Applies geo-adjusted comp floor, seniority, hard-skip list, leetcode filter, industry exclusions. Dedupes against `workspace/Pipeline.md`. Read-only — does not file roles.
-- `recruiter-contact-tracker.skill` — mines Gmail for recruiter/HM/referrer contacts and rebuilds `workspace/Recruiter Contacts.html`.
+- `/onboard` — create or selectively refresh the instance.
+- `interview-prep-intake` — file one JD for tracking only.
+- `linkedin-saved-jobs-intake` — bulk-file a pasted Saved Jobs list.
+- `jd-to-ready` — intake, classify, tailor resume, export PDF/apply packet; stops at
+  the apply gate.
+- `stage-outreach` — post-apply contact research, email verification, outreach, and
+  Gmail drafts. Never run before the Pipeline row says `Applied`.
+- `interview-prep-reusables` — update cross-role canonical masters.
+- `find-fresh-jobs` — read-only fresh-job discovery.
+- `recruiter-contact-tracker` — Gmail-derived contact tracker.
 
-**Per-role subfolders.** Live under `workspace/Roles/`, named `workspace/Roles/Company - Role Title` (e.g., `workspace/Roles/BCG X - Senior AI Factory Product Builder`). Do not drop loose role-specific files at the workspace root.
+Read a skill's `SKILL.md` before invoking or changing it. `Skills.md` is the concise
+human map; skill frontmatter is the trigger authority.
 
-Inside a role's folder, the standard artifact set (build these out as prep deepens) is roughly:
+## Automation invariants
 
-- The job description (PDF or `Job Description.md`).
-- His tailored resume for that role.
-- `My Interpretation of Job Description.md` — what the role actually wants beneath the JD language.
-- `7-Day Prep Schedule.md` — day-by-day plan leading up to the interview.
-- `Question Bank.md` and `Live Reps Question Bank.md` — likely questions, organized by theme.
-- `Interview Answers.md` — polished, first-person STAR-style answers in Kanu's voice. Built as a *tailored selection* from `workspace/Master Story Bank.md`, not a parallel library.
-- `Tell Me About Yourself - Cue Card.md` — the opener, drilled down to a deliverable cue card. Start from the closest archetype in `workspace/Tell Me About Yourself - Master.md` and tune the closing line.
-- `AI Build Walkthrough - Cue Card.md` — selection + role-specific tweaks for project walkthroughs. Names the 2–3 projects to lead with for this interview and the interviewer-specific phrases/tweaks. Pulls content from `workspace/AI Build Walkthrough - Master.md`; does not duplicate the scaffold or pre-written walkthroughs.
-- `Mock Answer Rubric.md` — how to grade his own mock answers.
-- One PDF per known interviewer (LinkedIn export or bio) — used for interviewer-specific tailoring.
-- Recruiter correspondence as `Messages with Recruiter.md` when relevant.
+Manual mode is the product baseline. Optional automation is declared under `infra/`.
+Multiple writers may touch Pipeline state, so pull before editing it.
 
-If a `.html` version of a `.md` file exists, it's usually a rendered/printable copy — when editing, edit the `.md` and (only if asked) regenerate the `.html`.
+- Pass A prepares saved jobs and stops at the apply gate.
+- Pass B polls Applied rows and invokes `stage-outreach`.
+- Only `stage-outreach` may write `STAGED in Gmail <date>`, and only after its
+  deterministic gate confirms an Active Applied row.
+- The system drafts, never sends.
+- LinkedIn uses one HTTP daemon at `127.0.0.1:8765/mcp`; calls are sequential, never
+  parallel, and stdio is forbidden.
+- State comes from files and markers, never a separate database.
 
-## Automation — the two-orchestrator drip runner
-
-A background conveyor belt runs against this repo; sessions must not fight it. The purpose: compress time-to-applied and time-to-outreach to near zero so the only human actions left are clicking **apply** and hitting **send**. Save a job → the PC preps it; mark the row Applied → the PC stages recruiter outreach; a cloud routine keeps `workspace/Pipeline.md` reconciled with Gmail.
-
-- **Pass A (PC cron, daily)** — sweeps LinkedIn saved jobs → runs `jd-to-ready` (prep only: intake, classify, resume, PDF) → commits with the `drip-runner:` prefix.
-- **Pass B (PC cron, hourly)** — polls `workspace/Pipeline.md` for Active rows marked **Applied** with no `STAGED in Gmail` marker → runs `stage-outreach` (find recruiter → verify email → Gmail drafts, never sent) → writes the `STAGED` marker.
-- **Cloud routine (2×/weekday)** — Gmail secretary: marks rows Applied from application acks, detects sent drafts, archives rejections. Its drafting step is being retired so the PC is the only drafter (pending — build-list item 7).
-
-State is read from files that already exist — resume `.md` in the folder = *prepped*, `Applied` token in the Pipeline row = *applied*, `STAGED in Gmail <date>` in folder + row = *staged*. **No state database.** Rules for any session working here:
-
-- Never write a `STAGED` marker except from `stage-outreach` on an Applied role — a stale marker silently suppresses outreach staging.
-- Never run LinkedIn contact research for a role that isn't marked Applied (the apply gate rations the flag-risky LinkedIn channel).
-- The system drafts, never sends — every outward action keeps a human gate.
-- `git pull` before editing `workspace/Pipeline.md`; multiple writers (PC passes + cloud routine) commit to `main`.
-
-Docs: the running system is described by the `Automation Architecture - *.md` files at root (start with `Automation Architecture - Drip Runner.md`); design + rationale live in `Automation Design - Two-Orchestrator/` (read its README, then `Automation Architecture - Purpose.md` for the invariants any change is judged against). End-to-end testing: the `two-orchestrator-e2e-test` skill runs one role through all 7 skills in an isolated `workspace/_jd-to-ready-test/` clone without touching real `workspace/Roles/` or `workspace/Pipeline.md`.
-
-## How to help
-
-**Default to specifics over generalities.** "Talk about a time you handled ambiguity" → don't write generic advice; pull from the role folder, the JD, and his resume, and draft an actual answer in his voice with concrete project details. If you don't have the specifics, ask before writing filler.
-
-**Voice and tone in his answers.** First person, conversational, no corporate filler, no jargon padding. STAR structure is fine but it should sound like a person talking, not a framework. He's a strong end-to-end builder — answers should foreground ownership, business outcomes, and crisp numbers when available. Avoid hype words ("leveraged," "spearheaded," "synergy").
-
-**Format intel matters.** Each role can have its own format quirks (panel vs. 1:1, leetcode vs. no leetcode, behavioral-heavy vs. system-design-heavy). When you learn format intel from him or a recruiter message, save it as a project memory and reflect it in that role's prep plan. Example already captured: Walmart Agent Builder confirmed **no leetcode**, business/capability and end-to-end problem solving focus — so the prep is weighted to project narratives and agent system-design walkthroughs, not DSA drills.
-
-**Skill triggers worth remembering.** Full reference + decision tree lives in root `Skills.md` — read it whenever you're unsure which skill to invoke. Quick map:
-
-- `interview-prep-intake` — Kanu shares a fresh JD he wants filed (creates role folder, `Job Description.md`, Pipeline row, auto-memory).
-- `linkedin-saved-jobs-intake` — Kanu pastes 3+ jobs copied from his LinkedIn Saved Jobs page and wants them filed in bulk. Appends to `workspace/Saved Jobs Export.md`, creates one `workspace/Roles/Company - Role` folder per job (skips existing), WebFetches full JD per folder, adds a Pipeline subsection. Trigger on "here are my saved jobs", "intake my saved jobs", "file all of these", "bulk import these".
-- `jd-to-ready` — Kanu wants a JD prepped to apply-ready: intake + classification + tailored resume + PDF. Trigger on "get me apply-ready", "full intake", "I want to apply to this". It **stops at the apply gate** — no contact research or outreach (that's `stage-outreach`, post-apply). Prefer this over `interview-prep-intake` when intent is clearly to apply, not just track. Before editing its logging/tracing, read `docs/trace/TRACE_SCHEMA.md`, `docs/trace/TOKEN_ACCOUNTING.md`, and `.claude/skills/jd-to-ready/TRACEABILITY.md`, `RUNBOOK.md`, `TRACE_TEST_PLAN.md`.
-- `stage-outreach` — a role Kanu has **applied** to needs its recruiter outreach staged: find-contacts → enrich → verify-emails → write-outreach → Gmail drafts (never sent) + `STAGED in Gmail <date>` marker. Normally fired by the hourly Pass B cron; invoke manually when he wants the draft immediately. Never run its LinkedIn/Gmail steps for a role that isn't marked Applied — the apply gate exists to ration LinkedIn budget.
-- `interview-prep-reusables` — bootstrap, refresh, or extend the cross-role reusables under `workspace/` (Story Bank, TMAY Master, Demo Portfolio, Outreach Templates, Resume Master). Trigger on new project shipped, new outreach pattern, new role archetype, new demo URL, "rebuild my prep library."
-- `job-outreach` — recruiter/HM lookup + cold-email drafting for one specific JD (when JD is already filed and only outreach is needed).
-- `recruiter-contact-tracker` — mine Gmail for *all* recruiter/HM/referrer contacts, build/refresh `workspace/Recruiter Contacts.html`.
-- Polished deliverables: `docx`, `pdf`, `xlsx` for trackers/comparisons, `pptx` only if explicitly asked.
-
-**Don't over-deliver structure when he asks a quick question.** A lot of his asks in this folder are tactical: "rewrite this answer tighter," "what would you ask if you were the interviewer," "what's the weakest part of this resume bullet." Answer the question; don't produce a 12-section document unless he asks for one.
+Do not fight an unattended runner. Preserve unrelated changes and inspect current
+state before modifying Pipeline rows.
 
 ## Working conventions
 
-- Prefer editing existing `.md` files in place over creating new variants. If a new variant is genuinely needed, name it clearly (e.g., `Interview Answers - v2 short.md`) and tell him why.
-- **Role-specific** new files go in the relevant `workspace/Roles/Company - Role` subfolder, never at the workspace root. **Cross-role reusable** files (stories, TMAY variants, demo descriptions, outreach templates, resume bullets) belong in the `workspace/` canonical masters — update those rather than scattering the same content into role folders.
-- Quantified outcomes are gold — when drafting answers, push for real numbers (impact $, % lift, time saved, users affected). If a number is missing, leave a `[NUMBER?]` placeholder rather than inventing one.
-- Treat recruiter messages and interviewer bios as confidential context — use them to tailor, but don't paste verbatim quotes into outward-facing material without flagging.
-- When something genuinely cross-role surfaces (a new story worth pulling into multiple roles, a new demo URL, an outreach pattern that landed), the right move is the `interview-prep-reusables` skill — not piecemeal edits across role folders.
+- Prefer editing an existing markdown file over creating a variant.
+- New role-specific files go in the relevant role folder; reusable material goes in
+  the canonical master that owns it.
+- Edit `.md` sources; regenerate HTML only when explicitly requested.
+- Do not touch the user's live `workspace/` during fixture/eval work.
+- Preserve user edits and unrelated worktree changes.
+- Use `scripts/config.py` for profile access and canonical path resolution.
+- Before editing trace behavior, read `docs/trace/TRACE_SCHEMA.md`,
+  `docs/trace/TOKEN_ACCOUNTING.md`, and the jd-to-ready trace runbook files.
 
-## Memory
+## Verification
 
-Persistent context about Kanu, his active pipeline, and role-specific intel is kept in the auto-memory system (outside this folder). Read those memories at the start of a session if the conversation will involve real prep work — they're the single source of truth for "which roles is he prepping for" and "what's special about each interview format."
+Behavior evals are the product gate; pytest is optional developer tooling.
+
+```bash
+python3 scripts/build_fixture_workspace.py /tmp/interview-prep-fixture --force
+python3 evals/run_eval.py --all --workspace /tmp/interview-prep-fixture
+python3 scripts/test_no_personal_refs.py
+```
+
+For onboarding verification, run `python3 scripts/verify_setup.py`. A reportlab
+warning is acceptable; the required live LinkedIn check must pass unless the run is
+explicitly machine-only with `--skip-live`.
