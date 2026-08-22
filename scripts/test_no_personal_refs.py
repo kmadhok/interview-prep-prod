@@ -33,6 +33,16 @@ FORBIDDEN = [
     re.compile(r"\bkmadhok\b"),               # personal GitHub handle
 ]
 
+# The distribution repo's own clone URL is the one sanctioned handle occurrence.
+ALLOWED_LITERALS = ("github.com/kmadhok/interview-prep-template",)
+
+
+def redact_allowed(text: str) -> str:
+    """Blank sanctioned literals so the forbidden patterns do not match them."""
+    for literal in ALLOWED_LITERALS:
+        text = text.replace(literal, "#" * len(literal))
+    return text
+
 
 def iter_template_files():
     for d in TEMPLATE_DIRS:
@@ -50,7 +60,7 @@ def iter_template_files():
 def find_violations() -> list[str]:
     violations = []
     for f in iter_template_files():
-        text = f.read_text(encoding="utf-8", errors="surrogateescape")  # surrogateescape: lossless — never silently drop bytes that could hide a violation
+        text = redact_allowed(f.read_text(encoding="utf-8", errors="surrogateescape"))  # surrogateescape: lossless — never silently drop bytes that could hide a violation
         for pattern in FORBIDDEN:
             for m in pattern.finditer(text):
                 line_no = text.count("\n", 0, m.start()) + 1

@@ -13,7 +13,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from test_no_personal_refs import FORBIDDEN, TEMPLATE_DIRS  # noqa: E402
+from test_no_personal_refs import FORBIDDEN, TEMPLATE_DIRS, redact_allowed  # noqa: E402
 
 EXTRA_DIRS = ("docs/trace",)
 ROOT_FILES = ("README.md", "LICENSE", "AGENTS.md", "CLAUDE.md", "Skills.md")
@@ -180,7 +180,7 @@ def scan_export(target: Path) -> list[str]:
         if relative == guard_relative:
             continue
         try:
-            text = file_path.read_text(encoding="utf-8", errors="surrogateescape")
+            text = redact_allowed(file_path.read_text(encoding="utf-8", errors="surrogateescape"))
         except OSError as exc:
             violations.append(f"{relative}: unreadable: {exc}")
             continue
