@@ -22,8 +22,8 @@ Schedulers are optional. Manual mode is the supported default.
 ## Quick start
 
 ```bash
-git clone <clean-export-repository-url>
-cd <repository-directory>
+git clone https://github.com/kmadhok/interview-prep-template.git
+cd interview-prep-template
 claude
 ```
 
