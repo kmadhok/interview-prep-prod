@@ -36,12 +36,23 @@ drafts. It never sends them. Review the drafts, attach the resume, choose at mos
 cold recipient at a company unless you deliberately space messages out, and click
 Send yourself.
 
+Email verification is optional; see [email verification](email-verification.md) for
+key setup and fallback behavior.
+
 ## 4. Follow the trace when output is wrong
 
 Each orchestrator writes `runs/<run-id>/trace.jsonl` and a rendered `report.md`.
 Start with the output you dislike, find the producing step in the report, then follow
 its `sources` to the skill prompt or canonical workspace master. Edit the source of
 truth and rerun the affected skill.
+
+The repository ships `.claude/settings.json` containing only the jd-to-ready trace
+hooks: PostToolUse, SubagentStop, and Stop, registered with
+`$CLAUDE_PROJECT_DIR`-relative commands. They no-op unless a jd-to-ready run is active;
+during a run they enrich `runs/<run-id>/trace.jsonl` with tool telemetry and block a
+silent finish when required steps remain unclosed. Claude Code asks you to approve
+project hooks on first use. If you previously registered the same hooks in global
+`~/.claude/settings.json`, remove those global entries to avoid duplicate telemetry.
 
 ## Optional helpers
 

@@ -11,6 +11,8 @@ submission and every outbound message remain explicit human actions.
 - Claude Code;
 - Python 3.11 or newer, using the standard library;
 - a local LinkedIn MCP server at `http://127.0.0.1:8765/mcp` (**required**);
+- an EmailFinder.dev API key (optional; without it email verification degrades to
+  flagged inferred addresses — see docs/onboarding/email-verification.md);
 - an authorized Gmail connector for outreach staging; and
 - `reportlab` only if you want PDF export (optional; missing support degrades to
   markdown without breaking the rest of setup).
@@ -87,6 +89,9 @@ Start with [manual mode](docs/onboarding/manual-mode.md). Connector help lives i
 [LinkedIn setup](docs/onboarding/linkedin-mcp.md) and
 [Gmail setup](docs/onboarding/gmail.md); optional automation is declared in
 [`infra/`](infra/README.md).
+
+Trace hooks ship in `.claude/settings.json` and are explained in
+[manual mode](docs/onboarding/manual-mode.md).
 
 When output is wrong, use trace as the repair manual. Each orchestrator records why a
 step ran and the source files that shaped it. The event contract is documented in

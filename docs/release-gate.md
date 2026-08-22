@@ -23,7 +23,9 @@ git status --short
 **Pass:** the export command reports a clean full-tree scan; the clone succeeds; and
 `git status` is empty. The clone contains no `workspace/`, root `profile.yaml`,
 `.lavish/`, `.obsidian/`, `runs/`, or private design/history documents. See
-`scripts/export_template.py`.
+`scripts/export_template.py`. The export command also asserts every required template
+file is present and not ignored by the generated `.gitignore`, so a dropped onboarding
+or fixture file fails the export rather than a tester's first run.
 
 ### 2. Confirm runtime requirements
 

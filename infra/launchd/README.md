@@ -13,7 +13,7 @@ daemon alive at `http://127.0.0.1:8765/mcp`.
    | --- | --- |
    | `__LABEL__` | A unique label, for example `com.<short-name>.linkedin-mcp` |
    | `__UV_PATH__` | Absolute output of `command -v uv` |
-   | `__SERVER_REPO__` | Absolute LinkedIn MCP server checkout |
+   | `__SERVER_REPO__` | Absolute path of the `stickerdaniel/linkedin-mcp-server` checkout at `v4.22.0` |
    | `__PATH__` | Minimal PATH containing `uv`, Python, and system binaries |
    | `__LOG_DIR__` | Existing user-owned log directory |
 

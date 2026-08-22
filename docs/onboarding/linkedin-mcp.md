@@ -7,8 +7,17 @@ reachable.
 
 ## 1. Install and sign in
 
-1. Install the LinkedIn MCP server and its browser dependencies by following the
-   server repository's pinned-version instructions.
+1. Install the
+   [`stickerdaniel/linkedin-mcp-server`](https://github.com/stickerdaniel/linkedin-mcp-server)
+   server. This template was verified against tag `v4.22.0`; newer tags may work but
+   are untested here.
+
+   ```bash
+   git clone https://github.com/stickerdaniel/linkedin-mcp-server.git
+   cd linkedin-mcp-server
+   git checkout v4.22.0
+   uv sync
+   ```
 2. Run its documented interactive login once so the browser profile contains your
    LinkedIn session.
 3. Configure the server for streamable HTTP on `127.0.0.1:8765` with the MCP path
@@ -22,10 +31,11 @@ reachable.
    HEADLESS=true
    ```
 
-Do not use stdio. The scraper can emit asynchronous progress frames, and the stdio
-transport can terminate calls when those frames interleave with responses. HTTP also
-gives every skill one stable, supervised daemon instead of spawning competing browser
-processes.
+Do not use stdio. The server's FastMCP layer can emit `notifications/progress` frames
+for already-completed progress tokens; on stdio the MCP client treats that as a
+protocol violation, tears down the transport, and kills in-flight calls. On
+streamable HTTP each tool call is a fresh request, so the same condition becomes a
+transient retry.
 
 ## 2. Install the launchd supervisor
 

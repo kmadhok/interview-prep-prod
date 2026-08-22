@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -15,6 +17,31 @@ from test_no_personal_refs import FORBIDDEN, TEMPLATE_DIRS  # noqa: E402
 
 EXTRA_DIRS = ("docs/trace",)
 ROOT_FILES = ("README.md", "LICENSE", "AGENTS.md", "CLAUDE.md", "Skills.md")
+EXTRA_FILES = ("docs/release-gate.md", ".claude/settings.json")
+REQUIRED_EXPORT_FILES = (
+    "README.md",
+    "LICENSE",
+    "CLAUDE.md",
+    "AGENTS.md",
+    "Skills.md",
+    ".claude/settings.json",
+    ".claude/skills/onboard/SKILL.md",
+    ".claude/skills/jd-to-ready/SKILL.md",
+    "templates/profile.yaml",
+    "evals/fixtures/profile.yaml",
+    "evals/fixtures/onboarding-answers.json",
+    "scripts/verify_setup.py",
+    "scripts/onboard_workspace.py",
+    "scripts/build_fixture_workspace.py",
+    "scripts/export_template.py",
+    "scripts/test_no_personal_refs.py",
+    "scripts/config.py",
+    "docs/onboarding/linkedin-mcp.md",
+    "docs/onboarding/gmail.md",
+    "docs/onboarding/manual-mode.md",
+    "docs/release-gate.md",
+    "infra/launchd/com.example.linkedin-mcp.plist",
+)
 GENERATED_GITIGNORE_LINES = (
     "",
     "# Personal instance data — created by /onboard, never shipped",
@@ -96,6 +123,54 @@ def _reset_runner_state(target: Path) -> None:
             destination.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
 
 
+def check_required_files(target: Path) -> list[str]:
+    """Return problems for required files that are missing or ignored."""
+    problems = [
+        f"{relative}: missing from clean export"
+        for relative in REQUIRED_EXPORT_FILES
+        if not (target / relative).is_file()
+    ]
+
+    try:
+        with tempfile.TemporaryDirectory() as git_dir:
+            subprocess.run(
+                [
+                    "git",
+                    "--git-dir",
+                    git_dir,
+                    "--work-tree",
+                    str(target),
+                    "init",
+                    "-q",
+                ],
+                check=True,
+            )
+            for relative in REQUIRED_EXPORT_FILES:
+                if not (target / relative).is_file():
+                    continue
+                result = subprocess.run(
+                    [
+                        "git",
+                        "--git-dir",
+                        git_dir,
+                        "--work-tree",
+                        str(target),
+                        "check-ignore",
+                        "-q",
+                        relative,
+                    ],
+                    check=False,
+                )
+                if result.returncode == 0:
+                    problems.append(
+                        f"{relative}: would be ignored by the exported .gitignore"
+                    )
+    except FileNotFoundError:
+        print("warning: git not found; skipping exported .gitignore checks", file=sys.stderr)
+
+    return problems
+
+
 def scan_export(target: Path) -> list[str]:
     """Return forbidden-pattern hits across every readable file in the export."""
     violations = []
@@ -124,11 +199,17 @@ def export_template(target: Path, *, force: bool = False) -> Path:
         _copy_relative(REPO_ROOT, target, relative)
     for relative in ROOT_FILES:
         _copy_relative(REPO_ROOT, target, relative)
-    release_gate = REPO_ROOT / "docs" / "release-gate.md"
-    if release_gate.is_file():
-        _copy_relative(REPO_ROOT, target, "docs/release-gate.md")
+    for relative in EXTRA_FILES:
+        _copy_relative(REPO_ROOT, target, relative)
     _write_gitignore(target)
     _reset_runner_state(target)
+
+    required_file_problems = check_required_files(target)
+    if required_file_problems:
+        raise ValueError(
+            "required template files missing or ignored in clean export:\n"
+            + "\n".join(required_file_problems)
+        )
 
     violations = scan_export(target)
     if violations:
@@ -158,6 +239,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     file_count = sum(1 for path in target.rglob("*") if path.is_file())
     print(f"Exported {file_count} template files to {target}")
+    print("PASS: all required template files present and not ignored")
     print("PASS: full export tree contains no forbidden personal references")
     return 0
 
