@@ -42,7 +42,7 @@ piece.
 | `enrich-contacts` | Activity-derived contacts and truthful personalization hooks. |
 | `verify-emails` | Email resolution, verification, and explicit degraded status. |
 | `write-outreach` | Voice-locked outreach and Gmail draft creation; never sends. |
-| `linkedin-mcp-operations` | HTTP transport, sequential-call discipline, and daemon recovery. |
+| `linkedin-mcp-operations` | Sequential-call discipline, transport tiers (stdio default, HTTP daemon for runners), and daemon recovery. |
 
 ## Libraries and analysis
 
@@ -59,7 +59,7 @@ piece.
 - `workspace/Resume Claims To Verify.md` is quarantined until the user verifies and
   promotes a claim.
 - Cross-role content belongs in canonical masters; role folders select and tailor it.
-- LinkedIn calls use the HTTP MCP daemon sequentially, never in parallel.
+- LinkedIn calls are sequential, never in parallel; unattended runners share the HTTP daemon.
 - Contact research starts only after the Pipeline row is `Applied`.
 - Gmail actions create drafts only. The user reviews, attaches files, and sends.
 - Only `stage-outreach` writes `STAGED in Gmail <date>` after its deterministic gate.

@@ -1,7 +1,8 @@
 # LinkedIn MCP launchd service
 
-This is the required v1 infrastructure for macOS. It keeps exactly one LinkedIn MCP
-daemon alive at `http://127.0.0.1:8765/mcp`.
+This is the optional Tier 2 supervisor for macOS. See
+[the LinkedIn MCP setup guide](../../docs/onboarding/linkedin-mcp.md). It keeps exactly
+one LinkedIn MCP daemon alive at `http://127.0.0.1:8765/mcp`.
 
 ## Install
 
@@ -13,7 +14,7 @@ daemon alive at `http://127.0.0.1:8765/mcp`.
    | --- | --- |
    | `__LABEL__` | A unique label, for example `com.<short-name>.linkedin-mcp` |
    | `__UV_PATH__` | Absolute output of `command -v uv` |
-   | `__SERVER_REPO__` | Absolute path of the `stickerdaniel/linkedin-mcp-server` checkout at `v4.22.0` |
+   | `__SERVER_REPO__` | Absolute path of a `stickerdaniel/linkedin-mcp-server` checkout (`git clone` + `uv sync`) |
    | `__PATH__` | Minimal PATH containing `uv`, Python, and system binaries |
    | `__LOG_DIR__` | Existing user-owned log directory |
 

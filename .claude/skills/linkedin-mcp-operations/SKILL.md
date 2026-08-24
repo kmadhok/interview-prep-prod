@@ -1,15 +1,15 @@
 ---
 name: linkedin-mcp-operations
-description: Use this skill BEFORE invoking any mcp__linkedin__* tool, when a LinkedIn MCP call fails or times out, or when diagnosing the linkedin MCP server. The single source of truth for how to use the LinkedIn MCP — the http-transport invariant, the sequential-only rule (never parallel), the per-operation reference, and the diagnostic ladder for the launchd-supervised daemon (com.<user>.linkedin-mcp on 127.0.0.1:8765). Trigger phrases - "linkedin mcp", "scrape linkedin", "find contacts", "linkedin handshake", "mcp__linkedin", "transport error".
+description: Use this skill BEFORE invoking any mcp__linkedin__* tool, when a LinkedIn MCP call fails or times out, or when diagnosing the linkedin MCP server. The single source of truth for how to use the LinkedIn MCP — the transport tiers (stdio default, HTTP daemon for unattended runners), the sequential-only rule (never parallel), the per-operation reference, and the diagnostic ladder for the launchd-supervised daemon (com.<user>.linkedin-mcp on 127.0.0.1:8765). Trigger phrases - "linkedin mcp", "scrape linkedin", "find contacts", "linkedin handshake", "mcp__linkedin", "transport error".
 ---
 
 # LinkedIn MCP Operations
 
-The one skill for using the LinkedIn MCP. Two things matter: the **transport must stay http** (or a known bug crashes calls), and **calls must be sequential, never parallel** (the upstream scraper is not concurrency-safe). There are no usage caps, no delays, no cool-downs — use it as much as you want, one call at a time.
+The one skill for using the LinkedIn MCP. Two things matter: the **transport must match how this instance was set up** (stdio by default; the HTTP daemon when one is installed — never both), and **calls must be sequential, never parallel** (the upstream scraper is not concurrency-safe). There are no usage caps, no delays, no cool-downs — use it as much as you want, one call at a time.
 
 ## The only two rules
 
-1. **http transport only.** The `linkedin` server in `~/.claude.json` MUST stay `"type": "http"` at `http://127.0.0.1:8765/mcp`. Do NOT switch to stdio — FastMCP 3.3.1 emits stray `notifications/progress` frames that kill stdio mid-call. This is the known bug this skill exists to avoid.
+1. **Do not change the registered transport mid-run.** If `linkedin` is registered as `"type": "http"` at `http://127.0.0.1:8765/mcp`, keep it — a launchd daemon owns that browser. If it is registered as stdio (`uvx mcp-server-linkedin@latest`), keep that — do not also start a daemon. (History: FastMCP 3.3.1 emitted stray `notifications/progress` frames that killed stdio; verified fixed 2026-08-24 on v4.23.1 / FastMCP 3.4.4.)
 2. **Sequential only, never parallel.** One `mcp__linkedin__*` call in flight at a time: issue a call, await its result, then issue the next. Never put two LinkedIn calls in the same tool batch. The upstream scraper drives a real browser and is not concurrency-safe — parallel calls corrupt each other mechanically, independent of any rate-limit concern. **There is no limit on sequential volume.**
 
 ## How callers use this
@@ -71,7 +71,7 @@ launchctl kickstart -k gui/$(id -u)/com.<user>.linkedin-mcp
 
 ## What NOT to do
 
-- Do not edit `~/.claude.json` to change `linkedin` from `http` back to `stdio` "just to test".
+- Do not flip `linkedin` between `http` and `stdio` in `~/.claude.json` "just to test"; two transports mean two browsers fighting over one profile.
 - Do not run two `mcp__linkedin__*` calls in the same tool batch.
 - Do not `pkill -f linkedin` or `pkill -f streamable-http`. The daemon is owned by launchd; killing it manually causes a respawn race.
 - Do not `launchctl unload` then re-`load` — use `kickstart -k` to preserve the agent registration.

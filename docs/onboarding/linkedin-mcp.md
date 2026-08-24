@@ -1,61 +1,46 @@
-# LinkedIn MCP setup (required)
+# LinkedIn MCP setup
 
-LinkedIn access is the only required external infrastructure in v1. The contact
-research skills use a local browser-driven MCP daemon. Set it up once, keep it
-supervised, and let `verify_setup.py` confirm that the configured endpoint is
-reachable.
+LinkedIn is required by `find-contacts`, `enrich-contacts`, `find-fresh-jobs`,
+`linkedin-saved-jobs-intake`, `verify-postings`, and the `write-outreach` hooks.
+`jd-to-ready` can file a role, tailor the resume, export the PDF, and build the apply
+packet without LinkedIn. LinkedIn calls are sequential, never parallel: use one caller
+per logged-in browser.
 
-## 1. Install and sign in
+## Tier 1 — one-line install (default)
 
-1. Install the
-   [`stickerdaniel/linkedin-mcp-server`](https://github.com/stickerdaniel/linkedin-mcp-server)
-   server. This template was verified against tag `v4.22.0`; newer tags may work but
-   are untested here.
-
-   ```bash
-   git clone https://github.com/stickerdaniel/linkedin-mcp-server.git
-   cd linkedin-mcp-server
-   git checkout v4.22.0
-   uv sync
-   ```
-2. Run its documented interactive login once so the browser profile contains your
-   LinkedIn session.
-3. Configure the server for streamable HTTP on `127.0.0.1:8765` with the MCP path
-   `/mcp`. A typical environment file contains:
-
-   ```text
-   TRANSPORT=streamable-http
-   HOST=127.0.0.1
-   PORT=8765
-   HTTP_PATH=/mcp
-   HEADLESS=true
-   ```
-
-Do not use stdio. The server's FastMCP layer can emit `notifications/progress` frames
-for already-completed progress tokens; on stdio the MCP client treats that as a
-protocol violation, tears down the transport, and kills in-flight calls. On
-streamable HTTP each tool call is a fresh request, so the same condition becomes a
-transient retry.
-
-## 2. Install the launchd supervisor
-
-Copy [the plist template](../../infra/launchd/com.example.linkedin-mcp.plist) to
-`~/Library/LaunchAgents/`, replace every `__PLACEHOLDER__`, and give the file a label
-such as `com.<your-short-name>.linkedin-mcp`. Then bootstrap it:
+Register the upstream
+[`stickerdaniel/linkedin-mcp-server`](https://github.com/stickerdaniel/linkedin-mcp-server)
+package with Claude Code:
 
 ```bash
-launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.<your-short-name>.linkedin-mcp.plist"
-launchctl enable "gui/$(id -u)/com.<your-short-name>.linkedin-mcp"
-launchctl kickstart -k "gui/$(id -u)/com.<your-short-name>.linkedin-mcp"
+claude mcp add --scope project linkedin -- uvx mcp-server-linkedin@latest
 ```
 
-Once launchd owns the daemon, do not start the server by hand. Two processes can
-fight over the same port and browser profile. The complete lifecycle and rollback
-steps live in [the launchd runbook](../../infra/launchd/README.md).
+Claude Code spawns the stdio server per session. On the first tool call that needs
+authentication, the server opens a LinkedIn login window. To log in ahead of time,
+run this once:
 
-## 3. Register the MCP endpoint
+```bash
+uvx mcp-server-linkedin@latest --login
+```
 
-In your Claude Code MCP configuration, register `linkedin` as an HTTP server:
+Do not pin a version. LinkedIn's page structure changes often, so pinned versions rot.
+
+For the health check, confirm that `claude mcp get linkedin` shows `Connected`, then
+run:
+
+```bash
+python3 scripts/verify_setup.py
+```
+
+## Tier 2 — supervised HTTP daemon (unattended runners)
+
+Choose Tier 2 for unattended runners, cloud or PC schedulers, or several callers that
+must share one logged-in browser. Install the optional launchd supervisor by following
+[the launchd runbook](../../infra/launchd/README.md). Once launchd owns the daemon,
+never start a second copy by hand and never use `pkill`.
+
+Register `linkedin` as an HTTP server in Claude Code:
 
 ```json
 {
@@ -66,10 +51,11 @@ In your Claude Code MCP configuration, register `linkedin` as an HTTP server:
 }
 ```
 
-Keep LinkedIn calls sequential. The scraper drives one browser profile and is not
-safe for parallel requests.
+The equivalent CLI command is:
 
-## 4. Health check and recovery
+```bash
+claude mcp add --transport http linkedin http://127.0.0.1:8765/mcp
+```
 
 Confirm the port and perform an MCP initialize handshake:
 
@@ -92,7 +78,15 @@ The handshake should return HTTP 200. If it does not:
    launchctl kickstart -k "gui/$(id -u)/com.<your-short-name>.linkedin-mcp"
    ```
 
-Finally run `python3 scripts/verify_setup.py`. It checks the endpoint from the
-optional `linkedin_mcp_endpoint` profile key, defaulting to
-`http://127.0.0.1:8765/mcp`. `--skip-live` is only for machine-only validation; a
-complete onboarding must pass the live check.
+## Why HTTP was once mandatory
+
+FastMCP 3.3.1 emitted stray `notifications/progress` frames that tore down stdio
+transports mid-call. That made stdio unsafe for this server. On 2026-08-24, server
+v4.23.1 with FastMCP 3.4.4 ran authenticated profile, job-search, and company scrapes
+over stdio with zero transport errors. The invariant that remains is sequential calls,
+never parallel.
+
+`python3 scripts/verify_setup.py` reports `PASS` when a `linkedin` MCP server is
+registered with Claude Code using either transport or the HTTP daemon answers. It
+reports `WARN` (contact research disabled) when neither exists. It reports `FAIL` only
+when a registered HTTP endpoint is unreachable.

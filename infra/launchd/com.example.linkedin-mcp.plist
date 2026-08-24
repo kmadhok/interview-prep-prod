@@ -9,7 +9,7 @@
   <array>
     <string>__UV_PATH__</string>
     <string>run</string>
-    <string>linkedin-mcp-server</string>
+    <string>mcp-server-linkedin</string>
   </array>
 
   <key>WorkingDirectory</key>

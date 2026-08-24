@@ -1,8 +1,8 @@
 # Release gate
 
 Run this checklist against a clean-history export before publishing or inviting a
-friend to test. The machine gate is deterministic except for the required live
-LinkedIn handshake. The human gate deliberately retains the ATS and send actions.
+friend to test. The machine gate is deterministic except for the LinkedIn registration
+check. The human gate deliberately retains the ATS and send actions.
 
 ## Machine validation (five steps)
 
@@ -68,7 +68,15 @@ python3 evals/run_eval.py --all --workspace /tmp/interview-prep-fixture --json
 are `BLOCKED`, and the last command emits parseable JSON. Evals—not pytest—are the
 product behavior gate.
 
-### 5. Prove the live LinkedIn MCP handshake
+### 5. Prove LinkedIn MCP is registered
+
+```bash
+claude mcp get linkedin
+```
+
+**Pass:** the status is `Connected` with either transport.
+
+If you chose the Tier 2 daemon:
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' -m 5 \
@@ -80,7 +88,7 @@ curl -s -o /dev/null -w '%{http_code}\n' -m 5 \
 
 **Pass:** the command prints `200`. If it does not, follow the recovery ladder in
 [`docs/onboarding/linkedin-mcp.md`](onboarding/linkedin-mcp.md); do not start a second
-daemon by hand or switch to stdio.
+daemon by hand.
 
 ## Human validation (five steps)
 

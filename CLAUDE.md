@@ -84,8 +84,10 @@ Multiple writers may touch Pipeline state, so pull before editing it.
 - Only `stage-outreach` may write `STAGED in Gmail <date>`, and only after its
   deterministic gate confirms an Active Applied row.
 - The system drafts, never sends.
-- LinkedIn uses one HTTP daemon at `127.0.0.1:8765/mcp`; calls are sequential, never
-  parallel, and stdio is forbidden.
+- LinkedIn calls go through the single MCP server registered as `linkedin`, one call at
+  a time, never in parallel. The default is stdio via `uvx mcp-server-linkedin@latest`;
+  unattended runners or several callers must instead share one HTTP daemon at
+  `127.0.0.1:8765/mcp` rather than spawn competing browsers.
 - State comes from files and markers, never a separate database.
 
 Do not fight an unattended runner. Preserve unrelated changes and inspect current
@@ -114,5 +116,7 @@ python3 scripts/test_no_personal_refs.py
 ```
 
 For onboarding verification, run `python3 scripts/verify_setup.py`. A reportlab
-warning is acceptable; the required live LinkedIn check must pass unless the run is
-explicitly machine-only with `--skip-live`.
+warning is acceptable. The LinkedIn check passes when a `linkedin` MCP server is
+registered or the HTTP daemon answers; it warns (contact research disabled) when neither
+exists, and fails only when a registered HTTP endpoint is unreachable. Use `--skip-live`
+only for machine-only runs.

@@ -102,29 +102,57 @@ def _check_reportlab() -> Check:
         return Check("PASS", "reportlab", "PDF export available")
 
 
-def _check_linkedin(endpoint: str, *, skip_live: bool) -> Check:
-    if skip_live:
-        return Check("SKIP", "LinkedIn MCP", "live check skipped by --skip-live")
+def _registered_linkedin_transport() -> str | None:
+    """Return the transport of the `linkedin` MCP server Claude Code has registered, if any."""
+    try:
+        result = subprocess.run(
+            ["claude", "mcp", "get", "linkedin"],
+            capture_output=True, text=True, timeout=20, check=False,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        return None
+    if result.returncode != 0:
+        return None
+    for line in result.stdout.splitlines():
+        if line.strip().lower().startswith("type:"):
+            return line.split(":", 1)[1].strip().lower() or "registered"
+    return "registered"
+
+
+def _probe_http_endpoint(endpoint: str) -> tuple[bool, str]:
+    """Return (alive, detail) for the streamable-HTTP daemon; a bare GET rejection still proves liveness."""
     request = Request(endpoint, headers={"Accept": "application/json, text/event-stream"})
     try:
         with urlopen(request, timeout=3) as response:
             status = response.status
     except HTTPError as exc:
-        # Streamable HTTP MCP endpoints normally reject a bare GET while proving
-        # that the configured daemon and route are alive.
         status = exc.code
     except (URLError, TimeoutError, OSError, ValueError) as exc:
-        return Check(
-            "FAIL",
-            "LinkedIn MCP",
-            f"unreachable at {endpoint}: {exc}; see docs/onboarding/linkedin-mcp.md",
-        )
+        return False, f"unreachable at {endpoint}: {exc}"
     if 200 <= status < 500:
-        return Check("PASS", "LinkedIn MCP", f"reachable at {endpoint} (HTTP {status})")
+        return True, f"reachable at {endpoint} (HTTP {status})"
+    return False, f"endpoint returned HTTP {status}"
+
+
+def _check_linkedin(endpoint: str, *, skip_live: bool) -> Check:
+    """PASS on a registered stdio server or a live HTTP daemon; WARN when neither exists."""
+    if skip_live:
+        return Check("SKIP", "LinkedIn MCP", "live check skipped by --skip-live")
+    transport = _registered_linkedin_transport()
+    if transport not in (None, "http"):
+        return Check(
+            "PASS", "LinkedIn MCP", f"registered with Claude Code ({transport}); login happens on first call"
+        )
+    alive, detail = _probe_http_endpoint(endpoint)
+    if alive:
+        return Check("PASS", "LinkedIn MCP", f"HTTP daemon {detail}")
+    if transport == "http":
+        return Check("FAIL", "LinkedIn MCP", f"registered as http but {detail}; see docs/onboarding/linkedin-mcp.md")
     return Check(
-        "FAIL",
+        "WARN",
         "LinkedIn MCP",
-        f"endpoint returned HTTP {status}; see docs/onboarding/linkedin-mcp.md",
+        "no `linkedin` MCP server registered and no HTTP daemon; contact research is disabled "
+        "until you follow docs/onboarding/linkedin-mcp.md",
     )
 
 
@@ -167,7 +195,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--repo-root", type=Path, default=REPO_ROOT, help="Repository instance to inspect"
     )
     parser.add_argument(
-        "--skip-live", action="store_true", help="Skip the required LinkedIn reachability check"
+        "--skip-live", action="store_true", help="Skip the LinkedIn registration/reachability check (machine-only runs)"
     )
     return parser
 

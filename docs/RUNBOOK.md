@@ -18,7 +18,7 @@ Always inspect `git status --short` before and after. Stop on authentication, ch
 
 | Credential / permission | Exact consumer | Missing behavior / safe default |
 |---|---|---|
-| LinkedIn session | external LinkedIn MCP at `127.0.0.1:8765/mcp` | Live contact/search steps block; fixture evals do not need it. |
+| LinkedIn session | the registered `linkedin` MCP server (stdio by default; HTTP daemon at `127.0.0.1:8765/mcp` for runners) | Live contact/search steps block; fixture evals do not need it. |
 | Gmail OAuth | external Gmail/Claude integration | Draft/search operations block; never store tokens here. |
 | `BQ_PROXY_TOKEN` | `scripts/drip_runner/apply_digest.py` | Optional dashboard proxy call fails; local file processing remains available. |
 | `CUBEJS_API_SECRET` | `scripts/drip_runner/apply_digest.py` | Same optional proxy path. |
@@ -159,7 +159,7 @@ Always inspect `git status --short` before and after. Stop on authentication, ch
 
 - **Pass A / saved-jobs drip:** task definitions under `infra/` invoke preparation and stop at the apply gate.
 - **Pass B / outreach:** polls only rows already marked `Applied`; only `stage-outreach` may append the Gmail staged marker.
-- **LinkedIn MCP daemon:** external HTTP service at `127.0.0.1:8765/mcp`; sequential calls only. Manual mode is the default.
+- **LinkedIn MCP:** the registered `linkedin` MCP server (stdio by default; HTTP daemon at `127.0.0.1:8765/mcp` for runners); sequential calls only. Manual mode is the default.
 
 ## Recovery
 

@@ -7,10 +7,10 @@ submission and every outbound message remain explicit human actions.
 
 ## Requirements
 
-- macOS for v1 onboarding and the required launchd-supervised LinkedIn daemon;
+- macOS or Linux; the optional launchd supervisor (Tier 2) is macOS-only;
 - Claude Code;
 - Python 3.11 or newer, using the standard library;
-- a local LinkedIn MCP server at `http://127.0.0.1:8765/mcp` (**required**);
+- the LinkedIn MCP server for contact research (one-line install: `claude mcp add --scope project linkedin -- uvx mcp-server-linkedin@latest`; resume tailoring works without it);
 - an EmailFinder.dev API key (optional; without it email verification degrades to
   flagged inferred addresses — see docs/onboarding/email-verification.md);
 - an authorized Gmail connector for outreach staging; and
@@ -34,8 +34,8 @@ Inside Claude Code, run `/onboard`. The conversational setup creates your gitign
 python3 scripts/verify_setup.py
 ```
 
-The command exits zero when profile/workspace checks, the required live LinkedIn
-reachability check, and the canonical behavior fixture all pass. Use `--skip-live`
+The command exits zero when profile/workspace checks, the LinkedIn registration check
+(PASS or WARN), and the canonical behavior fixture all pass. Use `--skip-live`
 only for clearly labeled machine-only validation.
 
 ## Behavior tests
@@ -61,7 +61,7 @@ self-tests for deterministic helpers.
 | `scripts/` | Deterministic helpers, verification, and optional runner code. |
 | `evals/` | Behavior contracts, verifiers, and synthetic fixtures. |
 | `templates/` | Blank canonical starters used by onboarding. Never put personal data here. |
-| `infra/` | Required LinkedIn supervisor plus optional cloud/PC schedulers. |
+| `infra/` | Optional LinkedIn HTTP supervisor plus optional cloud/PC schedulers. |
 | `docs/onboarding/` | Connector and manual-mode setup guides. |
 | `workspace/` | Your instance: Pipeline, canonical evidence, and role folders. Gitignored. |
 | `profile.yaml` | Your identity and filename configuration. Gitignored. |
@@ -76,8 +76,8 @@ all personal content stays in `workspace/` and `profile.yaml`.
   research and Gmail drafting do not run until the Pipeline row is marked `Applied`.
 - **Draft, never send:** skills may create Gmail drafts or paste-ready text, but never
   send a message or submit an ATS application.
-- **One LinkedIn browser:** calls are sequential and use one supervised HTTP daemon;
-  stdio and parallel calls are forbidden.
+- **One LinkedIn browser:** calls are sequential, never parallel; one caller per logged-in
+  browser, and unattended runners share a single supervised HTTP daemon.
 - **No state database:** role folders, Pipeline rows, and deterministic markers are
   the state. Never hand-write a `STAGED` marker.
 - **Truthful evidence:** resumes and outreach use canonical verified claims; unknown
