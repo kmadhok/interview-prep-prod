@@ -1,0 +1,20 @@
+schema: 1
+registry_id: interview-prep-prod
+runtime:
+  kind: python
+  version: "3.11"
+package_manager: pip
+setup: [python3 -m venv .venv, .venv/bin/pip install -q pytest]
+test: [.venv/bin/python -m pytest scripts/ -q, cd evals && ../.venv/bin/python -m pytest . -q]
+lint: []
+typecheck: []
+verify: []
+max_test_minutes: 15
+network: {allowed: true}
+secrets_required: []
+services: []
+generated_files: []
+generate: []
+personal_data: [workspace/**]
+forbidden_paths: [.env, .claude/settings.local.json, .apollo-scrape/**, .claude/skills/verify-emails/.email-cache.json]
+deploy: none

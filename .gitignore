@@ -20,3 +20,4 @@ runs/
 
 # codex-cli AGENTS.md compatibility mirror — tool artifact, never repo content
 .agents/
+.venv/
