@@ -15,6 +15,20 @@ secrets_required: []
 services: []
 generated_files: []
 generate: []
-personal_data: [workspace/**]
+personal_data:
+  - workspace/**
+  - profile.yaml
+  - CLAUDE.md
+  - AGENTS.md
+  - Skills.md
+  - "Automation Architecture - *.md"
+  - Automation Design - Two-Orchestrator/**
+  - Spec - Telegram JD Trigger (PC Runner).md
+  - LinkedIn MCP - Local Verification Harness.md
+  - docs/intent/**
+  - docs/spec/**
+  - docs/superpowers/**
+  - .superpowers/**
+  - .plans/**
 forbidden_paths: [.env, .claude/settings.local.json, .apollo-scrape/**, .claude/skills/verify-emails/.email-cache.json]
 deploy: none
