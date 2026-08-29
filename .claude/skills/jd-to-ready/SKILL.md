@@ -112,7 +112,7 @@ When editing trace behavior, do not rely on corrected summary lines. The McKinse
 
 ### Step 1 — Run intake (file the JD)
 
-Invoke the `interview-prep-intake` skill's workflow (read `interview-prep-intake.skill` at the workspace root for the authoritative version). Briefly: parse the JD → create `<Company - Role>` folder → write `Job Description.md` → add row to `Pipeline.md` (default stage: `Considering — JD reviewed, not yet applied`) → update `active_interview_pipeline.md`.
+Invoke the `interview-prep-intake` skill's workflow (`.claude/skills/interview-prep-intake/SKILL.md` is the authoritative version). Briefly: parse the JD → create `<Company - Role>` folder → write `Job Description.md` → add row to `Pipeline.md` (default stage: `Considering — JD reviewed, not yet applied`) → update `active_interview_pipeline.md`.
 
 Set the Pipeline row's **Next action** to: `Resume ready — apply on the ATS; outreach auto-stages once the row is marked Applied.`
 

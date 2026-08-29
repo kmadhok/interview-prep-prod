@@ -21,15 +21,15 @@ TEMPLATE_DIRS = ["scripts", ".claude/skills", "templates", "evals", "infra",
 SCAN_SUFFIXES = {".py", ".md", ".yaml", ".yml", ".json", ".ps1", ".sh", ".txt"}
 
 FORBIDDEN = [
-    re.compile(r"\bKanu\b"),
-    re.compile(r"\bMadhok\b"),
+    re.compile(r"\bKanu\b", re.IGNORECASE),
+    re.compile(r"\bMadhok\b", re.IGNORECASE),
     re.compile(r"kanumadhok", re.IGNORECASE),
-    re.compile(r"madhok\.kanu"),
+    re.compile(r"madhok\.kanu", re.IGNORECASE),
     re.compile(r"the user the user"),
     re.compile(r"/Users/[A-Za-z]"),          # absolute Mac home paths
     re.compile(r"G:[/\\]projects"),           # the user's PC drive layout
     re.compile(r"Documents/Claude/Projects"), # any form of the live workspace path
-    re.compile(r"kanu-madhok"),               # personal LinkedIn handle
+    re.compile(r"kanu-madhok", re.IGNORECASE), # personal LinkedIn handle
     re.compile(r"\bkmadhok\b"),               # personal GitHub handle
 ]
 
