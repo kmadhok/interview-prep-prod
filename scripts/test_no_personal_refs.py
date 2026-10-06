@@ -33,8 +33,11 @@ FORBIDDEN = [
     re.compile(r"\bkmadhok\b"),               # personal GitHub handle
 ]
 
-# The distribution repo's own clone URL is the one sanctioned handle occurrence.
-ALLOWED_LITERALS = ("github.com/kmadhok/interview-prep-template",)
+# The distribution repos' own clone URLs are the only sanctioned handle occurrences.
+ALLOWED_LITERALS = (
+    "github.com/kmadhok/interview-prep-template",
+    "github.com/kmadhok/interview-prep-prod",
+)
 
 
 def redact_allowed(text: str) -> str:

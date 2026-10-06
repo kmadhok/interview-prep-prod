@@ -5,6 +5,23 @@ description into a filed role, tailored resume, PDF/apply packet, and—only aft
 record that you applied—reviewable recruiter outreach. It drafts, never sends: ATS
 submission and every outbound message remain explicit human actions.
 
+It was built for, and run on, a real job search (126 roles filed, 50+ applications)
+before the reusable machinery was split from the personal data into this repository.
+
+## How it works
+
+```text
+job description
+  → jd-to-ready      file the role, classify it, tailor the resume, export PDF + apply packet
+  ⏸ you apply, then mark the Pipeline row Applied
+  → stage-outreach   find contacts, verify emails, write outreach, create Gmail drafts
+  ⏸ you review and send
+```
+
+Each step is a Claude Code skill. Deterministic work (Pipeline rows, role folders,
+resume verification) runs in plain Python; the model writes and judges. Every run leaves
+a trace of why each step ran and which files shaped it.
+
 ## Requirements
 
 - macOS or Linux; the optional launchd supervisor (Tier 2) is macOS-only;
@@ -22,8 +39,8 @@ Schedulers are optional. Manual mode is the supported default.
 ## Quick start
 
 ```bash
-git clone https://github.com/kmadhok/interview-prep-template.git
-cd interview-prep-template
+git clone https://github.com/kmadhok/interview-prep-prod.git
+cd interview-prep-prod
 claude
 ```
 
@@ -40,7 +57,8 @@ only for clearly labeled machine-only validation.
 
 ## Behavior tests
 
-Evals are the product's behavior tests. Build the self-contained synthetic workspace,
+Evals are the product's behavior tests: each of the nine pipeline behaviors has a
+verifier with written contract clauses. Build the self-contained synthetic workspace,
 then run every local contract:
 
 ```bash
@@ -99,6 +117,11 @@ step ran and the source files that shaped it. The event contract is documented i
 
 Before sharing or publishing, use the clean-export tool and execute
 [`docs/release-gate.md`](docs/release-gate.md).
+
+## Design decisions
+
+The reasoning behind the gates, the eval harness, the trace contract, and the
+template/instance split is recorded as ADRs in [`docs/ADRs/`](docs/ADRs/README.md).
 
 ## License
 
